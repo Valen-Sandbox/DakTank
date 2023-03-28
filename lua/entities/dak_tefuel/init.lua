@@ -8,29 +8,50 @@ ENT.DakIsExplosive = true
 ENT.DakArmor = 10
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakFuel = 0
 
-function ENT:Initialize()
+local function RecurseTrace(start, endpos, filter)
+	local trace = {}
+		trace.start = start
+		trace.endpos = endpos
+		trace.filter = filter
+		trace.mins = Vector(-1,-1,-1)
+		trace.maxs = Vector(1,1,1)
+	local FireTrace = util.TraceHull( trace )
+	if IsValid(FireTrace.Entity) then
+		local Class = FireTrace.Entity:GetClass()
+		if Class=="dak_crew" or Class=="dak_teammo" or Class=="dak_teautoloadingmodule" or Class=="dak_tefuel" or Class=="dak_tegearbox" or Class=="dak_temotor" or Class=="dak_turretmotor" then
+			FireTrace.Entity:Ignite( 60, 0 )
+		end
+		if FireTrace.Entity.DakArmor == nil then
+			DakTekTankEditionSetupNewEnt(FireTrace.Entity)
+		end
+		if FireTrace.Entity.DakArmor < 5 or DTCheckClip(FireTrace.Entity,FireTrace.HitPos) then
+			filter[#filter+1] = FireTrace.Entity
+			RecurseTrace(start, endpos, filter)
+		end
+	end
+end
 
+function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
 	--local phys = self:GetPhysicsObject()
 
-	
 	self.DakArmor = 10
 	self.DakMass = 1000
 	self.PowerMod = 1
 	self.Soundtime = CurTime()
- 	self.DumpTime = CurTime()
- 	self.SparkTime = CurTime()
+	self.DumpTime = CurTime()
+	self.SparkTime = CurTime()
 
- 	if self.DakHealth>self.DakMaxHealth then
+	if self.DakHealth > self.DakMaxHealth then
 		self.DakHealth = self.DakMaxHealth
 	end
- 	
+
 	self.DakBurnStacks = 0
 end
 
@@ -177,34 +198,9 @@ function ENT:Think()
     return true
 end
 
-function RecurseTrace(start, endpos, filter)
-	local trace = {}
-		trace.start = start
-		trace.endpos = endpos
-		trace.filter = filter
-		trace.mins = Vector(-1,-1,-1)
-		trace.maxs = Vector(1,1,1)
-	local FireTrace = util.TraceHull( trace )
-	if IsValid(FireTrace.Entity) then
-		local Class = FireTrace.Entity:GetClass()
-		if Class=="dak_crew" or Class=="dak_teammo" or Class=="dak_teautoloadingmodule" or Class=="dak_tefuel" or Class=="dak_tegearbox" or Class=="dak_temotor" or Class=="dak_turretmotor" then
-			FireTrace.Entity:Ignite( 60, 0 )
-		end
-		if FireTrace.Entity.DakArmor == nil then
-			DakTekTankEditionSetupNewEnt(FireTrace.Entity)
-		end
-		if FireTrace.Entity.DakArmor < 5 or DTCheckClip(FireTrace.Entity,FireTrace.HitPos) then
-			filter[#filter+1] = FireTrace.Entity
-			RecurseTrace(start, endpos, filter)
-		end
-	end
-end
-
 function ENT:PreEntityCopy()
-
 	local info = {}
-	local entids = {}
-
+	-- local entids = {}
 
 	info.DakName = self.DakName
 	info.DakIsExplosive = self.DakIsExplosive
@@ -214,13 +210,11 @@ function ENT:PreEntityCopy()
 
 	duplicator.StoreEntityModifier( self, "DakTek", info )
 
-	//Wire dupe info
+	-- Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
-
 	if (Ent.EntityMods) and (Ent.EntityMods.DakTek) then
 		self.DakName = Ent.EntityMods.DakTek.DakName
 		self.DakIsExplosive = Ent.EntityMods.DakTek.DakIsExplosive
@@ -231,5 +225,4 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 		Ent.EntityMods.DakTekLink = nil
 	end
 	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
-
 end

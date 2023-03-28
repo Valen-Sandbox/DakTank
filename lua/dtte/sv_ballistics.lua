@@ -292,9 +292,9 @@ function DTArmorSanityCheck(Ent)
     end
 end
 
-local function DTCheckClip(Ent, HitPos, nochecklegit)
+function DTCheckClip(Ent, HitPos, nochecklegit)
     if not (Ent:GetClass() == "prop_physics") or (Ent.ClipData == nil) then return false end
-    if nochecklegit~=true then
+    if nochecklegit ~= true then
         if not(Ent.DakLegit==1) then return true end
         if (Ent.DakLegit==1) and IsValid(Ent:GetPhysicsObject()) then
             if Ent:GetPhysicsObject():GetMass() ~= Ent.DakLegitMass then

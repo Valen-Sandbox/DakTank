@@ -1113,24 +1113,21 @@ function ENT:Think()
 					if self.DakHealth < 0 then self.DakHealth = 0 end
 				end
 
-
 				local basesize = {self.base:OBBMaxs().x,self.base:OBBMaxs().y,self.base:OBBMaxs().z}
 				table.sort( basesize, function(a, b) return a>b end )
 
-
-
-				fronttrace = {
+				local fronttrace = {
 					start = selfpos + Vector(0,0,100)+Angle(0,ForwardEnt:GetAngles().yaw,0):Forward()*(TrackLength*0.5),
 					endpos = selfpos + Vector(0,0,-1000)+Angle(0,ForwardEnt:GetAngles().yaw,0):Forward()*(TrackLength*0.5),
 					mask = MASK_SOLID_BRUSHONLY
 				}
-				FrontTrace = traceline( fronttrace )
-				backtrace = {
+				local FrontTrace = traceline( fronttrace )
+				local backtrace = {
 					start = selfpos + Vector(0,0,100)+Angle(0,ForwardEnt:GetAngles().yaw,0):Forward()*-(TrackLength*0.5),
 					endpos = selfpos + Vector(0,0,-1000)+Angle(0,ForwardEnt:GetAngles().yaw,0):Forward()*-(TrackLength*0.5),
 					mask = MASK_SOLID_BRUSHONLY
 				}
-				BackTrace = traceline( backtrace )
+				local BackTrace = traceline( backtrace )
 
 				local FrontHit = FrontTrace.HitPos
 				local BackHit = BackTrace.HitPos
@@ -1170,7 +1167,7 @@ function ENT:Think()
 				local leftbraking = Vector(math.max(self.LeftBrake*brakestiffness,TerrainBraking),1,0)*2
 				local WheelYaw = self.WheelYaw
 				local ShockForce = 10*self.PhysicalMass
-				local InAir = true 
+				local InAir = true
 				--Right side
 				for i=1, WheelsPerSide do
 					RideHeight = self.RideHeight
@@ -1375,7 +1372,7 @@ function ENT:Think()
 					self.LastPitchInt = pitchint
 				end
 				self.phy:ApplyForceCenter(self.RealInt*self.PhysicalMass*physenv.GetGravity())
-				
+
 				if self.LastSpeed == nil then self.LastSpeed = Vector(0,0,0):Distance(self.phy:GetVelocity())*(0.277778*0.254) end
 				self.Speed = Vector(0,0,0):Distance(self.phy:GetVelocity())*(0.277778*0.254)
 				local accel = self.Speed-self.LastSpeed

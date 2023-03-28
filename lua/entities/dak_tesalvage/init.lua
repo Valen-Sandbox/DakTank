@@ -76,7 +76,7 @@ function ENT:Initialize()
 	end
 	]]--
 	if self:GetModel() == "models/gibs/hgibs.mdl" or self:GetModel() == "models/gibs/hgibs_spine.mdl" or self:GetModel() == "models/gibs/hgibs_rib.mdl" then
-		
+
 	else
 		self:SetMaterial("models/props_buildings/plasterwall021a")
 	end
@@ -91,7 +91,7 @@ function ENT:Initialize()
 	if IsValid(phys) then
 		phys:Wake()
 	end
-	
+
 	self.SpawnTime = CurTime()
 	local DeathSounds = {"daktanks/closeexp1.mp3","daktanks/closeexp2.mp3","daktanks/closeexp3.mp3"}
 	self:EmitSound( DeathSounds[math.random(1,#DeathSounds)], 100, 100, 1, 3)
@@ -107,18 +107,16 @@ function ENT:Initialize()
 		self:Ignite(25,1)
 	end
 	self.DakBurnStacks = 0
-
 end
 
 function ENT:Think()
-
 	if self:GetModel() == "models/gibs/hgibs_rib.mdl" and (self:GetParent()==NULL or self:GetParent()==nil) then
-		trace = {}
+		local trace = {}
 		trace.start = self.LastPos
 		trace.endpos = self:GetPos() + self:GetVelocity()*0.25
 		trace.filter = self
 		local Hit = util.TraceLine( trace )
-		if Hit.Entity:IsValid() then 
+		if Hit.Entity:IsValid() then
 			self:SetParent(Hit.Entity)
 			if Hit.Entity:GetParent():IsValid() then
 				self:SetParent(Hit.Entity:GetParent())
@@ -137,5 +135,6 @@ function ENT:Think()
 	end
 
 	self:NextThink(CurTime()+0.25)
-    return true
+
+	return true
 end

@@ -17,7 +17,7 @@ util.AddNetworkString( "daktankcoredetailremove" )
 util.AddNetworkString( "daktankcoredie" )
 
 concommand.Add("daktank_unmake", function()
-	cores = ents.FindByClass("dak_tankcore")
+	local cores = ents.FindByClass("dak_tankcore")
 	for i=1, #cores do
 		local core = cores[i]
 		core.Off = true
@@ -45,7 +45,7 @@ concommand.Add("daktank_unmake", function()
 		end
 	end
 end)
-
+--[[
 function Average(Table)
 	local Ave = 0
 	for i=1, #Table do
@@ -53,8 +53,8 @@ function Average(Table)
 	end
 	return Ave/#Table
 end
-
-function AverageNoOutliers(Table)
+]]
+local function AverageNoOutliers(Table)
 	if #Table == 0 then return 0 end
 	local Ave = 0
 	local count = 0
@@ -67,13 +67,12 @@ function AverageNoOutliers(Table)
 	if count == 0 then return 0 end
 	return Ave/count
 end
-
-
+--[[
 function SplitTableByNegPos(Table)
 	local neg = {}
 	local pos = {}
 	for i=1, #Table do
-		if Table[i] > 0 then 
+		if Table[i] > 0 then
 			pos[#pos+1] = Table[i]
 		else
 			neg[#neg+1] = Table[i]
@@ -81,12 +80,12 @@ function SplitTableByNegPos(Table)
 	end
 	return pos, neg
 end
-
-function InRange(x, min, max) --how is this not standard???
-	return (x>min and x<max) or (x<min and x>max)
+]]
+local function InRange(x, min, max) -- how is this not standard???
+	return (x > min and x < max) or (x < min and x > max)
 end
 
-function MoveEntToPos(ent)
+local function MoveEntToPos(ent)
 	ent:SetPos(ent:GetPos()+Vector(0,0,math.random(400,1000)))
 	local num = math.random(1,4)
 	local scream = ""
@@ -175,12 +174,12 @@ function MoveEntToPos(ent)
 end
 
 concommand.Add("daktank_remake", function()
-	cores = ents.FindByClass("dak_tankcore")
-	for i=1, #cores do
+	local cores = ents.FindByClass("dak_tankcore")
+	for i = 1, #cores do
 		local core = cores[i]
-		for j=1, #core.Contraption do
-			if core.Contraption[j]~=core then
-				timer.Create( core:EntIndex()..core.Contraption[j]:EntIndex().."start", math.Rand(1,15), 1, function() MoveEntToPos(core.Contraption[j]) end )
+		for j = 1, #core.Contraption do
+			if core.Contraption[j] ~= core then
+				timer.Create( core:EntIndex() .. core.Contraption[j]:EntIndex() .. "start", math.Rand(1,15), 1, function() MoveEntToPos(core.Contraption[j]) end )
 			end
 		end
 	end
@@ -188,7 +187,7 @@ end)
 
 hook.Add("AdvDupe_FinishPasting", "daktank_tankcore_check", function(dupe)
 	local ents = dupe[1].CreatedEntities
-	for id, data in pairs(dupe[1].EntityList) do
+	for id, data in ipairs(dupe[1].EntityList) do
 		local ent = ents[id]
 		if IsValid(ent) then
 			if ent:GetClass() == "dak_tankcore" then
@@ -215,7 +214,7 @@ hook.Add("AdvDupe_FinishPasting", "daktank_tankcore_check", function(dupe)
 				if ent.DakModel == "models/daktanks/recoillessrifle100mm2.mdl" then ScalingGun = 1 end
 				if ScalingGun == 1 then
 					if IsValid(ent) then
-						ent:PhysicsDestroy()	
+						ent:PhysicsDestroy()
 						--timer.Simple(2,function()
 							if IsValid(ent) then
 								local mins, maxs = ent:GetModelBounds()
@@ -280,7 +279,7 @@ local function SetMass( Player, Entity, Data )
 end
 duplicator.RegisterEntityModifier( "mass", SetMass )
 
-function DakTankCollisions(ent1, ent2, pos)
+local function DakTankCollisions(ent1, ent2, pos)
 	if IsValid(ent1.Controller) and IsValid(ent2.Controller) then
 		if ent1.Controller ~= ent2.Controller then
 			local tmp = ent1.Controller.Base:GetPos() - ent2.Controller.Base:GetPos()
@@ -299,7 +298,7 @@ function DakTankCollisions(ent1, ent2, pos)
 				if ent2:CPPIGetOwner() ~= nil and ent2:CPPIGetOwner():HasGodMode()==false and not(ent2:CPPIGetOwner():IsWorld()) then
 				    ent2.Controller.DakHealth = ent2.Controller.DakHealth - (5*colspeed*0.09144*(ent1.Controller.TotalMass/ent2.Controller.TotalMass))
 				end
-			
+
 				ent1:EmitSound( "physics/metal/metal_large_debris2.wav" )
 				local effectdata = EffectData()
 				effectdata:SetOrigin(pos)
@@ -810,6 +809,7 @@ local AmNameExtras = {
 	"",
 	""
 }
+
 local AmNameNames = {
 	"Locust",
 	"Chaffee",
@@ -858,6 +858,7 @@ local AmNameNames = {
 	"Crusader",
 	"Paladin"
 }
+
 function ENT:Initialize()
 	self:SetModel( "models/bull/gates/logic.mdl" )
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -877,9 +878,9 @@ function ENT:Initialize()
 
 	self.Outputs = WireLib.CreateOutputs( self, { "Health","HealthPercent","Crew" } )
 	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
- 	self.SlowThinkTime = CurTime()
- 	self.DakActive = 0
+	self.SparkTime = CurTime()
+	self.SlowThinkTime = CurTime()
+	self.DakActive = 0
 	self.CurMass = 0
 	self.LastCurMass = 0
 	self.HitBox = {}
@@ -905,8 +906,6 @@ function ENT:Initialize()
 
 	self.PhysEnabled = true
 	self.LastPhysEnabled = true
-
-
 
 	--for i=1, 10 do
 	--	print(NameTable1[math.random(1,#NameTable1)]..NameTable2[math.random(1,#NameTable2)]..NameTable3[math.random(1,#NameTable3)])
@@ -946,7 +945,6 @@ function ENT:Initialize()
 	self.Forward = self:GetForward()
 end
 
-
 local function GetPhysCons( ent, Results )
 	local Results = Results or {}
 	if not IsValid( ent ) then return end
@@ -980,7 +978,6 @@ local function GetPhysCons( Ent, Table )
     return Table
 end
 ]]--
-
 local function GetParents( ent, Results )
 	local Results = Results or {}
 	local Parent = ent:GetParent()
@@ -993,7 +990,7 @@ end
 --[[
 local function GetParents(Ent)
     if not IsValid(Ent) then return end
-    
+
     local Table  = {[Ent] = true}
     local Parent = Ent:GetParent()
 
@@ -1005,7 +1002,6 @@ local function GetParents(Ent)
     return Table
 end
 ]]--
-
 local function GetPhysicalConstraints( Ent, Table )
     if not IsValid( Ent ) then return end
 
@@ -1022,7 +1018,6 @@ local function GetPhysicalConstraints( Ent, Table )
 
     return Table
 end
-
 --[[
 local function GetContraption(Ent)
     if not IsValid(Ent) then return {} end
@@ -1050,6 +1045,38 @@ local function GetContraption(Ent)
     return Entities --Mass
 end
 ]]--
+local function DakKillNotSolid( ent )
+	if not IsValid( ent.Controller ) then return end
+	if not IsValid( ent.Controller.Base ) then return end
+	if not ent.Controller.Base:GetPhysicsObject():IsMotionEnabled() then return end
+
+	local isNotSolid = not ent:IsSolid() or ent.ClipData ~= nil
+	if not isNotSolid then return end
+
+	local isAlive = ent.Controller.DakHealth > 0 or #ent.Controller.Crew < 2 or ent.Controller.LivingCrew <= math.max( #ent.Controller.Crew - 3, 1 )
+	if not isAlive then return end
+	if ent.Controller.Dead == 1 then return end
+
+	if IsValid( ent.Controller.DakOwner ) then
+		for _, ply in ipairs( player.GetAll() ) do
+			if not ent:IsSolid() then
+				ply:ChatPrint( ent.Controller.DakOwner:GetName() .. "'s vehicle has not solid components, solidifying..." )
+				ent:SetSolid( SOLID_VPHYSICS )
+			elseif ent.ClipData ~= nil and ent:GetClass() ~= "dak_teammo" then
+				ply:ChatPrint( ent.Controller.DakOwner:GetName() .. "'s vehicle exploded due to clipping components!" )
+			end
+		end
+	end
+
+	--[[ if not ent:IsSolid() then
+		--ent.Controller.DakHealth = -1
+	end ]]
+
+	if ent:GetClass() ~= "dak_teammo" then
+		ent.Controller.DakHealth = -1
+	end
+end
+
 function ENT:Think()
 	if CurTime()-1 >= self.SlowThinkTime then
 		if self:GetTankName() == "" then
@@ -1089,12 +1116,12 @@ function ENT:Think()
 					self.Base = self:GetParent():GetParent()
 					if not(self.PreCostTimerFirst) then
 						self.PreCostTimerFirst = CurTime()
-						self.PreCostTimer = 0	
+						self.PreCostTimer = 0
 					end
 					self.PreCostTimer = CurTime() - self.PreCostTimerFirst
 					if self.DakFinishedPasting == 1 and self.CanSpawn ~= true and (IsValid(self.Gearbox) or (self.TurretControls~=nil and IsValid(self.TurretControls[1]))) then
 						self.CanSpawn = true
-						--First portion						
+						--First portion
 						do --Get forced era setting
 							if self:GetForceColdWar() == true then
 								self.ColdWar = 1
@@ -1129,7 +1156,7 @@ function ENT:Think()
 								self.APSCost = self.APSShots*roundcost
 							end
 						end
-						
+
 						local forward
 						local right
 						local up
@@ -1183,7 +1210,7 @@ function ENT:Think()
 								self.HitBoxMaxs.z = self.HitBoxMins.z
 								self.HitBoxMins.z = temp
 							end
-						
+
 							self.BoxSize = self.HitBoxMaxs - self.HitBoxMins
 							self.BoxCenter = 0.5*(self.HitBoxMaxs + self.HitBoxMins)
 							--print("Spawn Box Size: "..tostring(self.BoxSize))
@@ -1215,12 +1242,11 @@ function ENT:Think()
 
 						do --Check top and bottom bounds of vehicle for each crew position
 							self.RealBounds = {}
-							local ent
-							local HitCrit
-							local ThickestPos
-							for i=1, #self.Crew do
-								local mins = self.Crew[i]:OBBMins()*0.9
-								local maxs = self.Crew[i]:OBBMaxs()*0.9
+							-- local ent, HitCrit, ThickestPos
+
+							for i = 1, #self.Crew do
+								local mins = self.Crew[i]:OBBMins() * 0.9
+								local maxs = self.Crew[i]:OBBMaxs() * 0.9
 								self.Crew[i].Heightaimpoints = {
 									self.Crew[i]:GetPos(),
 									self.Crew[i]:GetPos()+Vector(mins.x,0,0),
@@ -1233,9 +1259,9 @@ function ENT:Think()
 									self.Crew[i]:GetPos()+Vector(0,maxs.y*0.5,0),
 								}
 							end
-							for i=1, #self.Crew do
-								for j=i, #self.Crew[i].Heightaimpoints do
-									_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]+up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]-up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
+							for i = 1, #self.Crew do
+								for j = i, #self.Crew[i].Heightaimpoints do
+									local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]+up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]-up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1260,7 +1286,7 @@ function ENT:Think()
 						end
 
 						do --Setup crew armor checking positions
-							local aimpos
+							-- local aimpos
 							for i=1, #self.Crew do
 								local mins = self.Crew[i]:OBBMins()*0.9
 								local maxs = self.Crew[i]:OBBMaxs()*0.9
@@ -1274,7 +1300,7 @@ function ENT:Think()
 									self.Crew[i]:GetPos()+Vector(maxs.x*0.5,0,mins.z),
 									self.Crew[i]:GetPos()+Vector(0,mins.y*0.5,mins.z),
 									self.Crew[i]:GetPos()+Vector(0,maxs.y*0.5,mins.z),
-									
+
 									self.Crew[i]:GetPos()+Vector(0,0,mins.z*0.5),
 									self.Crew[i]:GetPos()+Vector(mins.x,0,mins.z*0.5),
 									self.Crew[i]:GetPos()+Vector(maxs.x,0,mins.z*0.5),
@@ -1323,6 +1349,7 @@ function ENT:Think()
 							local HitTable = {}
 							local ArmorVal1 = 0
 							local ent
+							local aimpos
 							local gunhit = 0
 							local gearhit = 0
 							local HitCrit = 0
@@ -1385,12 +1412,13 @@ function ENT:Think()
 							self.FrontalSpallLinerCoverage = (SpallLinerCount/#ArmorValTable)
 							if #ArmorValTable == 0 then self.FrontalSpallLinerCoverage = 1 end
 						end
-						
+
 						do --Rear armor check
 							local distance = self.MaxSize*2
 							local HitTable = {}
 							local ArmorVal1 = 0
 							local ent
+							local aimpos
 							local gunhit = 0
 							local gearhit = 0
 							local HitCrit = 0
@@ -1460,6 +1488,7 @@ function ENT:Think()
 							local HitTable = {}
 							local ArmorVal1 = 0
 							local ent
+							local aimpos
 							local gunhit = 0
 							local gearhit = 0
 							local HitCrit = 0
@@ -1578,7 +1607,7 @@ function ENT:Think()
 							self.CrewMaxs = self.ForwardEnt:WorldToLocal(Vector(crewxs[#crewxs],crewys[#crewys],crewzs[#crewzs]))
 							--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), self.CrewMins, self.CrewMaxs, self.ForwardEnt:GetAngles(), 30, Color( 255, 150, 150, 100 ) )
 						end
-							
+
 						do --Link guns to their appropriate ammo
 							for i = 1, #self.Guns do
 								self.Guns[i].AmmoBoxes = {}
@@ -1707,7 +1736,7 @@ function ENT:Think()
 
 						do --Determine costs of ammo based on how much is carried, NOTE: no longer used
 							--[[
-							for k=1, #self.Ammoboxes do 
+							for k=1, #self.Ammoboxes do
 								local shellvol = ((100*0.0393701)^2)*(100*0.0393701*13)
 								local shells = 0
 								local ammocosts = 0
@@ -1716,7 +1745,7 @@ function ENT:Think()
 								local name4 = boxname[#boxname-7]..boxname[#boxname-6]..boxname[#boxname-5]..boxname[#boxname-4]
 								local name2 = boxname[#boxname-5]..boxname[#boxname-4]
 								--check longest to shortest names, with if then ifelse then else
-								local name 
+								local name
 								if name6 == "APFSDS" or name6 == "HEATFS" then
 									name = name6
 								elseif name4 == "HVAP" or name4 == "APDS" or name4 == "HEAT" or name4 == "HESH" or name4 == "ATGM" or name4 == "APHE" then
@@ -1802,7 +1831,7 @@ function ENT:Think()
 													scanright = self.MainTurret:GetRight()
 													scanup = self.MainTurret:GetUp()
 												end
-												
+
 												if self.BoxSize.y>self.BoxSize.z then
 													aspectratio = self.BoxSize.y/self.BoxSize.z
 													local xstart = -scanright*self.HitBoxMaxs.y*1.1-- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
@@ -1821,7 +1850,7 @@ function ENT:Think()
 													addpos = xcur*aspectratio+ycur
 												end
 
-												SpallLiner = 0
+												-- SpallLiner = 0
 
 												local ForwardHit = DTFilterRecurseTrace(startpos+addpos+scanforward*distance, startpos+addpos-scanforward*distance, player.GetAll(), self)
 												local BackwardHit = DTFilterRecurseTrace(startpos+addpos-scanforward*distance, startpos+addpos+scanforward*distance, player.GetAll(), self)
@@ -1833,7 +1862,7 @@ function ENT:Think()
 												local TraceStart = ForwardHit
 												local TraceEnd = ForwardHit + ((BackwardHit-ForwardHit)*0.5)
 												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTGetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, true, false)
-												
+
 												local addval = 0
 
 												if IsValid(ent) then
@@ -1887,7 +1916,7 @@ function ENT:Think()
 													scanright = self.MainTurret:GetRight()
 													scanup = self.MainTurret:GetUp()
 												end
-												
+
 												if self.BoxSize.x>self.BoxSize.z then
 													aspectratio = self.BoxSize.x/self.BoxSize.z
 													local xstart = scanforward*self.HitBoxMaxs.x*1.1 - scanforward*(self.ForwardEnt:WorldToLocal(basepos)).x
@@ -1905,8 +1934,8 @@ function ENT:Think()
 													startpos = basepos + xstart*aspectratio + ystart
 													addpos = xcur*aspectratio+ycur
 												end
-												
-												SpallLiner = 0
+
+												-- SpallLiner = 0
 
 												local ForwardHit = DTFilterRecurseTrace(startpos+addpos-scanright*distance, startpos+addpos+scanright*distance, player.GetAll(), self)
 												local BackwardHit = DTFilterRecurseTrace(startpos+addpos+scanright*distance, startpos+addpos-scanright*distance, player.GetAll(), self)
@@ -1973,7 +2002,7 @@ function ENT:Think()
 													scanright = self.MainTurret:GetRight()
 													scanup = self.MainTurret:GetUp()
 												end
-												
+
 												if self.BoxSize.y>self.BoxSize.z then
 													aspectratio = self.BoxSize.y/self.BoxSize.z
 													local xstart = -scanright*self.HitBoxMaxs.y*1.1-- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
@@ -1992,7 +2021,7 @@ function ENT:Think()
 													addpos = xcur*aspectratio+ycur
 												end
 
-												SpallLiner = 0
+												-- SpallLiner = 0
 
 												local ForwardHit = DTFilterRecurseTrace(startpos+addpos-scanforward*distance, startpos+addpos+scanforward*distance, player.GetAll(), self)
 												local BackwardHit = DTFilterRecurseTrace(startpos+addpos+scanforward*distance, startpos+addpos-scanforward*distance, player.GetAll(), self)
@@ -2092,11 +2121,11 @@ function ENT:Think()
 							table.sort(xs)
 							table.sort(ys)
 							table.sort(zs)
-							
+
 							self.RealMins = Vector(xs[1],ys[1],zs[1])
 							self.RealMaxs = Vector(xs[#xs],ys[#ys],zs[#zs])
 							--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), self.RealMins, self.RealMaxs, self.ForwardEnt:GetAngles(), 30, Color( 150, 150, 255, 100 ) )
-								
+
 							local YHalfAve = AverageNoOutliers(ys)
 
 
@@ -2202,8 +2231,8 @@ function ENT:Think()
 										end
 										DPS = ShellDamage*ShotsPerSecond
 
-										if self.Guns[g].ReadyRounds == 2 then 
-											DPS = DPS*2 
+										if self.Guns[g].ReadyRounds == 2 then
+											DPS = DPS*2
 										end
 									end
 									if self.Guns[g]:GetClass() == "dak_tegun" then
@@ -2213,16 +2242,16 @@ function ENT:Think()
 											ShotsPerSecond = 1/(0.2484886*(math.pi*((self.Guns[g].DakCaliber*0.001*0.5)^2)*(self.Guns[g].DakCaliber*0.001*self.Guns[g].ShellLengthExact)*5150)+1.279318)
 										end
 										DPS = ShellDamage*ShotsPerSecond
-										if self.Guns[g].ReadyRounds == 2 then 
-											DPS = DPS*2 
+										if self.Guns[g].ReadyRounds == 2 then
+											DPS = DPS*2
 										end
 									end
 									if self.Guns[g]:GetClass() == "dak_temachinegun" then
 										self.Guns[g].ShellLengthExact = 6.5
 										ShotsPerSecond = 1/(self.Guns[g].DakCooldown*(1/self.Guns[g].FireRateMod))
 										DPS = ShellDamage*ShotsPerSecond
-										if self.Guns[g].ReadyRounds == 2 then 
-											DPS = DPS*2 
+										if self.Guns[g].ReadyRounds == 2 then
+											DPS = DPS*2
 										end
 									end
 									self.TotalDPS = self.TotalDPS + DPS
@@ -2233,7 +2262,7 @@ function ENT:Think()
 								local GunHandlingMult = 0
 								local MinHandling = 0.1
 								if self.TurretControls[1] then
-									local TotalTurretMass = 0 
+									local TotalTurretMass = 0
 									for i=1, #self.TurretControls do
 										if self.TurretControls[i].GunMass ~= nil then
 											TotalTurretMass = TotalTurretMass + self.TurretControls[i].GunMass
@@ -2242,7 +2271,7 @@ function ENT:Think()
 									self.MainTurret = self.TurretControls[1]
 									local GunPercentage
 									for i=1, #self.TurretControls do
-										if IsValid(self.MainTurret) then 
+										if IsValid(self.MainTurret) then
 											if self.TurretControls[i].GunMass ~= nil and self.MainTurret.GunMass ~= nil then
 												local WeaponMass = 0
 												local ATGMs = 0
@@ -2330,7 +2359,7 @@ function ENT:Think()
 								self.FirepowerMult = math.Round(math.max((self.DakVolume/250000),firepowermult),2)
 							end
 						end)
-						
+
 						timer.Simple(2,function()
 							do --Finalize Costs and print readout
 								self.PreCost = self.ArmorMult*50 + self.FirepowerMult*50
@@ -2340,14 +2369,14 @@ function ENT:Think()
 								local curera = "WWII"
 								if self.ColdWar == 1 then curera = "Cold War" end
 								if self.Modern == 1 then curera = "Modern" end
-								
+
 								hook.Run("DakTank_TankAnalysisComplete",self)
-									
+
 								self.DakOwner:ChatPrint("Tank Analysis Complete: "..self.Cost.." point "..curera.." tank. Right click tank core with spawner for detailed readout.")
 							end
 						end)
 
-						
+
 					end
 
 					if not(self.Dead) and (self.DakFinishedPasting == 1 or self.dupespawned==nil) then
@@ -2364,7 +2393,7 @@ function ENT:Think()
 							local Mass = 0
 							local ParentMass = 0
 							local SA = 0
-							
+
 							self.Contraption = {self.Base}
 							local turrets = {}
 
@@ -2398,8 +2427,8 @@ function ENT:Think()
 								end
 								if turrets[i].WiredGun ~= NULL then
 									if turrets[i].WiredGun:GetClass() == "dak_tegun" or turrets[i].WiredGun:GetClass() == "dak_teautogun" or turrets[i].WiredGun:GetClass() == "dak_temachinegun" then
-										if IsValid(turrets[i].WiredGun) and IsValid(turrets[i].WiredGun:GetParent()) and IsValid(turrets[i].WiredGun:GetParent():GetParent()) then 
-											self.Contraption[#self.Contraption+1] = turrets[i].WiredGun:GetParent():GetParent() 
+										if IsValid(turrets[i].WiredGun) and IsValid(turrets[i].WiredGun:GetParent()) and IsValid(turrets[i].WiredGun:GetParent():GetParent()) then
+											self.Contraption[#self.Contraption+1] = turrets[i].WiredGun:GetParent():GetParent()
 											TurEnts[#TurEnts+1] = turrets[i].WiredGun:GetParent():GetParent()
 											for k, v in pairs(turrets[i].WiredGun:GetParent():GetParent():GetChildren()) do
 												self.Contraption[#self.Contraption+1] = v
@@ -2517,7 +2546,7 @@ function ENT:Think()
 						       		hash[v] = true
 						   		end
 							end
-							
+
 							self.Contraption={}
 							self.Ammoboxes={}
 							self.TurretControls={}
@@ -2583,7 +2612,7 @@ function ENT:Think()
 										local name4 = boxname[#boxname-7]..boxname[#boxname-6]..boxname[#boxname-5]..boxname[#boxname-4]
 										local name2 = boxname[#boxname-5]..boxname[#boxname-4]
 										--check longest to shortest names, with if then ifelse then else
-										local name 
+										local name
 										if name6 == "APFSDS" or name6 == "HEATFS" then
 											name = name6
 										elseif name4 == "HVAP" or name4 == "APDS" or name4 == "HEAT" or name4 == "HESH" or name4 == "ATGM" or name4 == "APHE" then
@@ -2806,7 +2835,7 @@ function ENT:Think()
 							end
 
 							--PrintTable(self.Contraption)
-							
+
 							if IsValid(self.Gearbox) then
 								self.Gearbox.TotalMass = Mass
 								self.Gearbox.ParentMass = ParentMass
@@ -2832,7 +2861,7 @@ function ENT:Think()
 							--print("secondary run")
 							local CurrentRes
 							local Mass = 0
-							local ParentMass = 0 
+							local ParentMass = 0
 							local SA = 0
 							for i=1, #self.Contraption do
 								CurrentRes = self.Contraption[i]
@@ -2853,7 +2882,7 @@ function ENT:Think()
 										end
 									end
 									]]--
-									
+
 
 									if physobj:IsValid() then
 										local physmass = physobj:GetMass()
@@ -2960,7 +2989,7 @@ function ENT:Think()
 									end
 								end
 								WireLib.TriggerOutput(self, "Crew", self.LivingCrew)
-								
+
 								--print("ERA: "..(SysTime()-debugtime))
 								if self.Composites then
 									if table.Count(self.Composites) > 0 then
@@ -3015,9 +3044,9 @@ function ENT:Think()
 												end
 												self.Composites[i].IsComposite = 1
 												weightvalcomp = math.Round(self.Composites[i]:GetPhysicsObject():GetVolume()/61023.7*Density)
-												if self.Composites[i]:GetPhysicsObject():GetMass() ~= weightvalcomp then 
+												if self.Composites[i]:GetPhysicsObject():GetMass() ~= weightvalcomp then
 													self.Composites[i]:GetPhysicsObject():SetMass( math.Round(self.Composites[i]:GetPhysicsObject():GetVolume()/61023.7*Density) )
-													self.Composites[i].DakLegitMass = ( math.Round(self.Composites[i]:GetPhysicsObject():GetVolume()/61023.7*Density) ) 
+													self.Composites[i].DakLegitMass = ( math.Round(self.Composites[i]:GetPhysicsObject():GetVolume()/61023.7*Density) )
 												end
 												self.Composites[i].DakArmor = 10*KE
 											end
@@ -3165,7 +3194,7 @@ function ENT:Think()
 									if table.Count(self.ERA) > 0 then
 										local effectdata
 										local ExpSounds = {"daktanks/eraexplosion.mp3"}
-										local EntMod 
+										local EntMod
 										for i = 1, table.Count(self.ERA) do
 											if not(IsValid(self.ERA[i])) then
 												table.remove( self.ERA, i )
@@ -3205,10 +3234,10 @@ function ENT:Think()
 														self.ERA[i].EntityMods.DakName = "ERA"
 														self.ERA[i].EntityMods.IsERA = 1
 													end
-													local weightval = math.Round(self.ERA[i]:GetPhysicsObject():GetVolume()/61023.7*1732) 
-													if self.ERA[i]:GetPhysicsObject():GetMass() ~= weightval then 
-														self.ERA[i]:GetPhysicsObject():SetMass( weightval ) 
-														self.ERA[i].DakLegitMass = weightval 
+													local weightval = math.Round(self.ERA[i]:GetPhysicsObject():GetVolume()/61023.7*1732)
+													if self.ERA[i]:GetPhysicsObject():GetMass() ~= weightval then
+														self.ERA[i]:GetPhysicsObject():SetMass( weightval )
+														self.ERA[i].DakLegitMass = weightval
 													end
 													self.ERA[i].DakArmor = 2.5
 												end
@@ -3270,13 +3299,13 @@ function ENT:Think()
 														self.Crew[i].DakHealth = 0
 														if self.Crew[i].DakOwner:IsPlayer() then
 															if self.Crew[i].Job == 1 then
-																self.Crew[i].DakOwner:ChatPrint("Gunner Angle Invalid, Ejecting!") 
+																self.Crew[i].DakOwner:ChatPrint("Gunner Angle Invalid, Ejecting!")
 															elseif self.Crew[i].Job == 2 then
-																self.Crew[i].DakOwner:ChatPrint("Driver Angle Invalid, Ejecting!") 
+																self.Crew[i].DakOwner:ChatPrint("Driver Angle Invalid, Ejecting!")
 															elseif self.Crew[i].Job == 3 then
-																self.Crew[i].DakOwner:ChatPrint("Loader Angle Invalid, Ejecting!") 
+																self.Crew[i].DakOwner:ChatPrint("Loader Angle Invalid, Ejecting!")
 															else
-																self.Crew[i].DakOwner:ChatPrint("Passenger Angle Invalid, Ejecting!") 
+																self.Crew[i].DakOwner:ChatPrint("Passenger Angle Invalid, Ejecting!")
 															end
 														end
 														self.Crew[i]:SetMaterial("models/flesh")
@@ -3294,13 +3323,13 @@ function ENT:Think()
 																self.Crew[i].DakHealth = 0
 																if self.Crew[i].DakOwner:IsPlayer() then
 																	if self.Crew[i].Job == 1 then
-																		self.Crew[i].DakOwner:ChatPrint("Gunner Clipping Crew, Ejecting!") 
+																		self.Crew[i].DakOwner:ChatPrint("Gunner Clipping Crew, Ejecting!")
 																	elseif self.Crew[i].Job == 2 then
-																		self.Crew[i].DakOwner:ChatPrint("Driver Clipping Crew, Ejecting!") 
+																		self.Crew[i].DakOwner:ChatPrint("Driver Clipping Crew, Ejecting!")
 																	elseif self.Crew[i].Job == 3 then
-																		self.Crew[i].DakOwner:ChatPrint("Loader Clipping Crew, Ejecting!") 
+																		self.Crew[i].DakOwner:ChatPrint("Loader Clipping Crew, Ejecting!")
 																	else
-																		self.Crew[i].DakOwner:ChatPrint("Passenger Clipping Crew, Ejecting!") 
+																		self.Crew[i].DakOwner:ChatPrint("Passenger Clipping Crew, Ejecting!")
 																	end
 																end
 																self.Crew[i]:SetMaterial("models/flesh")
@@ -3318,12 +3347,12 @@ function ENT:Think()
 												if IsValid(cur) then
 													local currentDetail = {}
 													local curparent = cur
-												
-													if IsValid(cur:GetParent()) then 
-														curparent = cur:GetParent() 
+
+													if IsValid(cur:GetParent()) then
+														curparent = cur:GetParent()
 														if IsValid(cur:GetParent():GetParent()) then curparent = cur:GetParent():GetParent() end
 													end
-												
+
 													currentDetail.Parent = curparent:EntIndex()
 													currentDetail.Model = cur:GetModel()
 													currentDetail.LocalPos = curparent:WorldToLocal(cur:GetPos())
@@ -3370,14 +3399,14 @@ function ENT:Think()
 								self.LastDamagedBy = NULL
 								if self.DakHealth < self.CurrentHealth then
 									self.DamageCycle = self.DamageCycle+(self.CurrentHealth-self.DakHealth)
-									self.DakLastDamagePos = self.DakLastDamagePos	
+									self.DakLastDamagePos = self.DakLastDamagePos
 								end
 								self.Remake = 0
 								self.LastCurMass = self.CurMass
 								self.CurMass = 0
 								for i = 1, table.Count(self.HitBox) do
 									if self.HitBox[i].Controller ~= self then
-										self.Remake = 1	
+										self.Remake = 1
 									end
 									if self.Remake == 1 then
 										if self.HitBox[i].Controller == self then
@@ -3455,7 +3484,7 @@ function ENT:Think()
 									self.HitBox[i].DakHealth = self.CurrentHealth
 								end
 								self.DakHealth = self.CurrentHealth
-								
+
 								local curvel = self.Base:GetVelocity()
 								if self.LastVel == nil then
 									self.LastVel = curvel
@@ -3467,13 +3496,13 @@ function ENT:Think()
 										if self.Crew[i].DakHealth <= 0 then
 											if self.Crew[i].DakOwner:IsPlayer() then
 												if self.Crew[i].Job == 1 then
-													self.Crew[i].DakOwner:ChatPrint("Gunner Killed!") 
+													self.Crew[i].DakOwner:ChatPrint("Gunner Killed!")
 												elseif self.Crew[i].Job == 2 then
-													self.Crew[i].DakOwner:ChatPrint("Driver Killed!") 
+													self.Crew[i].DakOwner:ChatPrint("Driver Killed!")
 												elseif self.Crew[i].Job == 3 then
-													self.Crew[i].DakOwner:ChatPrint("Loader Killed!") 
+													self.Crew[i].DakOwner:ChatPrint("Loader Killed!")
 												else
-													self.Crew[i].DakOwner:ChatPrint("Passenger Killed!") 
+													self.Crew[i].DakOwner:ChatPrint("Passenger Killed!")
 												end
 											end
 											self.Crew[i]:SetMaterial("models/flesh")
@@ -3560,7 +3589,7 @@ function ENT:Think()
 															end
 														end
 
-														TurretPhys = ents.Create("prop_physics")
+														local TurretPhys = ents.Create("prop_physics")
 													 	TurretPhys:SetAngles(self.TurretControls[j].turretaimer:GetAngles())
 													 	TurretPhys:SetPos(self.TurretControls[j].turretaimer:GetPos())
 													 	TurretPhys:SetModel( self.TurretControls[j].TurretBase:GetModel() )
@@ -3728,7 +3757,7 @@ function ENT:Think()
 			local collisionstrace = util.TraceHull( {
 				start = self.ForwardEnt:GetPos(),
 				endpos = self.ForwardEnt:GetPos()+(self.Base:GetPhysicsObject():GetVelocity()*0.2),
-				
+
 				mins = Vector(-smallest,-smallest,self.HitBoxMins.z),
 				maxs = Vector(smallest,smallest,self.HitBoxMaxs.z),
 				mask = MASK_SOLID,
@@ -3770,7 +3799,7 @@ function ENT:PreEntityCopy()
 	end
 
 	local DupeClips = {}
-	if self.Contraption~= nil then 
+	if self.Contraption~= nil then
 		if table.Count(self.Contraption)>0 then
 			for i=1, #self.Contraption do
 				local CurrentRes = self.Contraption[i]
@@ -3866,7 +3895,7 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 				self.ERA = {}
 			end
 		end
-		
+
 		--[[
 		if Ent.EntityMods.DTClips ~= nil then
 			for i=1, #Ent.EntityMods.DTClips do

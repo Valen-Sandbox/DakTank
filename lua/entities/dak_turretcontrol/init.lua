@@ -16,18 +16,19 @@ ENT.DakTurretMotors = {}
 ENT.DakCrew = NULL
 
 local function GetTurretParents( ent, Results )
-	local Results = Results or {}
+	Results = Results or {}
 	local Parent = ent:GetParent()
 	Results[ ent ] = ent
 	if IsValid(Parent) then
 		GetTurretParents(Parent, Results)
 	end
+
 	return Results
 end
 --[[
 local function GetParents(Ent)
     if not IsValid(Ent) then return end
-    
+
     local Table  = {[Ent] = true}
     local Parent = Ent:GetParent()
 
@@ -39,42 +40,41 @@ local function GetParents(Ent)
     return Table
 end
 ]]--
-
 local function GetTurretPhysCons( ent, Results )
-	local Results = Results or {}
+	Results = Results or {}
 	if not IsValid( ent ) then return end
-		if Results[ ent ] then return end
-		Results[ ent ] = ent
-		local Constraints = constraint.GetTable( ent )
-		for k, v in ipairs( Constraints ) do
-			if (v.Type ~= "NoCollide") and (v.Type ~= "Axis") and (v.Type ~= "Ballsocket") and (v.Type ~= "AdvBallsocket") and (v.Type ~= "Rope") and (v.Type ~= "Wire") then
-				for i, Ent in pairs( v.Entity ) do
-					GetTurretPhysCons( Ent.Entity, Results )
-				end
+	if Results[ ent ] then return end
+	Results[ ent ] = ent
+	local Constraints = constraint.GetTable( ent )
+	for k, v in ipairs( Constraints ) do
+		if (v.Type ~= "NoCollide") and (v.Type ~= "Axis") and (v.Type ~= "Ballsocket") and (v.Type ~= "AdvBallsocket") and (v.Type ~= "Rope") and (v.Type ~= "Wire") then
+			for i, Ent in pairs( v.Entity ) do
+				GetTurretPhysCons( Ent.Entity, Results )
 			end
 		end
+	end
+
 	return Results
 end
-
 
 function ENT:toLocalAxis(worldAxis)
 	if not IsValid(self) then return Vector(0,0,0) end
 	return self:WorldToLocal(Vector(worldAxis[1],worldAxis[2],worldAxis[3])+self:GetPos())
 end
 
-function normalizedVector(vector)
+local function normalizedVector(vector)
 	local len = (vector[1] * vector[1] + vector[2] * vector[2] + vector[3] * vector[3]) ^ 0.5
-	if len > 0.0000001000000 then
+	if len > 0.0000001 then
 		return Vector( vector[1] / len, vector[2] / len, vector[3] / len )
 	else
 		return Vector( 0, 0, 0 )
 	end
 end
-
+--[[
 local function angnorm(rv1)
 	return Angle((rv1[1] + 180) % 360 - 180,(rv1[2] + 180) % 360 - 180,(rv1[3] + 180) % 360 - 180)
 end
-
+]]
 local function angClamp(ang,clamp1,clamp2)
 	return Angle(math.Clamp(ang.pitch,clamp1.pitch,clamp2.pitch),math.Clamp(ang.yaw,clamp1.yaw,clamp2.yaw),math.Clamp(ang.roll,clamp1.roll,clamp2.roll))
 end
@@ -82,7 +82,7 @@ end
 local function angNumClamp(ang,clamp1,clamp2)
 	return Angle(math.Clamp(ang.pitch,clamp1,clamp2),math.Clamp(ang.yaw,clamp1,clamp2),math.Clamp(ang.roll,clamp1,clamp2))
 end
-
+--[[
 local function angNumRotationSpeedClamp(ang,clamp1,clamp2,elevationmult)
 	return Angle(math.Clamp(ang.pitch,clamp1*elevationmult,clamp2*elevationmult),math.Clamp(ang.yaw,clamp1,clamp2),math.Clamp(ang.roll,clamp1,clamp2))
 end
@@ -96,14 +96,14 @@ local function heading(originpos,originangle,pos)
 	if (len < 0.0000001000000) then return Angle( 0, bearing, 0 ) end
 	return Angle( (180 / math.pi)*math.asin(pos.z / len), bearing, 0 )
 end
-
+]]
 function ENT:ApplyForce(entity, angle)
 	local phys = entity:GetPhysicsObject()
 
 	local up = entity:GetUp()
 	local left = entity:GetRight() * -1
 	local forward = entity:GetForward()
-	
+
 	local forcemult = 1
 	if angle.pitch ~= 0 then
 		local pitch = up      * (angle.pitch * 0.5)
@@ -128,10 +128,10 @@ function ENT:ApplyForceDirector(Director, entity, angle)
 	local up = Director:GetUp()
 	local left = Director:GetRight() * -1
 	local forward = Director:GetForward()
-	
+
 	local forcemult = 1
 	if angle.pitch ~= 0 then
-		local pitch = up      * (angle.pitch * 0.5)
+		local pitch = up * (angle.pitch * 0.5)
 		phys:ApplyForceOffset( forward*forcemult, pitch )
 		phys:ApplyForceOffset( forward * -1*forcemult, pitch * -1 )
 	end
@@ -157,7 +157,7 @@ function ENT:Initialize()
 	--local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
 	self.CoreRemoteMult = 1
-	
+
 
 	self.Inputs = Wire_CreateInputs(self, { "Active", "Gun [ENTITY]", "Turret [ENTITY]", "CamTrace [RANGER]", "Lock", "CamTrace2 [RANGER]", "Active2", "AirBurst" })
 	self.Soundtime = CurTime()
@@ -165,7 +165,7 @@ function ENT:Initialize()
  	self.ErrorTime = CurTime()
  	self.ErrorTime2 = CurTime()
  	self.SlowThinkTime = CurTime()
- 	RotMult = 1.2
+ 	-- RotMult = 1.2
  	self.SentError = 0
  	self.SentError2 = 0
  	self.LastHullAngles = self:GetAngles()
@@ -477,8 +477,8 @@ function ENT:Think()
 									self.DakGun:SetParent()
 									constraint.RemoveAll( DakTurret )
 									constraint.AdvBallsocket( DakTurret, self.Controller:GetParent():GetParent(), 0, 0, Vector(0,0,0), Vector(0,0,0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0 )
-									constraint.AdvBallsocket( self.DakGun, DakTurret, 0, 0, Vector(0,0,0), Vector(0,0,0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0 )	
-									constraint.AdvBallsocket( self.turretaimer, self.Controller:GetParent():GetParent(), 0, 0, Vector(0,0,0), Vector(0,0,0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0 )							
+									constraint.AdvBallsocket( self.DakGun, DakTurret, 0, 0, Vector(0,0,0), Vector(0,0,0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0 )
+									constraint.AdvBallsocket( self.turretaimer, self.Controller:GetParent():GetParent(), 0, 0, Vector(0,0,0), Vector(0,0,0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0 )
 									DakTurret:SetParent( self.turretaimer )
 									self.DakGun:SetParent( self.turretaimer )
 								else
@@ -508,7 +508,7 @@ function ENT:Think()
 											if self.FCS==true and not(self.CustomFCS==true) and not(GunEnt.DakShellAmmoType=="HEATFS" and GunEnt.DakShellPenetration == GunEnt.DakMaxHealth*6.40) then --atgm has 6.40 maxhealth for pen and HEATFS ammo type
 												local AirBurst = self.Inputs.AirBurst.Value
 												local AddZ = 0
-												if AirBurst ~= 0 then 
+												if AirBurst ~= 0 then
 													AddZ = self:GetAirburstHeight() * 39.3701
 													for i=1, #self.Guns do
 														self.Guns[i].FuzeOverride = true
@@ -544,8 +544,8 @@ function ENT:Think()
 												if PreCamTrace.Entity and not(PreCamTrace.Entity:IsWorld()) or self.Tar==nil then
 													self.Tar = PreCamTrace.Entity
 													self.CamTarPos = PreCamTrace.HitPos
-												else 
-													self.NoTarTicks = self.NoTarTicks + 1 
+												else
+													self.NoTarTicks = self.NoTarTicks + 1
 												end
 												if self.NoTarTicks>15 then
 													self.Tar = PreCamTrace.Entity
@@ -596,9 +596,9 @@ function ENT:Think()
 												    Disc = VelValue^4 - G*(G*X*X + 2*Y*VelValue*VelValue)
 												    Ang = math.atan(-(VelValue^2 - math.sqrt(Disc))/(G*X))*57.29577951
 												    TravelTime = X/(VelValue*math.cos(Ang*0.017453293))
-												    VelLossFull = VelLoss * TravelTime 
+												    VelLossFull = VelLoss * TravelTime
 												end
-												if AirBurst ~= 0 then 
+												if AirBurst ~= 0 then
 													for i=1, #self.Guns do
 														self.Guns[i].FuzeOverrideDelay = TravelTime
 													end
@@ -620,7 +620,7 @@ function ENT:Think()
 													trace.filter = self.DakContraption
 												self.CamTrace = util.TraceLine( trace )
 											end
-										
+
 										self.Shake = Angle(0,0,0)
 										if self.Stabilizer==false then
 											local X = math.abs(self.DakGun:OBBMins().x)+math.abs(self.DakGun:OBBMaxs().x)
@@ -629,22 +629,23 @@ function ENT:Think()
 
 											if self.LastPos == nil then self.LastPos = BasePlate:GetPos() end
 											if self.LastAngles == nil then self.LastAngles = Angle(0,0,0) end
-											local Speed = Vector(0,0,0):Distance(BasePlate:GetPos()-self.LastPos)									
+											local Speed = Vector(0,0,0):Distance(BasePlate:GetPos()-self.LastPos)
 
 											if self.ShakeAmpX == nil then self.ShakeAmpX = 0 end
 											self.ShakeAmpX = self.ShakeAmpX + math.random(-1,1)
 											if self.ShakeAmpX > 5 then self.ShakeAmpX = 5 end
 											if self.ShakeAmpX < -5 then self.ShakeAmpX = -5 end
-											if self.ShakeAmpX > 0 then self.ShakeAmpX = self.ShakeAmpX - 0.05 end 
-											if self.ShakeAmpX < 0 then self.ShakeAmpX = self.ShakeAmpX + 0.05 end 
-											
+											if self.ShakeAmpX > 0 then self.ShakeAmpX = self.ShakeAmpX - 0.05 end
+											if self.ShakeAmpX < 0 then self.ShakeAmpX = self.ShakeAmpX + 0.05 end
+
 											if self.ShakeAmpY == nil then self.ShakeAmpY = 0 end
 											self.ShakeAmpY = self.ShakeAmpY + math.random(-1,1)
 											if self.ShakeAmpY > 5 then self.ShakeAmpY = 5 end
 											if self.ShakeAmpY < -5 then self.ShakeAmpY = -5 end
-											if self.ShakeAmpY > 0 then self.ShakeAmpY = self.ShakeAmpY - 0.05 end 
-											if self.ShakeAmpY < 0 then self.ShakeAmpY = self.ShakeAmpY + 0.05 end 
+											if self.ShakeAmpY > 0 then self.ShakeAmpY = self.ShakeAmpY - 0.05 end
+											if self.ShakeAmpY < 0 then self.ShakeAmpY = self.ShakeAmpY + 0.05 end
 
+											local Shake
 											if self.ShortStop==false then
 												self.Accel = math.Clamp(self.Accel,-0.15,0.15)
 												Shake = (Angle(1*self.ShakeAmpX,0.1*self.ShakeAmpY,0) * (Speed * 0.025))+Angle(-self.Accel*25,0,0)--+(Angle(((self:GetAngles().pitch - self.LastAngles.pitch))*5,0,0))
@@ -656,9 +657,9 @@ function ENT:Think()
 										--local HullAngleMovement = -self:WorldToLocalAngles(self.LastAngles)
 										self.LastAngles = self:GetAngles()
 										--get angle that self has changed in last tick, infact this is done above in last angles
-										
+
 								    	local GunDir = normalizedVector(self.CamTrace.HitPos - self.CamTrace.StartPos+(self.CamTrace.StartPos-self.DakGun:GetPos()))
-								    	
+
 								    	if self:GetSetPitchOnLoading() and not(GunEnt.ShellLoaded == 1 or GunEnt.ShellLoaded2 == 1) then
 								    		if IsValid(DakTurret) then
 								    			GunDir = (self.turretaimer:GetAngles()+Angle(-self:GetLoadingAngle(),0,0)):Forward()
@@ -715,8 +716,8 @@ function ENT:Think()
 														Limit = 25
 														max = 0.25
 													end
-													if yawdiff > Limit then 
-														pitch = 0 
+													if yawdiff > Limit then
+														pitch = 0
 													else
 														pitch = pitch*math.min((Limit-yawdiff)/Limit,max)
 													end
@@ -810,7 +811,7 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 		if Ent.EntityMods.DakTek.TurretMotorIDs then
 			if #Ent.EntityMods.DakTek.TurretMotorIDs > 0 then
 				for i = 1, #Ent.EntityMods.DakTek.TurretMotorIDs do
-					self.DakTurretMotors[#self.DakTurretMotors+1] = CreatedEntities[ Ent.EntityMods.DakTek.TurretMotorIDs[i] ] 
+					self.DakTurretMotors[#self.DakTurretMotors+1] = CreatedEntities[ Ent.EntityMods.DakTek.TurretMotorIDs[i] ]
 				end
 			end
 		end
@@ -822,7 +823,7 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 		self.DakName = Ent.EntityMods.DakTek.DakName
 		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
 		if Ent.EntityMods.DakTek.DakMaxHealth == nil then
-			self.DakMaxHealth = 10 
+			self.DakMaxHealth = 10
 		end
 		self.DakHealth = self.DakMaxHealth
 		self.DakMass = Ent.EntityMods.DakTek.DakMass

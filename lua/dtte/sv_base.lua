@@ -33,38 +33,6 @@ local function InMapCheck(vec)
 	end
 end
 
-function DakKillNotSolid( ent )
-	if not IsValid( ent.Controller ) then return end
-	if not IsValid( ent.Controller.Base ) then return end
-	if not ent.Controller.Base:GetPhysicsObject():IsMotionEnabled() then return end
-
-	local isNotSolid = not ent:IsSolid() or ent.ClipData ~= nil
-	if not isNotSolid then return end
-
-	local isAlive = ent.Controller.DakHealth > 0 or #ent.Controller.Crew < 2 or ent.Controller.LivingCrew <= math.max( #ent.Controller.Crew - 3, 1 )
-	if not isAlive then return end
-	if ent.Controller.Dead == 1 then return end
-
-	if IsValid( ent.Controller.DakOwner ) then
-		for _, ply in ipairs( player.GetAll() ) do
-			if not ent:IsSolid() then
-				ply:ChatPrint( ent.Controller.DakOwner:GetName() .. "'s vehicle has not solid components, solidifying..." )
-				ent:SetSolid( SOLID_VPHYSICS )
-			elseif ent.ClipData ~= nil and ent:GetClass() ~= "dak_teammo" then
-				ply:ChatPrint( ent.Controller.DakOwner:GetName() .. "'s vehicle exploded due to clipping components!" )
-			end
-		end
-	end
-
-	--[[ if not ent:IsSolid() then
-		--ent.Controller.DakHealth = -1
-	end ]]
-
-	if ent:GetClass() ~= "dak_teammo" then
-		ent.Controller.DakHealth = -1
-	end
-end
-
 DakTankShellList = {} -- Create Entity list for storing things people spawn
 
 -- Setup global daktek function for setting up affected entities.
