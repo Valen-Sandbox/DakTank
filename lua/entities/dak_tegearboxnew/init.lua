@@ -2,12 +2,11 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
 include("shared.lua")
---get suspension force multiplier working again
---remove suspension give value
---improve default forces since they affect different weights somewhat differently
+-- get suspension force multiplier working again
+-- remove suspension give value
+-- improve default forces since they affect different weights somewhat differently
 
-
---make a check to see if the trace for determining speed going up or down a hill started underground, if so then just cut the speed as the hill is so steep it is beyond the limits and ends up giving a speed boost
+-- make a check to see if the trace for determining speed going up or down a hill started underground, if so then just cut the speed as the hill is so steep it is beyond the limits and ends up giving a speed boost
 
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
@@ -15,7 +14,7 @@ ENT.DakName = "Light Motor"
 ENT.DakModel = "models/daktanks/engine1.mdl"
 ENT.DakSpeed = 1.1725
 ENT.DakMass = 1000
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.MaxHP = 0
 
@@ -75,7 +74,7 @@ function ENT:Initialize()
 	self.SlowThinkTime = CurTime()
 	self.RealYaw = 0
 	self.WheelYaw = 0
-	for i=1, self.WheelsPerSide do
+	for i = 1, self.WheelsPerSide do
 		self.RightChanges[i] = 0
 		self.LeftChanges[i] = 0
 		self.RightPosChanges[i] = self:GetPos()
@@ -238,8 +237,8 @@ function ENT:Think()
 	self.FrontWheelHeight = self:GetFrontWheelHeight()
 	self.RearWheelHeight = self:GetRearWheelHeight()
 
-	if CurTime()>=self.SlowThinkTime+1 then
-		self.SlowThinkTime=CurTime()
+	if CurTime() >= self.SlowThinkTime + 1 then
+		self.SlowThinkTime = CurTime()
 
 		if self.DakName == "Micro Frontal Mount Gearbox" then
 			self.DakMaxHealth = 7.5
@@ -351,8 +350,8 @@ function ENT:Think()
 		end
 	end
 
-	if CurTime()>=self.SparkTime+0.33 then
-		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
+	if CurTime() >= self.SparkTime + 0.33 then
+		if self.DakHealth <= ( self.DakMaxHealth * 0.80 ) and self.DakHealth > ( self.DakMaxHealth * 0.60 ) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
@@ -361,7 +360,7 @@ function ENT:Think()
 			effectdata:SetScale(1)
 			util.Effect("daktedamage", effectdata)
 		end
-		if self.DakHealth<=(self.DakMaxHealth*0.60) and self.DakHealth>(self.DakMaxHealth*0.40) then
+		if self.DakHealth <= ( self.DakMaxHealth * 0.60 ) and self.DakHealth > ( self.DakMaxHealth * 0.40 ) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
@@ -370,7 +369,7 @@ function ENT:Think()
 			effectdata:SetScale(2)
 			util.Effect("daktedamage", effectdata)
 		end
-		if self.DakHealth<=(self.DakMaxHealth*0.40) and self.DakHealth>(self.DakMaxHealth*0.20) then
+		if self.DakHealth <= ( self.DakMaxHealth * 0.40 ) and self.DakHealth > ( self.DakMaxHealth * 0.20 ) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
@@ -379,7 +378,7 @@ function ENT:Think()
 			effectdata:SetScale(3)
 			util.Effect("daktedamage", effectdata)
 		end
-		if self.DakHealth<=(self.DakMaxHealth*0.20) then
+		if self.DakHealth <= ( self.DakMaxHealth * 0.20 ) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
@@ -388,12 +387,14 @@ function ENT:Think()
 			effectdata:SetScale(4)
 			util.Effect("daktedamage", effectdata)
 		end
-		self.SparkTime=CurTime()
+		self.SparkTime = CurTime()
 	end
-	if not(self.FirstCheck) and not(self.DakMaxHealth == 25) then
+
+	if not self.FirstCheck and self.DakMaxHealth ~= 25 then
 		self.FirstCheck = true
 		self.DakHealth = self.DakMaxHealth
 	end
+
 	if IsValid(self.DakTankCore) and IsValid(self.DakTankCore.Motors[1]) and self.DakTankCore.Off ~= true then
 		self.DakSpeed = 0
 		self.DakFuel = 0
@@ -452,8 +453,8 @@ function ENT:Think()
 			self:SetMoveType(MOVETYPE_VPHYSICS)
 			self:SetSolid(SOLID_VPHYSICS)
 		end
-		if self.AddonMass ~= nil then
-			if self:GetPhysicsObject():GetMass() ~= self.DakMass+self.AddonMass then self:GetPhysicsObject():SetMass(self.DakMass+self.AddonMass) end
+		if self.AddonMass ~= nil and self:GetPhysicsObject():GetMass() ~= self.DakMass + self.AddonMass then
+			self:GetPhysicsObject():SetMass( self.DakMass + self.AddonMass )
 		end
 		self.MoveForward = self.Inputs.Forward.Value
 		self.MoveReverse = self.Inputs.Reverse.Value
@@ -466,7 +467,7 @@ function ENT:Think()
 			self.ForwardEnt = self
 		end
 
-		if self.ForwardEnt~=self.LastForwardEnt then
+		if self.ForwardEnt ~= self.LastForwardEnt then
 			self:SetNWEntity("ForwardEnt",self.ForwardEnt)
 			self.LastForwardEnt = self.ForwardEnt
 		end
@@ -474,31 +475,27 @@ function ENT:Think()
 		self.CarTurning = self.Inputs.CarTurning.Value
 
 		if IsValid(self.DakTankCore) and self.DakTankCore.Off ~= true then
-			if self.setup == nil then
-				if self:GetParent():IsValid() then
-					if self:GetParent():GetParent():IsValid() then
-						self.YawAng = Angle(0,self:GetParent():GetParent():GetAngles().yaw,0)
-						self.LastYaw = self:GetParent():GetParent():GetAngles().yaw
-						--print(self:GetParent():GetParent():GetPhysicsObject():GetInertia())
-						self.setup = 1
-					end
-				end
+			if self.setup == nil and IsValid( self:GetParent() ) and IsValid( self:GetParent():GetParent() ) then
+				self.YawAng = Angle(0, self:GetParent():GetParent():GetAngles().yaw, 0)
+				self.LastYaw = self:GetParent():GetParent():GetAngles().yaw
+				-- print(self:GetParent():GetParent():GetPhysicsObject():GetInertia())
+				self.setup = 1
 			end
-			if self.InertiaSet == nil then
-				if self:GetParent():GetParent():GetPhysicsObject():IsMotionEnabled() == true then
-					local oldinertia = self:GetParent():GetParent():GetPhysicsObject():GetInertia()
-					local multiplier = 2--(self.TotalMass/self.PhysicalMass)--1--(self.TotalMass/6000)
-					self:GetParent():GetParent():GetPhysicsObject():SetInertia(Vector(oldinertia.x*multiplier, oldinertia.y*multiplier, oldinertia.z*multiplier))
-					self:GetParent():GetParent():GetPhysicsObject():SetMass(self:GetParent():GetParent():GetPhysicsObject():GetMass())
-					self:GetParent():GetParent():GetPhysicsObject():EnableGravity( false )
-					self.InertiaSet = 1
-				end
+
+			if self.InertiaSet == nil and self:GetParent():GetParent():GetPhysicsObject():IsMotionEnabled() == true then
+				local oldinertia = self:GetParent():GetParent():GetPhysicsObject():GetInertia()
+				local multiplier = 2--(self.TotalMass/self.PhysicalMass)--1--(self.TotalMass/6000)
+				self:GetParent():GetParent():GetPhysicsObject():SetInertia( Vector( oldinertia.x * multiplier, oldinertia.y * multiplier, oldinertia.z * multiplier ) )
+				self:GetParent():GetParent():GetPhysicsObject():SetMass( self:GetParent():GetParent():GetPhysicsObject():GetMass() )
+				self:GetParent():GetParent():GetPhysicsObject():EnableGravity( false )
+				self.InertiaSet = 1
 			end
+
 			if self.TotalMass then
-				if self.AddonMass == nil then self.AddonMass = math.Round(self.TotalMass*0.1), self:GetPhysicsObject():SetMass(self:GetPhysicsObject():GetMass()+math.Round(self.TotalMass*0.1)) end
+				if self.AddonMass == nil then self.AddonMass = math.Round( self.TotalMass * 0.1 ), self:GetPhysicsObject():SetMass( self:GetPhysicsObject():GetMass() + math.Round( self.TotalMass * 0.1 ) ) end
 				self.DakSpeed = self.DakSpeed*(10000/self.TotalMass)
 				self.TopSpeed = (29.851*self.DakSpeed)*self.GearRatio
-				if(self:GetParent():IsValid()) then
+				if IsValid( self:GetParent() ) then
 					if(self:GetParent():GetParent():IsValid()) then
 						self.phy = self:GetParent():GetParent():GetPhysicsObject()
 						self.base = self:GetParent():GetParent()
@@ -518,7 +515,7 @@ function ENT:Think()
 				else
 					self.HPperTon = 0
 				end
-				if (self.Active>0) then
+				if self.Active > 0 then
 					if not(self.MoveForward>0) and not(self.MoveReverse>0) and not(self.MoveLeft>0) and not(self.MoveRight>0) then
 						if self.RPM > 600 then
 							self.RPM = self.RPM - 100
@@ -591,7 +588,7 @@ function ENT:Think()
 							self.TopSpeed = self.TopSpeed/3
 						end
 
-						local ForwardVal = self.ForwardEnt:GetForward():Distance(self.phy:GetVelocity():GetNormalized()) --if it is below one you are going forward, if it is above one you are reversing
+						-- local ForwardVal = self.ForwardEnt:GetForward():Distance(self.phy:GetVelocity():GetNormalized()) --if it is below one you are going forward, if it is above one you are reversing
 						if self.Speed < self.TopSpeed then
 							self.RBoost = 1
 							self.LBoost = 1
@@ -652,9 +649,9 @@ function ENT:Think()
 							self.LastTopSpeed = 0
 							self.MaxSpeedDif = 0
 
-							local G1Speed = self.TopSpeed*0.15
-							local G2Speed = self.TopSpeed*0.4
-							local G3Speed = self.TopSpeed*0.75
+							local G1Speed = self.TopSpeed * 0.15
+							local G2Speed = self.TopSpeed * 0.4
+							local G3Speed = self.TopSpeed * 0.75
 							local G4Speed = self.TopSpeed
 
 							self.LeftForce = 0
@@ -670,19 +667,19 @@ function ENT:Think()
 							end
 							--if self.ShiftTime == nil then self.ShiftTime = 0 end
 							--if CurTime() - 5 > self.ShiftTime then
-							if self.Speed > 0 and self.Speed < G1Speed and not(self.Gear == 1) then
+							if self.Speed > 0 and self.Speed < G1Speed and self.Gear ~= 1 then
 								self.Gear = 1
 								--self.ShiftTime = CurTime()
 							end
-							if self.Speed > G1Speed and self.Speed < G2Speed and not(self.Gear == 2) then
+							if self.Speed > G1Speed and self.Speed < G2Speed and self.Gear ~= 2 then
 								self.Gear = 2
 								--self.ShiftTime = CurTime()
 							end
-							if self.Speed > G2Speed and self.Speed < G3Speed and not(self.Gear == 3) then
+							if self.Speed > G2Speed and self.Speed < G3Speed and self.Gear ~= 3 then
 								self.Gear = 3
 								--self.ShiftTime = CurTime()
 							end
-							if self.Speed > G3Speed and self.Speed < G4Speed and not(self.Gear == 4) then
+							if self.Speed > G3Speed and self.Speed < G4Speed and self.Gear ~= 4 then
 								self.Gear = 4
 								--self.ShiftTime = CurTime()
 							end
@@ -731,11 +728,11 @@ function ENT:Think()
 
 							if self.lastshift == nil then self.lastshift = 0 end
 							if self.LastGear == nil then self.LastGear = 1 end
-							if self.LastGear ~= self.Gear then
+							-- if self.LastGear ~= self.Gear then
 								if self.Gear > self.LastGear then
-									if self.lastshift+2.5 < CurTime() then
+									if self.lastshift + 2.5 < CurTime() then
 										--sound.Play("vehicles/v8/v8_stop1.wav",self:GetPos(),100,100,0.5)
-										if #self.DakTankCore.Motors>0 then
+										if #self.DakTankCore.Motors > 0 then
 											for i=1, #self.DakTankCore.Motors do
 												if IsValid(self.DakTankCore.Motors[i]) then
 													self.DakTankCore.Motors[i].Sound:ChangeVolume( 0.125 , 0 )
@@ -747,7 +744,7 @@ function ENT:Think()
 										self.lastshift = CurTime()
 									end
 								end
-							end
+							-- end
 							self.LastGear = self.Gear
 
 							if self.LastMoving == nil then self.LastMoving = 0 end
@@ -833,10 +830,10 @@ function ENT:Think()
 							]]--
 						end
 
-						if self.CarTurning==0 then
-							local TorqueBoost = 0.15*self.HPperTon
+						if self.CarTurning == 0 then
+							-- local TorqueBoost = 0.15*self.HPperTon
 
-							if self.MoveLeft>0 or self.MoveRight>0 then
+							if self.MoveLeft > 0 or self.MoveRight > 0 then
 								if math.abs(self.turnperc) < 1 then
 									if self.MoveLeft>0 then
 										if self.turnperc<0 then self.turnperc = 0 end
@@ -1030,7 +1027,7 @@ function ENT:Think()
 				local CurTrace
 				local RidePos
 				local SuspensionForce
-				local SuspensionAbsorb
+				-- local SuspensionAbsorb
 				local lastchange
 				local lastvel
 				local AbsorbForce
@@ -1041,21 +1038,21 @@ function ENT:Think()
 				local CurTraceDist
 				local ForwardEnt = self.ForwardEnt
 				local WheelsPerSide = self.WheelsPerSide--math.min(self.WheelsPerSide,5)
-				local SuspensionForceMult = (5/WheelsPerSide)*math.Clamp(self:GetSuspensionForceMult(),0,2)
+				-- local SuspensionForceMult = (5/WheelsPerSide)*math.Clamp(self:GetSuspensionForceMult(),0,2)
 				local TrackLength = self.TrackLength
 				local ForwardOffset = self.ForwardOffset
-				local RideLimit = self.RideLimit
+				-- local RideLimit = self.RideLimit
 				local RideHeight = self.RideHeight
 				local FrontWheelRaise = self.FrontWheelRaise
 				local RearWheelRaise = self.RearWheelRaise
 
 				local forward = ForwardEnt:GetForward()
 				local right = ForwardEnt:GetRight()
-				local up = ForwardEnt:GetUp()
+				-- local up = ForwardEnt:GetUp()
 				--local selfpos = self:GetPos()
 				local CurTraceHitPos
-				local weightforce = self.PhysicalMass*-GravxTicks --note, raise tick interval if I increase interval
-				local wheelforce = weightforce/((WheelsPerSide-2)*2)
+				-- local weightforce = self.PhysicalMass*-GravxTicks --note, raise tick interval if I increase interval
+				-- local wheelforce = weightforce/((WheelsPerSide-2)*2)
 
 				local hydrabias = math.Clamp(self.Inputs.SuspensionBias.Value,-1,1)
 				if self.lasthydrabias == nil then self.lasthydrabias = hydrabias end
@@ -1101,9 +1098,9 @@ function ENT:Think()
 				if self.RightGroundedLast == nil then self.RightGroundedLast = WheelsPerSide end
 				if self.LeftGroundedLast == nil then self.LeftGroundedLast = WheelsPerSide end
 				local CurRideHeight = 0
-				local RightGrounded = 0
-				local LeftGrounded = 0
-				local BrakeMult = 0
+				-- local RightGrounded = 0
+				-- local LeftGrounded = 0
+				-- local BrakeMult = 0
 				local RearTurners = self:GetRearTurningWheels()
 				local FrontTurners = self:GetForwardTurningWheels()
 
@@ -1415,15 +1412,16 @@ function ENT:Think()
 		self.RealYaw = (totalspeed/#self.SpeedTable)
 		self.LastYaw = self:GetParent():GetParent():GetAngles().yaw
 	end
+
 	self.LastThink = CurTime()
 	self:NextThink(CurTime())
+
 	return true
 end
 
 function ENT:PreEntityCopy()
-
 	local info = {}
-	local entids = {}
+	-- local entids = {}
 
 	info.CrewID = self.DakCrew:EntIndex()
 	info.DakName = self.DakName
@@ -1434,14 +1432,12 @@ function ENT:PreEntityCopy()
 
 	duplicator.StoreEntityModifier( self, "DakTek", info )
 
-	//Wire dupe info
+	-- Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
-
-	if (Ent.EntityMods) and (Ent.EntityMods.DakTek) then
+	if Ent.EntityMods and Ent.EntityMods.DakTek then
 		local Crew = CreatedEntities[ Ent.EntityMods.DakTek.CrewID ]
 		if Crew and IsValid(Crew) then
 			self.DakCrew = Crew
@@ -1469,11 +1465,9 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 	end
 
 	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
-
 end
 
 function ENT:OnDuplicated(data)
-
 	local dt = data.DT
 	if not istable(dt) or dt.TrackLength == nil then
 
@@ -1489,7 +1483,6 @@ function ENT:OnDuplicated(data)
 	self.dak_restoreLegacy = function()
 		MsgN(tostring(self), "restoring legacy daktank gearbox values")
 
-
 		-- mobility
 		self:SetVehicleMode(dt.WheeledMode == true and "wheeled" or "tracked")
 		self:SetWheelBase(dt.TrackLength)
@@ -1503,7 +1496,6 @@ function ENT:OnDuplicated(data)
 		self:SetSuspensionForceMult(dt.SuspensionForceMult)
 		self:SetRideLimit(dt.RideLimit)
 		self:SetBrakeStiffness(dt.BrakeStiffness)
-
 
 		-- visual
 		local color = dt.WheelColor
@@ -1537,12 +1529,10 @@ function ENT:OnDuplicated(data)
 			self:SetIdlerWDiameter(dt.RearWheelHeight)
 		end
 
-
 		-- front
 		self:SetDriveWModel(dt.WheelModel)
 		self:SetDriveWWidth(dt.WheelWidth)
 		self:SetDriveWBGroup(string.format("%d%d%d", dt.WheeBodygroup1 or 0, dt.WheeBodygroup2 or 0, (dt.FrontSprocket and 1) or tonumber(dt.WheelBodygroup3) or 0))
-
 
 		-- road
 		if tonumber(dt.WheelsPerSide) then
@@ -1553,11 +1543,9 @@ function ENT:OnDuplicated(data)
 		self:SetRoadWWidth(dt.WheelWidth)
 		self:SetRoadWBGroup(string.format("%d%d%d", dt.WheeBodygroup1 or 0, dt.WheelBodygroup2 or 0, dt.WheelBodygroup3 or 0))
 
-
 		-- rear
 		self:SetIdlerWModel(dt.WheelModel)
 		self:SetIdlerWWidth(dt.WheelWidth)
 		self:SetIdlerWBGroup(string.format("%d%d%d", dt.WheeBodygroup1 or 0, dt.WheeBodygroup2 or 0, (dt.RearSprocket and 1) or tonumber(dt.WheelBodygroup3) or 0))
 	end
-
 end

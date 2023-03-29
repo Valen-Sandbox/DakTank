@@ -187,7 +187,7 @@ end)
 
 hook.Add("AdvDupe_FinishPasting", "daktank_tankcore_check", function(dupe)
 	local ents = dupe[1].CreatedEntities
-	for id, data in ipairs(dupe[1].EntityList) do
+	for id, data in pairs(dupe[1].EntityList) do
 		local ent = ents[id]
 		if IsValid(ent) then
 			if ent:GetClass() == "dak_tankcore" then

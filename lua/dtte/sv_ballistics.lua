@@ -242,10 +242,10 @@ local function CanDamage(Ent)
     return true
 end
 
-local function DTGetArmor(Ent, ShellType, Caliber)
+local function DTGetArmor( Ent, ShellType, Caliber )
     if Ent.EntityMods ~= nil and Ent.EntityMods.ArmorType ~= nil and Ent.EntityMods.ArmorType == "CHA" then
         if Ent.DakArmor < 175 then
-            return math.Clamp((-11.6506+1.072239*Ent.DakArmor+0.0004415663*Ent.DakArmor^2-0.000002624166*Ent.DakArmor^3),Ent.DakArmor*0.5,Ent.DakArmor)
+            return math.Clamp( -11.6506 + 1.072239 * Ent.DakArmor + 0.0004415663 * Ent.DakArmor ^ 2 - 0.000002624166 * Ent.DakArmor ^ 3, Ent.DakArmor * 0.5, Ent.DakArmor )
         else
             return Ent.DakArmor
         end
@@ -254,7 +254,7 @@ local function DTGetArmor(Ent, ShellType, Caliber)
         if ShellType == "HE" or ShellType == "HESH" or ShellType == "HEAT" or ShellType == "HEATFS" or ShellType == "ATGM" then
             return Ent.DakArmor
         end
-        return Ent.DakArmor*(9.7707 * Caliber^0.06111 * (Ent.DakArmor/Caliber)^0.2821 * 450^-0.4363) --hardness value of 450
+        return Ent.DakArmor * ( 9.7707 * Caliber ^ 0.06111 * ( Ent.DakArmor / Caliber ) ^ 0.2821 * 450 ^ -0.4363 ) --hardness value of 450
     end
     if Ent.DakArmor == nil then Ent.DakArmor = 1000 end
 
@@ -348,7 +348,7 @@ function DTSimpleRecurseTrace(Start, End, Caliber, Filter, Gun, ignoreworld)
     NewFilter[#NewFilter + 1] = Ent
     --instead of ignoring ent maybe ignore position in particular hit
     --also figure out what is going on with tube turrets
-    -- local newEnt = Ent
+    local newEnt = Ent
     local LastPos = Pos
     if Stop == 1 then
         local Distance = Start:Distance(LastPos)
@@ -356,7 +356,7 @@ function DTSimpleRecurseTrace(Start, End, Caliber, Filter, Gun, ignoreworld)
         return Distance
     end
     while Stop == 0 and Recurse < 25 do
-        local newEnt, LastPos, Stop = DTSimpleTrace(Start, End, Caliber, NewFilter, Gun, ignoreworld)
+        newEnt, LastPos, Stop = DTSimpleTrace(Start, End, Caliber, NewFilter, Gun, ignoreworld)
         NewFilter[#NewFilter + 1] = newEnt
         Recurse = Recurse + 1
         if Stop == 1 then

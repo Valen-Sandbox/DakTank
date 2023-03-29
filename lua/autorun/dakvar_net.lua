@@ -1,6 +1,4 @@
-
 --[[
-
 	Similar to editable NetworkVars but not limited by DTVar slots
 	and actually clamps data when constraints are provided
 
@@ -9,17 +7,14 @@
 	-- SHARED - required, call in entity initialize method
 	_DakVar_INSTALL(DakEnt)
 
-
 	-- SHARED - required, works like ent:SetupDatatables()
 	function DakEnt:_DakVar_SETUP()
 		DakEnt:_DakVar_REGISTER({type="Float", name="TurnAngle", min=0, max=180}, {title="Turn Angle", property=...})
 	end
 
-
 	-- SERVER/CLIENT - optional, called when a value changes
 	function DakEnt:_DakVar_CHANGED(vname, newvalue, oldvalue)
 	end
-
 ]]
 
 ----------------------------------------------------------------
@@ -29,27 +24,22 @@ local net, util, duplicator =
 local pairs, istable, isstring, isnumber, isvector, isfunction =
 	  pairs, istable, isstring, isnumber, isvector, isfunction
 
-
 if SERVER then
-	util.AddNetworkString("_DakVar_NETWORK")
+	util.AddNetworkString( "_DakVar_NETWORK" )
 
-	net.Receive("_DakVar_NETWORK", function(len, pl)
-		local eid = net.ReadUInt(32)
-		local ent = Entity(eid)
+	net.Receive( "_DakVar_NETWORK", function( _, pl )
+		local eid = net.ReadUInt( 32 )
+		local ent = Entity( eid )
 
-		if not ent or not ent:IsValid() or not isfunction(ent._DakVar_SET) then
-			return
-		end
+		if not ent or not ent:IsValid() or not isfunction( ent._DakVar_SET ) then return end
 
-		if CPPI and pl ~= ent:CPPIGetOwner() then
-			return
-		end
+		if CPPI and pl ~= ent:CPPIGetOwner() then return end
 
 		local vname = net.ReadString()
 		local value = net.ReadString()
 
-		ent:_DakVar_SET(vname, value)
-	end)
+		ent:_DakVar_SET( vname, value )
+	end )
 
 	-- duplicator.RegisterEntityModifier("_DakVar_DUPED", function(pl, ent, data)
 	-- 	if isfunction(ent._DakVar_RESTORE) then
@@ -62,12 +52,10 @@ end
 
 ----------------------------------------------------------------
 local _NOTIFY = {}
-hook.Add("EntityNetworkedVarChanged", "_DakVar_NOTIFY", function(ent, name, old, new)
-	if not _NOTIFY[ent] or not ent._DakVar_NOTIFY[name] or not isfunction(ent._DakVar_CHANGED) then
-		return
-	end
-	ent._DakVar_CHANGED(ent, name, old, new)
-end)
+hook.Add( "EntityNetworkedVarChanged", "_DakVar_NOTIFY", function (ent, name, old, new )
+	if not _NOTIFY[ent] or not ent._DakVar_NOTIFY[name] or not isfunction( ent._DakVar_CHANGED ) then return end
+	ent._DakVar_CHANGED( ent, name, old, new )
+end )
 
 ----------------------------------------------------------------
 local sanitize = {}
