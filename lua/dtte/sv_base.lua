@@ -38,7 +38,7 @@ end
 DakTankShellList = {} -- Create Entity list for storing things people spawn
 
 -- Setup global daktek function for setting up affected entities.
-function DakTekTankEditionSetupNewEnt(ent)
+function DTTE.SetupNewEnt(ent)
 	if not IsValid(ent) then return end
 
 	local entClass = ent:GetClass()

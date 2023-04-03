@@ -35,6 +35,8 @@ TOOL.crewcolors = {
 	Color(0,0,0)
 }
 
+local DTTE = DTTE
+
 --Main spawning function, creates entities based on the options selected in the menu and updates current entities
 function TOOL:LeftClick( trace )
 	if SERVER then
@@ -1682,7 +1684,7 @@ function TOOL:RightClick( trace )
 	if SERVER then
 		if IsValid(trace.Entity) then
 			if trace.Entity.DakArmor == nil then
-				DakTekTankEditionSetupNewEnt(trace.Entity)
+				DTTE.SetupNewEnt(trace.Entity)
 			end
 			if trace.Entity:GetClass()=="prop_physics" then
 				local SA = trace.Entity:GetPhysicsObject():GetSurfaceArea()

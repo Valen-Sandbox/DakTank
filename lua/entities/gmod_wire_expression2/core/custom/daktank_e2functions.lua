@@ -1,5 +1,7 @@
 E2Lib.RegisterExtension("daktank",true)
 
+local DTTE = DTTE
+
 -- E2 Functions
 __e2setcost(1)
 e2function number entity:daktankArmor()
@@ -7,7 +9,7 @@ e2function number entity:daktankArmor()
 	if this.IsWorld() then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 	local SA = -1
 	if IsValid(this:GetPhysicsObject()) then
@@ -45,7 +47,7 @@ e2function number entity:daktankHealth()
 	if not IsValid(this) then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 
 	if this.DakHealth == nil then
@@ -59,7 +61,7 @@ e2function number entity:daktankMaxHealth()
 	if not IsValid(this) then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 
 	if this.DakMaxHealth == nil then

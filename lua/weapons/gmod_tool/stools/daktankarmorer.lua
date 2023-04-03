@@ -1,8 +1,7 @@
- 
 TOOL.Category = "DakTank"
 TOOL.Name = "#Tool.daktankarmorer.listname"
 TOOL.Command = nil
-TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud 
+TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 TOOL.LastLeftClick = CurTime()
 TOOL.LastRightClick = CurTime()
 TOOL.LastThink = 0
@@ -34,6 +33,8 @@ end
 TOOL.ClientConVar[ "DakArmor" ] = "1"
 TOOL.ClientConVar[ "ArmorType" ]   = "RHA"
 
+local DTTE = DTTE
+
 local function SetMass( Player, Entity, Data )
 	if not SERVER then return end
 
@@ -49,10 +50,10 @@ duplicator.RegisterEntityModifier( "mass", SetMass )
 function TOOL:LeftClick( trace )
 	if CurTime()>self.LastLeftClick then
 
-		if trace.Entity:IsSolid() and IsValid(trace.Entity) then 
+		if trace.Entity:IsSolid() and IsValid(trace.Entity) then
 			if SERVER then
 				if trace.Entity.DakArmor == nil then
-					DakTekTankEditionSetupNewEnt(trace.Entity)
+					DTTE.SetupNewEnt(trace.Entity)
 				end
 				local SA = trace.Entity:GetPhysicsObject():GetSurfaceArea()
 				if trace.Entity.IsDakTekFutureTech == 1 then
@@ -63,7 +64,7 @@ function TOOL:LeftClick( trace )
 						trace.Entity.DakArmor = trace.Entity:OBBMaxs().x/2
 						trace.Entity.DakIsTread = 1
 					else
-						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then 
+						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
 							DTArmorSanityCheck(trace.Entity)
 						end
 					end
@@ -137,11 +138,11 @@ function TOOL:LeftClick( trace )
 	self.LastLeftClick = CurTime()
 	end
 end
- 
+
 function TOOL:RightClick( trace )
 	if CurTime()>self.LastRightClick then
 		if (SERVER) then
-			if trace.Entity:IsSolid() and IsValid(trace.Entity) then 
+			if trace.Entity:IsSolid() and IsValid(trace.Entity) then
 				local ply = self:GetOwner()
 				local APArmor, APEnt, APShatters = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()})
 				local HEATArmor, HEATEnt, HEATShatters, HEATRico = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()})
@@ -190,7 +191,7 @@ function TOOL:RightClick( trace )
 	self.LastRightClick = CurTime()
 	end
 end
- 
+
 local function GetPhysCons( ent, Results )
 	local Results = Results or {}
 	if not IsValid( ent ) then return end
@@ -265,9 +266,9 @@ function TOOL:Think()
 				newtrace.filter = self:GetOwner()
 			local trace = util.TraceLine(newtrace)
 
-			if trace.Entity:IsSolid() and IsValid(trace.Entity) then 
+			if trace.Entity:IsSolid() and IsValid(trace.Entity) then
 				if trace.Entity.DakArmor == nil then
-					DakTekTankEditionSetupNewEnt(trace.Entity)
+					DTTE.SetupNewEnt(trace.Entity)
 				end
 				local SA = trace.Entity:GetPhysicsObject():GetSurfaceArea()
 				if trace.Entity.IsDakTekFutureTech == 1 then
@@ -278,7 +279,7 @@ function TOOL:Think()
 						trace.Entity.DakArmor = trace.Entity:OBBMaxs().x/2
 						trace.Entity.DakIsTread = 1
 					else
-						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then 
+						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
 							DTArmorSanityCheck(trace.Entity)
 						end
 					end
@@ -292,8 +293,8 @@ function TOOL:Think()
 					self.Weapon:SetNWFloat("Shell",0,2)
 				end
 				if trace.Entity.IsComposite == 1 then
-					if trace.Entity.EntityMods.CompKEMult == nil then trace.Entity.EntityMods.CompKEMult = 9.2 end 
-					if trace.Entity.EntityMods.CompCEMult == nil then trace.Entity.EntityMods.CompCEMult = 18.4 end 
+					if trace.Entity.EntityMods.CompKEMult == nil then trace.Entity.EntityMods.CompKEMult = 9.2 end
+					if trace.Entity.EntityMods.CompCEMult == nil then trace.Entity.EntityMods.CompCEMult = 18.4 end
 					local CompArmor = math.Round((DTCompositesTrace( trace.Entity, trace.HitPos, trace.Normal, {self:GetOwner()} )*1),2)
 					self.Weapon:SetNWFloat("Armor",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 					self.Weapon:SetNWFloat("AP",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
@@ -392,7 +393,7 @@ function TOOL:DrawToolScreen( w, h )
 
 	cam.Start2D()
 		render.Clear( 0, 0, 0, 0 )
-		
+
 		surface.SetMaterial( Material( "phoenix_storms/black_chrome" ) )
 		surface.SetDrawColor( color_white )
 		surface.DrawTexturedRect( 0, 0, 256, 256 )
@@ -403,7 +404,7 @@ function TOOL:DrawToolScreen( w, h )
 
 		draw.SimpleTextOutlined( "Armor", "DakTankArmorFont", 64, 79, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Armor"),2), "DakTankArmorFont", 64, 109, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		
+
 		draw.SimpleTextOutlined( "Mass", "DakTankArmorFont", 64, 143, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Mass"),2), "DakTankArmorFont", 64, 173, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
@@ -415,7 +416,7 @@ function TOOL:DrawToolScreen( w, h )
 
 		draw.SimpleTextOutlined( "vs HEAT", "DakTankArmorFont", 192, 79, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HEAT"),2), "DakTankArmorFont", 192, 109, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		
+
 		draw.SimpleTextOutlined( "vs HVAP", "DakTankArmorFont", 192, 143, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HVAP"),2), "DakTankArmorFont", 192, 173, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
@@ -423,5 +424,5 @@ function TOOL:DrawToolScreen( w, h )
 		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("APFSDS"),2), "DakTankArmorFont", 192, 237, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
 	cam.End2D()
-	
+
 end

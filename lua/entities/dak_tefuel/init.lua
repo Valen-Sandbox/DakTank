@@ -27,7 +27,7 @@ local function RecurseTrace(start, endpos, filter)
 			FireTrace.Entity:Ignite( 60, 0 )
 		end
 		if FireTrace.Entity.DakArmor == nil then
-			DakTekTankEditionSetupNewEnt(FireTrace.Entity)
+			DTTE.SetupNewEnt(FireTrace.Entity)
 		end
 		if FireTrace.Entity.DakArmor < 5 or DTCheckClip(FireTrace.Entity,FireTrace.HitPos) then
 			filter[#filter+1] = FireTrace.Entity
@@ -178,7 +178,7 @@ function ENT:Think()
 						FireTrace.Entity:Ignite( 60, 0 )
 					end
 					if FireTrace.Entity.DakArmor == nil then
-						DakTekTankEditionSetupNewEnt(FireTrace.Entity)
+						DTTE.SetupNewEnt(FireTrace.Entity)
 					end
 					if FireTrace.Entity.DakArmor < 5 or DTCheckClip(FireTrace.Entity,FireTrace.HitPos) then
 						RecurseTrace(self:GetPos(), self:GetPos() + Direction*50, {self, FireTrace.Entity})

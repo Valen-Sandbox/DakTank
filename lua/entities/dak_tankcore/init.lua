@@ -16,6 +16,8 @@ util.AddNetworkString( "daktankcoreeraremove" )
 util.AddNetworkString( "daktankcoredetailremove" )
 util.AddNetworkString( "daktankcoredie" )
 
+local DTTE = DTTE
+
 concommand.Add("daktank_unmake", function()
 	local cores = ents.FindByClass("dak_tankcore")
 	for i=1, #cores do
@@ -2955,7 +2957,7 @@ function ENT:Think()
 								self.CurrentHealth = self.DakVolume
 								self.DakMaxHealth = self.DakVolume
 								for i=1, table.Count(self.HitBox) do
-									DakTekTankEditionSetupNewEnt(self.HitBox[i])
+									DTTE.SetupNewEnt(self.HitBox[i])
 									self.HitBox[i].DakHealth = self.CurrentHealth
 									self.HitBox[i].DakMaxHealth = self.CurrentHealth
 									self.HitBox[i].Controller = self
