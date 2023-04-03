@@ -9,6 +9,15 @@ include("shared.lua")
 -- make a check to see if the trace for determining speed going up or down a hill started underground, if so then just cut the speed as the hill is so steep it is beyond the limits and ends up giving a speed boost
 
 local DTTE = DTTE
+local math = math
+local traceline = util.TraceLine
+local tracehull = util.TraceHull
+local Clamp = math.Clamp
+local abs = math.abs
+local max = math.max
+local min = math.min
+local IsValid = IsValid
+local sort = table.sort
 
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
@@ -59,10 +68,10 @@ function ENT:Initialize()
 	self.Gear = 0
 	self.SideDist = self:GetSideDist()
 	self.TrackLength = self:GetTrackLength()
-	self.WheelsPerSide = math.Clamp(self:GetWheelsPerSide(),2,20)
+	self.WheelsPerSide = Clamp(self:GetWheelsPerSide(),2,20)
 	self.RideHeight = self:GetRideHeight()
-	self.RideLimit = math.Clamp(self:GetRideLimit(),50,200)
-	self.SuspensionBias = math.Clamp(self:GetSuspensionBias(),-0.99,0.99)
+	self.RideLimit = Clamp(self:GetRideLimit(),50,200)
+	self.SuspensionBias = Clamp(self:GetSuspensionBias(),-0.99,0.99)
 	self.RightChanges = {}
 	self.RightPosChanges = {}
 	self.RightRidePosChanges = {}
@@ -171,9 +180,9 @@ end
 function ENT:PID(goal, height, lastheight, lastintegral)
 	--goal is ride height
 	--height is current suspension extension
-	local P = 1.125*math.Clamp(self:GetSuspensionForceMult(),0,2)
+	local P = 1.125*Clamp(self:GetSuspensionForceMult(),0,2)
 	local I = 1
-	local D = 1.25*(100/math.Clamp(self:GetRideLimit(),50,200))
+	local D = 1.25*(100/Clamp(self:GetRideLimit(),50,200))
 	local Time = (1/self.RealInt) * 3 --3s to full power
 
 	--proportional
@@ -226,14 +235,14 @@ function ENT:Think()
 
 	self.SideDist = self:GetSideDist()
 	self.TrackLength = self:GetTrackLength()
-	self.WheelsPerSide = math.Clamp(self:GetWheelsPerSide(),2,20)
+	self.WheelsPerSide = Clamp(self:GetWheelsPerSide(),2,20)
 	self.RideHeight = self:GetRideHeight()
-	self.RideLimit = math.Clamp(self:GetRideLimit(),50,200)
-	self.SuspensionBias = math.Clamp(self:GetSuspensionBias(),-0.99,0.99)
+	self.RideLimit = Clamp(self:GetRideLimit(),50,200)
+	self.SuspensionBias = Clamp(self:GetSuspensionBias(),-0.99,0.99)
 	self.FrontWheelRaise = self:GetFrontWheelRaise()
 	self.RearWheelRaise = self:GetRearWheelRaise()
 	self.ForwardOffset = self:GetForwardOffset()
-	self.GearRatio = math.Clamp(self:GetGearRatio(),50,100)*0.01
+	self.GearRatio = Clamp(self:GetGearRatio(),50,100)*0.01
 
 	self.WheelHeight = self:GetWheelHeight()
 	self.FrontWheelHeight = self:GetFrontWheelHeight()
@@ -426,7 +435,7 @@ function ENT:Think()
 				self.DakHP = 0
 			end
 		end
-		self.DakSpeed = (self.DakSpeed * 2 * math.Clamp(self.DakFuel/self.DakFuelReq,0,1)) * math.Clamp(self.MaxHP/self.DakHP,0,1)
+		self.DakSpeed = (self.DakSpeed * 2 * Clamp(self.DakFuel/self.DakFuelReq,0,1)) * Clamp(self.MaxHP/self.DakHP,0,1)
 
 		self.CrewAlive = 1
 		if self.DakCrew == NULL then
@@ -527,14 +536,14 @@ function ENT:Think()
 						end
 					else
 						if self.MoveReverse>0 then
-							self.RPM = 1000*math.Clamp(self.TopSpeed*0.5/(self.Speed*1.5),0.6,2.0)
+							self.RPM = 1000*Clamp(self.TopSpeed*0.5/(self.Speed*1.5),0.6,2.0)
 							if self.Speed*1.5>self.TopSpeed then
-								self.RPM = 2000*math.Clamp(self.Speed/self.TopSpeed*0.5,0.5,1)
+								self.RPM = 2000*Clamp(self.Speed/self.TopSpeed*0.5,0.5,1)
 							end
 						else
-							self.RPM = 1000*math.Clamp(self.TopSpeed/(self.Speed*1.5),0.6,2.0)
+							self.RPM = 1000*Clamp(self.TopSpeed/(self.Speed*1.5),0.6,2.0)
 							if self.Speed*1.5>self.TopSpeed then
-								self.RPM = 2000*math.Clamp(self.Speed/self.TopSpeed,0.5,1)
+								self.RPM = 2000*Clamp(self.Speed/self.TopSpeed,0.5,1)
 							end
 						end
 					end
@@ -556,7 +565,7 @@ function ENT:Think()
 						if #self.DakTankCore.Motors>0 then
 							for i=1, #self.DakTankCore.Motors do
 								if IsValid(self.DakTankCore.Motors[i]) then
-									self.DakTankCore.Motors[i].Sound:ChangePitch(math.Clamp( 255*self.RPM/2500,0,255), 0.5 )
+									self.DakTankCore.Motors[i].Sound:ChangePitch(Clamp( 255*self.RPM/2500,0,255), 0.5 )
 								end
 							end
 						end
@@ -608,10 +617,10 @@ function ENT:Think()
 								--TRACTION CONTROL
 								local _, temp = WorldToLocal( Vector(0,0,0), Angle(0,self.LastYaw,0), Vector(0,0,0), Angle(0,self.base:GetAngles().yaw,0) )
 								local TurnVal = temp.yaw/self.TimeMult
-								local ControlForce = math.Min(math.max(4,math.abs(TurnVal*5)),10)
+								local ControlForce = min(max(4,abs(TurnVal*5)),10)
 								if self.Perc>=0 then
 									if TurnVal > 0.05 and self.MoveRight==0 then
-										--math.abs(TurnVal)
+										--abs(TurnVal)
 										self.LBoost = 0-ControlForce
 										self.RBoost = 2+ControlForce
 									end
@@ -692,40 +701,40 @@ function ENT:Think()
 								self.CurTopSpeed = G1Speed
 								self.LastTopSpeed = 0
 								self.MaxSpeedDif = G1Speed
-								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*math.Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*4),0,8*math.abs(self.Perc)) )
-								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*math.Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*4),0,8*math.abs(self.Perc)) )
+								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*4),0,8*abs(self.Perc)) )
+								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*4),0,8*abs(self.Perc)) )
 							elseif self.Gear == 2 then
 								--self.Gear = 2
 								GearBoost = 0.15
 								self.CurTopSpeed = G2Speed
 								self.LastTopSpeed = G1Speed
 								self.MaxSpeedDif = G2Speed - self.TopSpeed*0.1
-								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*math.Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*5),0,4*math.abs(self.Perc)) )
-								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*math.Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*5),0,4*math.abs(self.Perc)) )
+								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*5),0,4*abs(self.Perc)) )
+								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*5),0,4*abs(self.Perc)) )
 							elseif self.Gear == 3 then
 								--self.Gear = 3
 								GearBoost = 0.1
 								self.CurTopSpeed = G3Speed
 								self.LastTopSpeed = G2Speed
 								self.MaxSpeedDif = G3Speed - G2Speed
-								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*math.Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*2),0,2*math.abs(self.Perc)) )
-								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*math.Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*2),0,2*math.abs(self.Perc)) )
+								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*2),0,2*abs(self.Perc)) )
+								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*2),0,2*abs(self.Perc)) )
 							else
 								--self.Gear = 4
 								GearBoost = 0.05
 								self.CurTopSpeed = G4Speed
 								self.LastTopSpeed = G3Speed
 								self.MaxSpeedDif = G4Speed - G3Speed
-								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * math.Min(throttle,1)
-								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*math.Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*1.5),0,1*math.abs(self.Perc)) )
-								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*math.Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*math.Clamp(self.TopSpeed/(self.Speed*1.5),0,1*math.abs(self.Perc)) )
+								self.LeftForce = (self.PhysicalMass/3000)*self.LBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								self.RightForce = (self.PhysicalMass/3000)*self.RBoost*self.Perc*(1/self.GearRatio)*self.HPperTon*50*GearBoost * min(throttle,1)
+								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.LBoost*Clamp(Lmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*1.5),0,1*abs(self.Perc)) )
+								--RPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.RBoost*Clamp(Rmult,0.0,2)*-self:GetRight()*self.Perc*(1/self.GearRatio)*self.HPperTon*150*Clamp(self.TopSpeed/(self.Speed*1.5),0,1*abs(self.Perc)) )
 							end
 
 							if self.lastshift == nil then self.lastshift = 0 end
@@ -756,7 +765,7 @@ function ENT:Think()
 									if #self.DakTankCore.Motors>0 then
 										for i=1, #self.DakTankCore.Motors do
 											if IsValid(self.DakTankCore.Motors[i]) then
-												self.DakTankCore.Motors[i].Sound:ChangePitch( math.Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif)*math.Min(throttle,1),0,1)*60+((self.Speed/self.TopSpeed)*90)+50 , 0.1 )
+												self.DakTankCore.Motors[i].Sound:ChangePitch( Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif)*min(throttle,1),0,1)*60+((self.Speed/self.TopSpeed)*90)+50 , 0.1 )
 											end
 										end
 									end
@@ -766,7 +775,7 @@ function ENT:Think()
 											if #self.DakTankCore.Motors>0 then
 												for i=1, #self.DakTankCore.Motors do
 													if IsValid(self.DakTankCore.Motors[i]) then
-														self.DakTankCore.Motors[i].Sound:ChangePitch( math.max( math.min( math.max(self.MoveRight,self.MoveLeft)/1*100,100) ,50) , 0.5 )
+														self.DakTankCore.Motors[i].Sound:ChangePitch( max( min( max(self.MoveRight,self.MoveLeft)/1*100,100) ,50) , 0.5 )
 													end
 												end
 											end
@@ -775,7 +784,7 @@ function ENT:Think()
 										if self.lastdump == nil then self.lastdump = 0 end
 										if self.LastMoving == 1 then
 											if self.lastdump+2.5 < CurTime() then
-												if self.Gear > 2 and math.Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif),0,1) > 0.5 then
+												if self.Gear > 2 and Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif),0,1) > 0.5 then
 													--sound.Play("acf_extra/vehiclefx/boost/gear_change_dump1.wav",self:GetPos(),100,100,1)
 													self.lastdump = CurTime()
 												end
@@ -787,7 +796,7 @@ function ENT:Think()
 													if self.CarTurning == 0 then
 														self.DakTankCore.Motors[i].Sound:ChangePitch( 50 , 0.1 )
 													else
-														self.DakTankCore.Motors[i].Sound:ChangePitch( math.Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif)*math.Min(throttle,1),0,1)*60+((self.Speed/self.TopSpeed)*90)+50 , 0.1 )
+														self.DakTankCore.Motors[i].Sound:ChangePitch( Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif)*min(throttle,1),0,1)*60+((self.Speed/self.TopSpeed)*90)+50 , 0.1 )
 													end
 												end
 											end
@@ -799,7 +808,7 @@ function ENT:Think()
 								if self.lastdump == nil then self.lastdump = 0 end
 								if self.LastMoving == 1 then
 									if self.lastdump+2.5 < CurTime() then
-										if self.Gear > 2 and math.Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif),0,1) > 0.5 then
+										if self.Gear > 2 and Clamp(((self.Speed-self.LastTopSpeed)/self.MaxSpeedDif),0,1) > 0.5 then
 											--sound.Play("acf_extra/vehiclefx/boost/gear_change_dump1.wav",self:GetPos(),100,100,1)
 											self.lastdump = CurTime()
 										end
@@ -824,7 +833,7 @@ function ENT:Think()
 								if #self.DakTankCore.Motors>0 then
 									for i=1, #self.DakTankCore.Motors do
 										if IsValid(self.DakTankCore.Motors[i]) then
-											self.DakTankCore.Motors[i].Sound:ChangePitch( math.Clamp(255*self.RPM/2500,0,255) , 0.5 )
+											self.DakTankCore.Motors[i].Sound:ChangePitch( Clamp(255*self.RPM/2500,0,255) , 0.5 )
 										end
 									end
 								end
@@ -836,7 +845,7 @@ function ENT:Think()
 							-- local TorqueBoost = 0.15*self.HPperTon
 
 							if self.MoveLeft > 0 or self.MoveRight > 0 then
-								if math.abs(self.turnperc) < 1 then
+								if abs(self.turnperc) < 1 then
 									if self.MoveLeft>0 then
 										if self.turnperc<0 then self.turnperc = 0 end
 										self.turnperc = self.turnperc + 0.02*self.TimeMult
@@ -868,7 +877,7 @@ function ENT:Think()
 							if self.Speed > 10 then
 								if self.MoveLeft>0 and self.MoveRight==0 then
 									if self.MoveReverse>0 then
-										if math.abs(self.RealYaw)<1.5 then
+										if abs(self.RealYaw)<1.5 then
 											self.LeftBrake = 0
 											self.RightBrake = 1
 											self.LeftForce = self.LeftForce*2
@@ -880,7 +889,7 @@ function ENT:Think()
 											self.RightForce = self.RightForce*2
 										end
 									else
-										if math.abs(self.RealYaw)<1.5 then
+										if abs(self.RealYaw)<1.5 then
 											self.LeftBrake = 1
 											self.RightBrake = 0
 											self.LeftForce = 0
@@ -895,7 +904,7 @@ function ENT:Think()
 								end
 								if self.MoveRight>0 and self.MoveLeft==0 then
 									if self.MoveReverse>0 then
-										if math.abs(self.RealYaw)<1.5 then
+										if abs(self.RealYaw)<1.5 then
 											self.LeftBrake = 1
 											self.RightBrake = 0
 											self.LeftForce = 0
@@ -907,7 +916,7 @@ function ENT:Think()
 											self.RightForce = 0
 										end
 									else
-										if math.abs(self.RealYaw)<1.5 then
+										if abs(self.RealYaw)<1.5 then
 											self.LeftBrake = 0
 											self.RightBrake = 1
 											self.LeftForce = self.LeftForce*2
@@ -923,42 +932,42 @@ function ENT:Think()
 							else
 								--[[
 								if self.MoveLeft>0 or self.MoveRight>0 then
-									self.RPM = 1000*math.Clamp( 0.5*(self.HPperTon/13) / math.abs((self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*10 ,0,2)
+									self.RPM = 1000*Clamp( 0.5*(self.HPperTon/13) / abs((self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*10 ,0,2)
 									if #self.DakTankCore.Motors>0 then
 										for i=1, #self.DakTankCore.Motors do
 											if IsValid(self.DakTankCore.Motors[i]) then
-												self.DakTankCore.Motors[i].Sound:ChangePitch( math.Clamp( (255*self.RPM/2500)*math.Min(self.MoveLeft+self.MoveRight,1),50,255), 0.5 )
+												self.DakTankCore.Motors[i].Sound:ChangePitch( Clamp( (255*self.RPM/2500)*min(self.MoveLeft+self.MoveRight,1),50,255), 0.5 )
 											end
 										end
 									end
 								end
 								]]--
 								--OLD FORMULA
-								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.Turn*self:GetRight()*10*math.Clamp( (0.13*(1/self.GearRatio)*self.HPperTon) / math.abs((self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult) ,0,10*self.turnperc)*450*(self.DakHealth/self.DakMaxHealth) )
+								--LPhys:ApplyTorqueCenter( (self.PhysicalMass/3000)*self.Turn*self:GetRight()*10*Clamp( (0.13*(1/self.GearRatio)*self.HPperTon) / abs((self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult) ,0,10*self.turnperc)*450*(self.DakHealth/self.DakMaxHealth) )
 
 								if self.MoveReverse>0 then
 									if self.MoveLeft>0 and self.MoveRight==0 then
-										self.LeftForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveLeft,1)
-										self.RightForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveLeft,1)
+										self.LeftForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveLeft,1)
+										self.RightForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveLeft,1)
 										--RIGHT FORWARD
 										--LEFT BACKWARD
 									end
 									if self.MoveRight>0 and self.MoveLeft==0 then
-										self.LeftForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveRight,1)
-										self.RightForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveRight,1)
+										self.LeftForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveRight,1)
+										self.RightForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveRight,1)
 										--RIGHT BACKWARD
 										--LEFT FORWARD
 									end
 								else
 									if self.MoveLeft>0 and self.MoveRight==0 then
-										self.LeftForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveLeft,1)
-										self.RightForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveLeft,1)
+										self.LeftForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveLeft,1)
+										self.RightForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveLeft,1)
 										--RIGHT BACKWARD
 										--LEFT FORWARD
 									end
 									if self.MoveRight>0 and self.MoveLeft==0 then
-										self.LeftForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveRight,1)
-										self.RightForce = math.Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*math.Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (math.abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*math.abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * math.Min(self.MoveRight,1)
+										self.LeftForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveRight,1)
+										self.RightForce = Clamp(self.DakFuel/self.DakFuelReq,0,1)*-(self.PhysicalMass/3000)*0.5*self.Turn*10*Clamp( (0.015*(1/self.GearRatio)*self.HPperTon) / (abs(self.LastYaw-self.base:GetAngles().yaw)/self.TimeMult)*1.75 ,0,10*abs(self.turnperc))*450*(self.DakHealth/self.DakMaxHealth) * min(self.MoveRight,1)
 										--RIGHT FORWARD
 										--LEFT BACKWARD
 									end
@@ -966,12 +975,12 @@ function ENT:Think()
 							end
 						else
 							if self.MoveLeft>0 and self.MoveRight==0 then
-								if self.WheelYaw > -math.Clamp(self:GetTurnAngle(),0,45) then
+								if self.WheelYaw > -Clamp(self:GetTurnAngle(),0,45) then
 									self.WheelYaw = self.WheelYaw - 1*self.TimeMult
 								end
 							end
 							if self.MoveRight>0 and self.MoveLeft==0 then
-								if self.WheelYaw < math.Clamp(self:GetTurnAngle(),0,45) then
+								if self.WheelYaw < Clamp(self:GetTurnAngle(),0,45) then
 									self.WheelYaw = self.WheelYaw + 1*self.TimeMult
 								end
 							end
@@ -1039,8 +1048,8 @@ function ENT:Think()
 				local lastvelnorm
 				local CurTraceDist
 				local ForwardEnt = self.ForwardEnt
-				local WheelsPerSide = self.WheelsPerSide--math.min(self.WheelsPerSide,5)
-				-- local SuspensionForceMult = (5/WheelsPerSide)*math.Clamp(self:GetSuspensionForceMult(),0,2)
+				local WheelsPerSide = self.WheelsPerSide--min(self.WheelsPerSide,5)
+				-- local SuspensionForceMult = (5/WheelsPerSide)*Clamp(self:GetSuspensionForceMult(),0,2)
 				local TrackLength = self.TrackLength
 				local ForwardOffset = self.ForwardOffset
 				-- local RideLimit = self.RideLimit
@@ -1056,21 +1065,21 @@ function ENT:Think()
 				-- local weightforce = self.PhysicalMass*-GravxTicks --note, raise tick interval if I increase interval
 				-- local wheelforce = weightforce/((WheelsPerSide-2)*2)
 
-				local hydrabias = math.Clamp(self.Inputs.SuspensionBias.Value,-1,1)
+				local hydrabias = Clamp(self.Inputs.SuspensionBias.Value,-1,1)
 				if self.lasthydrabias == nil then self.lasthydrabias = hydrabias end
 				if self.Inputs.NoBiasSpeedLimit.Value == 0 then
-					hydrabias = math.Clamp(hydrabias,self.lasthydrabias-(0.25/RideHeight),self.lasthydrabias+(0.25/RideHeight))
+					hydrabias = Clamp(hydrabias,self.lasthydrabias-(0.25/RideHeight),self.lasthydrabias+(0.25/RideHeight))
 				else
-					hydrabias = math.Clamp(hydrabias,self.lasthydrabias-(5/RideHeight),self.lasthydrabias+(5/RideHeight))
+					hydrabias = Clamp(hydrabias,self.lasthydrabias-(5/RideHeight),self.lasthydrabias+(5/RideHeight))
 				end
 				self:SetNWFloat("Hydra",hydrabias)
 				self.lasthydrabias = hydrabias
-				local hydrabiasside = math.Clamp(self.Inputs.SuspensionBiasSide.Value,-1,1)
+				local hydrabiasside = Clamp(self.Inputs.SuspensionBiasSide.Value,-1,1)
 				if self.lasthydrabiasside == nil then self.lasthydrabiasside = hydrabiasside end
 				if self.Inputs.NoSideBiasSpeedLimit.Value == 0 then
-					hydrabiasside = math.Clamp(hydrabiasside,self.lasthydrabiasside-(0.25/RideHeight),self.lasthydrabiasside+(0.25/RideHeight))
+					hydrabiasside = Clamp(hydrabiasside,self.lasthydrabiasside-(0.25/RideHeight),self.lasthydrabiasside+(0.25/RideHeight))
 				else
-					hydrabiasside = math.Clamp(hydrabiasside,self.lasthydrabiasside-(5/RideHeight),self.lasthydrabiasside+(5/RideHeight))
+					hydrabiasside = Clamp(hydrabiasside,self.lasthydrabiasside-(5/RideHeight),self.lasthydrabiasside+(5/RideHeight))
 				end
 				self:SetNWFloat("HydraSide",hydrabiasside)
 				self.lasthydrabiasside = hydrabiasside
@@ -1092,11 +1101,7 @@ function ENT:Think()
 						self.LeftInts[i] = 0
 					end
 				end
-				local traceline = util.TraceLine
-				local tracehull = util.TraceHull
-				local clamp = math.Clamp
-				local abs = math.abs
-				local max = math.Max
+
 				if self.RightGroundedLast == nil then self.RightGroundedLast = WheelsPerSide end
 				if self.LeftGroundedLast == nil then self.LeftGroundedLast = WheelsPerSide end
 				local CurRideHeight = 0
@@ -1113,7 +1118,7 @@ function ENT:Think()
 				end
 
 				local basesize = {self.base:OBBMaxs().x,self.base:OBBMaxs().y,self.base:OBBMaxs().z}
-				table.sort( basesize, function(a, b) return a>b end )
+				sort( basesize, function(a, b) return a > b end )
 
 				local fronttrace = {
 					start = selfpos + Vector(0,0,100)+Angle(0,ForwardEnt:GetAngles().yaw,0):Forward()*(TrackLength*0.5),
@@ -1133,7 +1138,7 @@ function ENT:Think()
 				local HeightDiff = FrontHit.z-BackHit.z
 				local ResistAng = math.atan(HeightDiff/TrackLength)*57.2958
 				if self.MoveReverse>0 then ResistAng = ResistAng*-1 end
-				local TerrainMultiplier = math.Clamp(1-math.sin(math.rad(ResistAng)),0,1)
+				local TerrainMultiplier = Clamp(1-math.sin(math.rad(ResistAng)),0,1)
 
 				local TerrainBraking = 0
 				if TerrainMultiplier < 1 then
@@ -1141,9 +1146,9 @@ function ENT:Think()
 				else
 					if not(self.Brakes>0) then
 						if not(self.MoveReverse>0) then
-							self.phy:ApplyForceCenter(self.RealInt*-forward*self.PhysicalMass*math.abs(physenv.GetGravity().z)*math.sin(math.rad(ResistAng)))
+							self.phy:ApplyForceCenter(self.RealInt*-forward*self.PhysicalMass*abs(physenv.GetGravity().z)*math.sin(math.rad(ResistAng)))
 						else
-							self.phy:ApplyForceCenter(self.RealInt*forward*self.PhysicalMass*math.abs(physenv.GetGravity().z)*math.sin(math.rad(ResistAng)))
+							self.phy:ApplyForceCenter(self.RealInt*forward*self.PhysicalMass*abs(physenv.GetGravity().z)*math.sin(math.rad(ResistAng)))
 						end
 					end
 				end
@@ -1162,8 +1167,8 @@ function ENT:Think()
 				local rotatedforward
 				local ForwardEntPos = ForwardEnt:GetPos()
 				local ForwardEntAng = ForwardEnt:GetAngles()
-				local rightbraking = Vector(math.max(self.RightBrake*brakestiffness,TerrainBraking),1,0)*2
-				local leftbraking = Vector(math.max(self.LeftBrake*brakestiffness,TerrainBraking),1,0)*2
+				local rightbraking = Vector(max(self.RightBrake*brakestiffness,TerrainBraking),1,0)*2
+				local leftbraking = Vector(max(self.LeftBrake*brakestiffness,TerrainBraking),1,0)*2
 				local WheelYaw = self.WheelYaw
 				local ShockForce = 10*self.PhysicalMass
 				local InAir = true
@@ -1202,7 +1207,7 @@ function ENT:Think()
 					}
 					CurTrace = tracehull( trace )
 					CurTraceHitPos = CurTrace.HitPos
-					CurTraceDist = math.max((CurTrace.StartPos-(CurTraceHitPos)):Length(),80)
+					CurTraceDist = max((CurTrace.StartPos-(CurTraceHitPos)):Length(),80)
 					lastchange = (CurTraceDist-self.RightChanges[i])/self.RealInt
 					self.RightChanges[i] = CurTraceDist
 					lastvel = (CurTraceHitPos - self.RightPosChanges[i])/self.TimeMult
@@ -1223,10 +1228,10 @@ function ENT:Think()
 					end
 					lastvel = worldfriction-ForwardEntPos
 					self.RightPosChanges[i] = CurTraceHitPos
-					RidePos = math.Clamp((CurTraceDist - 100),-10,10)
+					RidePos = Clamp((CurTraceDist - 100),-10,10)
 					if RidePos<-0.1 then
 						AbsorbForce = self:GetSuspensionDamping() *(5/WheelsPerSide)
-						if math.abs(hydrabias) > 0 then AbsorbForce = 1 end
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
 						FrictionForce = basefriction
 					else
 						AbsorbForce = 0.0
@@ -1246,13 +1251,13 @@ function ENT:Think()
 					self.RightLastHeights[i] = CurHeight
 					self.RightInts[i] = LastInt
 					if CurHeight >= RideHeight then Force = 0 else InAir = false end
-					SuspensionForce = wheelweightforce+Vector(0,0,(self.PhysicalMass*1.2)*(math.Min(Force,10)/WheelsPerSide)*multval)
-					--SuspensionForce = wheelweightforce+(Vector(0,0,1)*(self.PhysicalMass/3000)*SuspensionForceMult*multval*(((500*(100/(RideLimit)))*math.abs(RidePos+(RidePos + math.abs(self.RightRidePosChanges[i]))))))
+					SuspensionForce = wheelweightforce+Vector(0,0,(self.PhysicalMass*1.2)*(min(Force,10)/WheelsPerSide)*multval)
+					--SuspensionForce = wheelweightforce+(Vector(0,0,1)*(self.PhysicalMass/3000)*SuspensionForceMult*multval*(((500*(100/(RideLimit)))*abs(RidePos+(RidePos + abs(self.RightRidePosChanges[i]))))))
 					--if i == 2 then print((RidePos+(RidePos - self.RightRidePosChanges[i]))) end
-					AbsorbForceFinal = (-Vector(0,0,math.Clamp( self.PhysicalMass*lastchange/(WheelsPerSide*2),-ShockForce,ShockForce)) * AbsorbForce)*math.Clamp(self:GetSuspensionForceMult(),0,2)/self.TimeMult
+					AbsorbForceFinal = (-Vector(0,0,Clamp( self.PhysicalMass*lastchange/(WheelsPerSide*2),-ShockForce,ShockForce)) * AbsorbForce)*Clamp(self:GetSuspensionForceMult(),0,2)/self.TimeMult
 					lastvelnorm = lastvel:GetNormalized()--*(Vector(1-forward.x,1-forward.y,1-forward.z)) + forward*self.RightBrake
 
-					FrictionForceFinal = -Vector(clamp(lastvel.x,-abs(lastvelnorm.x),abs(lastvelnorm.x)),clamp(lastvel.y,-abs(lastvelnorm.y),abs(lastvelnorm.y)),0)*FrictionForce
+					FrictionForceFinal = -Vector(Clamp(lastvel.x,-abs(lastvelnorm.x),abs(lastvelnorm.x)),Clamp(lastvel.y,-abs(lastvelnorm.y),abs(lastvelnorm.y)),0)*FrictionForce
 					self.RightRidePosChanges[i] = RidePos
 					--print(FrictionForceFinal) ----------FIX ISSUE WHERE THIS SPERGS OUT AND GETS BIG FOR NO RAISIN
 					--print(SuspensionForce)
@@ -1295,7 +1300,7 @@ function ENT:Think()
 					}
 					CurTrace = tracehull( trace )
 					CurTraceHitPos = CurTrace.HitPos
-					CurTraceDist = math.max((CurTrace.StartPos-(CurTraceHitPos)):Length(),80)
+					CurTraceDist = max((CurTrace.StartPos-(CurTraceHitPos)):Length(),80)
 					lastchange = (CurTraceDist-self.LeftChanges[i])/self.RealInt
 					self.LeftChanges[i] = CurTraceDist
 					lastvel = (CurTraceHitPos - self.LeftPosChanges[i])/self.TimeMult
@@ -1316,10 +1321,10 @@ function ENT:Think()
 					end
 					lastvel = worldfriction-ForwardEntPos
 					self.LeftPosChanges[i] = CurTraceHitPos
-					RidePos = math.Clamp((CurTraceDist - 100),-10,10)
+					RidePos = Clamp((CurTraceDist - 100),-10,10)
 					if RidePos<-0.1 then
 						AbsorbForce = self:GetSuspensionDamping() *(5/WheelsPerSide)
-						if math.abs(hydrabias) > 0 then AbsorbForce = 1 end
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
 						FrictionForce = basefriction
 					else
 						AbsorbForce = 0.0
@@ -1339,12 +1344,12 @@ function ENT:Think()
 					self.LeftLastHeights[i] = CurHeight
 					self.LeftInts[i] = LastInt
 					if CurHeight >= RideHeight then Force = 0 else InAir = false end
-					SuspensionForce = wheelweightforce+Vector(0,0,(self.PhysicalMass*1.2)*(math.Min(Force,10)/WheelsPerSide)*multval)
-					--SuspensionForce = wheelweightforce+(Vector(0,0,1)*(self.PhysicalMass/3000)*SuspensionForceMult*multval*(((500*(100/(RideLimit)))*math.abs(RidePos+(RidePos + math.abs(self.LeftRidePosChanges[i]))))))
-					AbsorbForceFinal = (-Vector(0,0, math.Clamp(self.PhysicalMass*lastchange/(WheelsPerSide*2),-ShockForce,ShockForce)) * AbsorbForce)*math.Clamp(self:GetSuspensionForceMult(),0,2)/self.TimeMult
+					SuspensionForce = wheelweightforce+Vector(0,0,(self.PhysicalMass*1.2)*(min(Force,10)/WheelsPerSide)*multval)
+					--SuspensionForce = wheelweightforce+(Vector(0,0,1)*(self.PhysicalMass/3000)*SuspensionForceMult*multval*(((500*(100/(RideLimit)))*abs(RidePos+(RidePos + abs(self.LeftRidePosChanges[i]))))))
+					AbsorbForceFinal = (-Vector(0,0, Clamp(self.PhysicalMass*lastchange/(WheelsPerSide*2),-ShockForce,ShockForce)) * AbsorbForce)*Clamp(self:GetSuspensionForceMult(),0,2)/self.TimeMult
 					lastvelnorm = lastvel:GetNormalized() --*(Vector(1-forward.x,1-forward.y,1-forward.z)) + forward*self.LeftBrake
 
-					FrictionForceFinal = -Vector(clamp(lastvel.x,-abs(lastvelnorm.x),abs(lastvelnorm.x)),clamp(lastvel.y,-abs(lastvelnorm.y),abs(lastvelnorm.y)),0)*FrictionForce
+					FrictionForceFinal = -Vector(Clamp(lastvel.x,-abs(lastvelnorm.x),abs(lastvelnorm.x)),Clamp(lastvel.y,-abs(lastvelnorm.y),abs(lastvelnorm.y)),0)*FrictionForce
 					self.LeftRidePosChanges[i] = RidePos
 					self.phy:ApplyImpulseOffsetF( self.TimeMult*((rotatedforward*Vector(1,1,0))*4*(TerrainMultiplier*self.LeftForce)/WheelsPerSide+SuspensionForce+Vector(FrictionForceFinal.x,FrictionForceFinal.y,max(0,2*AbsorbForceFinal.z))) ,ForcePos)
 				end
@@ -1355,7 +1360,7 @@ function ENT:Think()
 					if self.LastRoll == nil then self.LastRoll = self.ForwardEnt:GetAngles().roll end
 					if self.LastRollInt == nil then self.LastRollInt = 0 end
 					local rollforce, rollint = self:AngPID(0, self.ForwardEnt:GetAngles().roll, self.LastRoll, self.LastRollInt)
-					rollforce = math.Clamp(rollforce,-25,25)
+					rollforce = Clamp(rollforce,-25,25)
 					self.phy:ApplyImpulseOffsetF( -rollforce*self.ForwardEnt:GetUp()*self.PhysicalMass*0.01*self.TimeMult,self.base:GetPos()+self.ForwardEnt:GetRight()*100)
 					self.phy:ApplyImpulseOffsetF( rollforce*self.ForwardEnt:GetUp()*self.PhysicalMass*0.01*self.TimeMult,self.base:GetPos()+self.ForwardEnt:GetRight()*-100)
 					self.LastRoll = self.ForwardEnt:GetAngles().roll
@@ -1364,7 +1369,7 @@ function ENT:Think()
 					if self.LastPitch == nil then self.LastPitch = self.ForwardEnt:GetAngles().pitch end
 					if self.LastPitchInt == nil then self.LastPitchInt = 0 end
 					local pitchforce, pitchint = self:AngPID(0, self.ForwardEnt:GetAngles().pitch, self.LastPitch, self.LastPitchInt)
-					pitchforce = math.Clamp(pitchforce,-25,25)
+					pitchforce = Clamp(pitchforce,-25,25)
 					self.phy:ApplyImpulseOffsetF( -pitchforce*self.ForwardEnt:GetUp()*self.PhysicalMass*0.01*self.TimeMult,self.base:GetPos()+self.ForwardEnt:GetForward()*100)
 					self.phy:ApplyImpulseOffsetF( pitchforce*self.ForwardEnt:GetUp()*self.PhysicalMass*0.01*self.TimeMult,self.base:GetPos()+self.ForwardEnt:GetForward()*-100)
 					self.LastPitch = self.ForwardEnt:GetAngles().pitch
@@ -1375,7 +1380,7 @@ function ENT:Think()
 				if self.LastSpeed == nil then self.LastSpeed = Vector(0,0,0):Distance(self.phy:GetVelocity())*(0.277778*0.254) end
 				self.Speed = Vector(0,0,0):Distance(self.phy:GetVelocity())*(0.277778*0.254)
 				local accel = self.Speed-self.LastSpeed
-				self.phy:ApplyImpulseOffsetFTorqueOnly(self.phy:GetMass()*self.phy:GetVelocity():GetNormalized()*-accel*math.Clamp(self:GetDakInertia(),0,10),self.base:GetPos()+self.ForwardEnt:GetUp()*100)
+				self.phy:ApplyImpulseOffsetFTorqueOnly(self.phy:GetMass()*self.phy:GetVelocity():GetNormalized()*-accel*Clamp(self:GetDakInertia(),0,10),self.base:GetPos()+self.ForwardEnt:GetUp()*100)
 				self.LastSpeed = self.Speed
 			end
 

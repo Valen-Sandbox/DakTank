@@ -3,6 +3,11 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local math = math
+local IsValid = IsValid
+local pairs = pairs
+local ipairs = ipairs
+
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakArmor = 0
@@ -158,7 +163,6 @@ function ENT:Initialize()
 	self.timer = CurTime()
 	self.CoreRemoteMult = 1
 
-
 	self.Inputs = Wire_CreateInputs(self, { "Active", "Gun [ENTITY]", "Turret [ENTITY]", "CamTrace [RANGER]", "Lock", "CamTrace2 [RANGER]", "Active2", "AirBurst" })
 	self.Soundtime = CurTime()
  	self.SparkTime = CurTime()
@@ -183,7 +187,7 @@ function ENT:Initialize()
 end
 
 local function GetParents( ent, Results )
-	local Results = Results or {}
+	Results = Results or {}
 	local Parent = ent:GetParent()
 	Results[ ent ] = ent
 	if IsValid(Parent) then
@@ -623,9 +627,9 @@ function ENT:Think()
 
 										self.Shake = Angle(0,0,0)
 										if self.Stabilizer==false then
-											local X = math.abs(self.DakGun:OBBMins().x)+math.abs(self.DakGun:OBBMaxs().x)
-											local Y = math.abs(self.DakGun:OBBMins().y)+math.abs(self.DakGun:OBBMaxs().y)
-											local Z = math.abs(self.DakGun:OBBMins().z)+math.abs(self.DakGun:OBBMaxs().z)
+											-- local X = math.abs(self.DakGun:OBBMins().x)+math.abs(self.DakGun:OBBMaxs().x)
+											-- local Y = math.abs(self.DakGun:OBBMins().y)+math.abs(self.DakGun:OBBMaxs().y)
+											-- local Z = math.abs(self.DakGun:OBBMins().z)+math.abs(self.DakGun:OBBMaxs().z)
 
 											if self.LastPos == nil then self.LastPos = BasePlate:GetPos() end
 											if self.LastAngles == nil then self.LastAngles = Angle(0,0,0) end
@@ -781,12 +785,12 @@ function ENT:Think()
 	end
 
 	self:NextThink(CurTime())
-    return true
+	return true
 end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	local entids = {}
+	-- local entids = {}
 	info.TurretMotorIDs = {}
 
 	if #self.DakTurretMotors > 0 then
@@ -802,12 +806,12 @@ function ENT:PreEntityCopy()
 	info.DakMass = self.DakMass
 	info.DakOwner = self.DakOwner
 	duplicator.StoreEntityModifier( self, "DakTek", info )
-	//Wire dupe info
+	-- Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
-	if (Ent.EntityMods) and (Ent.EntityMods.DakTek) then
+	if Ent.EntityMods and Ent.EntityMods.DakTek then
 		if Ent.EntityMods.DakTek.TurretMotorIDs then
 			if #Ent.EntityMods.DakTek.TurretMotorIDs > 0 then
 				for i = 1, #Ent.EntityMods.DakTek.TurretMotorIDs do
