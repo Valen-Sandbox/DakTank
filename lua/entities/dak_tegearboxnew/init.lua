@@ -8,6 +8,8 @@ include("shared.lua")
 
 -- make a check to see if the trace for determining speed going up or down a hill started underground, if so then just cut the speed as the hill is so steep it is beyond the limits and ends up giving a speed boost
 
+local DTTE = DTTE
+
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
 ENT.DakName = "Light Motor"
@@ -211,9 +213,9 @@ function ENT:AngPID(goal, height, lastheight, lastintegral)
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	self.RealInt = CurTime()-self.LastThink
-	self.TimeMult = self.RealInt / (1/66)
+	DTTE.CheckSpherical(self)
+	self.RealInt = CurTime() - self.LastThink
+	self.TimeMult = self.RealInt / (1 / 66)
 	local self = self
 
 	if self.dak_restoreLegacy then

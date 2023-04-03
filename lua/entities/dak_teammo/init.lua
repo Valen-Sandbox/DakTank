@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakName = "Base Ammo"
 ENT.DakIsExplosive = true
 --ENT.DakAmmo = 10
@@ -11,7 +13,7 @@ ENT.DakArmor = 5
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakAmmoType = "Base"
-ENT.DakPooled=0
+ENT.DakPooled = 0
 
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -20,28 +22,27 @@ function ENT:Initialize()
 
 	--local phys = self:GetPhysicsObject()
 
-	
 	--self.DakAmmo = self.DakMaxAmmo
-	
+
 	self.Inputs = Wire_CreateInputs(self, { "EjectAmmo" })
 	self.Outputs = WireLib.CreateOutputs( self, { "Ammo", "MaxAmmo" } )
 	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
- 	self.DumpTime = CurTime()
- 	self.SlowThinkTime = CurTime()
- 	self.DakArmor = 5
- 	self.DakMaxHealth = 30
+	self.SparkTime = CurTime()
+	self.DumpTime = CurTime()
+	self.SlowThinkTime = CurTime()
+	self.DakArmor = 5
+	self.DakMaxHealth = 30
 	self.DakHealth = 30
 	self.DakBurnStacks = 0
 
 	function self:SetupDataTables()
- 		self:NetworkVar("Bool",0,"Firing")
- 	end
+		self:NetworkVar("Bool",0,"Firing")
+	end
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
+	DTTE.CheckSpherical(self)
+	if CurTime() >= self.SparkTime + 0.33 then
 		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
@@ -160,7 +161,7 @@ function ENT:Think()
 					self.ShellVolume = self.ShellVolume*1.5
 				end
 				self.ShellMass = self.ShellVolume*0.044
-				if self.DakAmmo == nil then 
+				if self.DakAmmo == nil then
 					self.DakAmmo = self.DakMaxAmmo
 				end
 				if self.DakAmmo > self.DakMaxAmmo then
@@ -192,7 +193,7 @@ function ENT:Think()
 				if self:GetPhysicsObject():GetMass() ~= math.Round((self.ShellMass*self.DakAmmo)+10) then self:GetPhysicsObject():SetMass(math.Round((self.ShellMass*self.DakAmmo)+10)) end
 			end
 		end
-		
+
 		WireLib.TriggerOutput(self, "Ammo", self.DakAmmo)
 		WireLib.TriggerOutput(self, "MaxAmmo", self.DakMaxAmmo)
 
@@ -270,7 +271,7 @@ function ENT:Think()
 										self.DakDead = true
 									end
 								end
-							end)		
+							end)
 							timer.Create( "AmmoBurnTimer"..self:EntIndex(), 0.25, 100, function()
 								if not(self.DakAmmo == nil) then
 									if self.DakAmmo > 0 then
@@ -360,7 +361,7 @@ function ENT:Think()
 			self.DakDead = true
 		end
 	end
-	
+
 	self:NextThink( CurTime()+0.1 )
     return true
 end
@@ -386,7 +387,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
@@ -462,7 +463,7 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 			self.ShellVolume = self.ShellVolume*1.5
 		end
 		self.ShellMass = self.ShellVolume*0.044
-		if self.DakAmmo == nil then 
+		if self.DakAmmo == nil then
 			self.DakAmmo = self.DakMaxAmmo
 		end
 		if self.DakAmmo > self.DakMaxAmmo then

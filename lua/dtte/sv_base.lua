@@ -1,3 +1,9 @@
+local DTTE = DTTE
+
+local math = math
+local bmax = 16384
+local bmin = -bmax
+
 hook.Add( "InitPostEntity", "DakTekTankEditionRunOnLoadHook", function()
 	local Settings = physenv.GetPerformanceSettings() -- copy table from physenfv
 	Settings.MaxVelocity = 1000000 -- change max velocity
@@ -5,11 +11,7 @@ hook.Add( "InitPostEntity", "DakTekTankEditionRunOnLoadHook", function()
 	print("DakTekTankEditionLoaded")
 end )
 
-local math = math
-local bmax = 16384
-local bmin = -bmax
-
-function CheckSpherical(ent)
+function DTTE.CheckSpherical(ent)
 	local PhysObj = ent:GetPhysicsObject()
 	if not PhysObj:GetMesh() then
 		if ent.SentSphereMessage == nil and IsValid(ent.DakOwner) then

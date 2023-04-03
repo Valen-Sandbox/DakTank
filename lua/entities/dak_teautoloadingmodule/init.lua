@@ -3,38 +3,38 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakName = "Autoloader Module"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakGun = nil
 
 function ENT:Initialize()
-
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
 	--local phys = self:GetPhysicsObject()
 
-	
 	self.DakArmor = 10
 	self.DakMass = 1000
 	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
+	self.SparkTime = CurTime()
 
- 	if self.DakHealth>self.DakMaxHealth then
+	if self.DakHealth > self.DakMaxHealth then
 		self.DakHealth = self.DakMaxHealth
 	end
- 	
+
 	self.DakBurnStacks = 0
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
+	DTTE.CheckSpherical(self)
+	if CurTime() >= self.SparkTime + 0.33 then
 		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
@@ -90,13 +90,13 @@ function ENT:Think()
 		self.SparkTime=CurTime()
 	end
 	if self.DakName == "Small Autoloader Clip" then
-		self.DakName = "Small Autoloader Magazine" 
+		self.DakName = "Small Autoloader Magazine"
 	end
 	if self.DakName == "Medium Autoloader Clip" then
-		self.DakName = "Medium Autoloader Magazine" 
+		self.DakName = "Medium Autoloader Magazine"
 	end
 	if self.DakName == "Large Autoloader Clip" then
-		self.DakName = "Large Autoloader Magazine" 
+		self.DakName = "Large Autoloader Magazine"
 	end
 	if self.DakName == "Small Autoloader Magazine" then
 		self.DakMass = 1000

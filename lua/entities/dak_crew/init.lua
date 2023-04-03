@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakEntity = NULL
 ENT.DakMaxHealth = 5
 ENT.DakHealth = 5
@@ -10,8 +12,7 @@ ENT.DakArmor = 2.5
 ENT.DakName = "Crew"
 --ENT.DakModel = "models/daktanks/crew.mdl"
 ENT.DakMass = 75
-ENT.DakPooled=0
-
+ENT.DakPooled = 0
 
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
@@ -20,7 +21,7 @@ function ENT:Initialize()
 	self:SetSolid(SOLID_VPHYSICS)
 	self.DakHealth = self.DakMaxHealth
 	--local phys = self:GetPhysicsObject()
-	
+
 	self.Soundtime = CurTime()
  	self.SparkTime = CurTime()
  	self.DakBurnStacks = 0
@@ -69,11 +70,11 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-	CheckSpherical(self)
+	DTTE.CheckSpherical(self)
 	self.DakMaxHealth = 5
 	self.DakArmor = 2.5
 	self.DakMass = 75
-	--self.DakModel = "models/daktanks/crew.mdl"	
+	--self.DakModel = "models/daktanks/crew.mdl"
 	if self.DakHealth > self.DakMaxHealth then
 		self.DakHealth = self.DakMaxHealth
 	end
@@ -260,13 +261,13 @@ function ENT:Think()
     	if self.DakHealth <= 0 then
 			if self.DakOwner:IsPlayer() then
 				if self.Job == 1 then
-					self.DakOwner:ChatPrint("Gunner Killed!") 
+					self.DakOwner:ChatPrint("Gunner Killed!")
 				elseif self.Job == 2 then
-					self.DakOwner:ChatPrint("Driver Killed!") 
+					self.DakOwner:ChatPrint("Driver Killed!")
 				elseif self.Job == 3 then
-					self.DakOwner:ChatPrint("Loader Killed!") 
+					self.DakOwner:ChatPrint("Loader Killed!")
 				else
-					self.DakOwner:ChatPrint("Passenger Killed!") 
+					self.DakOwner:ChatPrint("Passenger Killed!")
 				end
 			end
 			self:SetMaterial("models/flesh")
@@ -279,13 +280,13 @@ function ENT:Think()
 		if self.DakHealth <= 0 then
 			if self.DakOwner:IsPlayer() then
 				if self.Job == 1 then
-					self.DakOwner:ChatPrint("Gunner Killed!") 
+					self.DakOwner:ChatPrint("Gunner Killed!")
 				elseif self.Job == 2 then
-					self.DakOwner:ChatPrint("Driver Killed!") 
+					self.DakOwner:ChatPrint("Driver Killed!")
 				elseif self.Job == 3 then
-					self.DakOwner:ChatPrint("Loader Killed!") 
+					self.DakOwner:ChatPrint("Loader Killed!")
 				else
-					self.DakOwner:ChatPrint("Passenger Killed!") 
+					self.DakOwner:ChatPrint("Passenger Killed!")
 				end
 			end
 			self:SetMaterial("models/flesh")
@@ -315,7 +316,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )

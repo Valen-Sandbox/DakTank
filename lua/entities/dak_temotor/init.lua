@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakFuel = NULL
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
@@ -11,10 +13,9 @@ ENT.DakHealth = 25
 ENT.DakSpeed = 1.1725
 ENT.DakMass = 1000
 ENT.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.DakHP = 0
-
 
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
@@ -23,7 +24,7 @@ function ENT:Initialize()
 	self:SetSolid(SOLID_VPHYSICS)
 	self.DakHealth = self.DakMaxHealth
 	--local phys = self:GetPhysicsObject()
-	
+
 	--self:EmitSound(self.DakSound,75,0,1,CHAN_AUTO)
 	self.initsound = self.DakSound
 	self.Sound = CreateSound( self, self.DakSound, CReliableBroadcastRecipientFilter )
@@ -31,12 +32,12 @@ function ENT:Initialize()
 	self.Sound:ChangePitch( 0, 0 )
 	self.Sound:ChangeVolume( 0, 0 )
 	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
+	self.SparkTime = CurTime()
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
+	DTTE.CheckSpherical(self)
+	if CurTime() >= self.SparkTime + 0.33 then
 		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
@@ -157,8 +158,8 @@ function ENT:Think()
 
 	self.DakSpeed = self.DakSpeed * (self.DakHealth/self.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(),0,1)
 	self.DakHP = self.DakHP * (self.DakHealth/self.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(),0,1)
-	if self.DakDead == true then 
-		self.DakHP = 0 
+	if self.DakDead == true then
+		self.DakHP = 0
 		self.DakHealth = 0
 	end
 	if self.initsound ~= self.DakSound then
@@ -211,7 +212,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )

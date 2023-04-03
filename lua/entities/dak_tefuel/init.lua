@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakName = "Fuel Tank"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
@@ -56,7 +58,7 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-	CheckSpherical(self)
+	DTTE.CheckSpherical(self)
 	if self.DakDead ~= true then
 		if CurTime()>=self.SparkTime+0.33 then
 			if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then

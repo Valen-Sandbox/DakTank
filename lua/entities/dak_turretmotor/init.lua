@@ -3,14 +3,15 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakEngine = NULL
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 --ENT.DakName = "TMotor"
 --ENT.DakModel = "models/xqm/hydcontrolbox.mdl"
 ENT.DakMass = 250
-ENT.DakPooled=0
-
+ENT.DakPooled = 0
 
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
@@ -20,15 +21,15 @@ function ENT:Initialize()
 	self.DakArmor = 10
 	self.DakHealth = self.DakMaxHealth
 	--local phys = self:GetPhysicsObject()
-	
+
 	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
- 	self.DakBurnStacks = 0
+	self.SparkTime = CurTime()
+	self.DakBurnStacks = 0
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
+	DTTE.CheckSpherical(self)
+	if CurTime() >= self.SparkTime + 0.33 then
 		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
@@ -94,19 +95,19 @@ function ENT:Think()
 	if self.DakName == "Small Turret Motor" then
 		self.DakMaxHealth = 10
 		self.DakMass = 250
-		self.DakModel = "models/xqm/hydcontrolbox.mdl"	
+		self.DakModel = "models/xqm/hydcontrolbox.mdl"
 		self.DakRotMult = 0.1
 	end
 	if self.DakName == "Medium Turret Motor" then
 		self.DakMaxHealth = 20
 		self.DakMass = 500
-		self.DakModel = "models/props_c17/utilityconducter001.mdl"	
+		self.DakModel = "models/props_c17/utilityconducter001.mdl"
 		self.DakRotMult = 0.25
 	end
 	if self.DakName == "Large Turret Motor" then
 		self.DakMaxHealth = 50
 		self.DakMass = 1000
-		self.DakModel = "models/props_c17/substation_transformer01d.mdl"	
+		self.DakModel = "models/props_c17/substation_transformer01d.mdl"
 		self.DakRotMult = 0.6
 	end
 	if self.DakModel then
@@ -128,7 +129,7 @@ function ENT:Think()
 		self.DakHealth = 0
 	end
 	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	
+
 	if self:IsOnFire() and self.DakDead ~= true then
 		self.DakHealth = self.DakHealth - 1*0.33
 		if self.DakHealth <= 0 then
@@ -161,7 +162,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
