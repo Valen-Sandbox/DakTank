@@ -1267,7 +1267,7 @@ function ENT:Think()
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
-												if not(ThickestPos==self.Crew[i].Heightaimpoints[j]+up*self.BestHeight*2) then
+												if ThickestPos ~= self.Crew[i].Heightaimpoints[j] + up * self.BestHeight * 2 then
 													self.Crew[i].TopBounds[#self.Crew[i].TopBounds+1] = ThickestPos
 												end
 											end
