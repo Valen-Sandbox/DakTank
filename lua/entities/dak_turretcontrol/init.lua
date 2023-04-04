@@ -51,9 +51,9 @@ local function GetTurretPhysCons( ent, Results )
 	if Results[ ent ] then return end
 	Results[ ent ] = ent
 	local Constraints = constraint.GetTable( ent )
-	for k, v in ipairs( Constraints ) do
+	for _, v in ipairs( Constraints ) do
 		if (v.Type ~= "NoCollide") and (v.Type ~= "Axis") and (v.Type ~= "Ballsocket") and (v.Type ~= "AdvBallsocket") and (v.Type ~= "Rope") and (v.Type ~= "Wire") then
-			for i, Ent in pairs( v.Entity ) do
+			for _, Ent in pairs( v.Entity ) do
 				GetTurretPhysCons( Ent.Entity, Results )
 			end
 		end
@@ -61,12 +61,12 @@ local function GetTurretPhysCons( ent, Results )
 
 	return Results
 end
-
+--[[
 function ENT:toLocalAxis(worldAxis)
 	if not IsValid(self) then return Vector(0,0,0) end
 	return self:WorldToLocal(Vector(worldAxis[1],worldAxis[2],worldAxis[3])+self:GetPos())
 end
-
+]]
 local function normalizedVector(vector)
 	local len = (vector[1] * vector[1] + vector[2] * vector[2] + vector[3] * vector[3]) ^ 0.5
 	if len > 0.0000001 then
@@ -101,7 +101,7 @@ local function heading(originpos,originangle,pos)
 	if (len < 0.0000001000000) then return Angle( 0, bearing, 0 ) end
 	return Angle( (180 / math.pi)*math.asin(pos.z / len), bearing, 0 )
 end
-]]
+
 function ENT:ApplyForce(entity, angle)
 	local phys = entity:GetPhysicsObject()
 
@@ -151,7 +151,7 @@ function ENT:ApplyForceDirector(Director, entity, angle)
 		phys:ApplyForceOffset( up * -1*forcemult, roll * -1 )
 	end
 end
-
+]]
 function ENT:Initialize()
 	self:SetModel( "models/beer/wiremod/gate_e2_mini.mdl" )
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -245,7 +245,7 @@ function ENT:Think()
 						end
 					end
 				end
-				if not(self.DakParented==1) then
+				if self.DakParented ~= 1 then
 					if IsValid(GunEnt:GetParent()) then
 						if IsValid(GunEnt:GetParent():GetParent()) then
 							self.DakGun = GunEnt:GetParent():GetParent()
@@ -253,12 +253,12 @@ function ENT:Think()
 						self.Turret = {}
 						if IsValid(DakTurret) then
 							table.Add(self.Turret,GetTurretParents(GunEnt))
-							for k, v in pairs(GetTurretParents(GunEnt)) do
+							for _, v in pairs(GetTurretParents(GunEnt)) do
 								table.Add(self.Turret,GetTurretPhysCons(v))
 							end
 							if IsValid(DakTurret) then
 								table.Add(self.Turret,GetTurretParents(DakTurret))
-								for k, v in pairs(GetTurretParents(DakTurret)) do
+								for _, v in pairs(GetTurretParents(DakTurret)) do
 									table.Add(self.Turret,GetTurretPhysCons(v))
 								end
 							end
@@ -275,7 +275,7 @@ function ENT:Think()
 							table.Add( self.Turret, Children )
 						else
 							table.Add(self.Turret,self.DakGun:GetChildren())
-							for k, v in pairs(self.DakGun:GetChildren()) do
+							for _, v in pairs(self.DakGun:GetChildren()) do
 								table.Add(self.Turret,v:GetChildren())
 							end
 						end

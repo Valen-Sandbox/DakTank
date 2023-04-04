@@ -150,8 +150,8 @@ function _DakVar_INSTALL(DakEnt)
 			return vget(DakEnt, vname)
 		end
 
-		if SERVER then
-			if var.default then DakEnt["Set" .. vname](DakEnt, var.default) end
+		if SERVER and var.default then
+			DakEnt["Set" .. vname](DakEnt, var.default)
 		end
 	end
 
