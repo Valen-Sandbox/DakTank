@@ -45,7 +45,7 @@ function ENT:Initialize()
 	self.NoLoad = 0
 	--self:SetModel(self.DakModel)
 	self.DakHealth = self.DakMaxHealth
-	
+
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
@@ -53,7 +53,7 @@ function ENT:Initialize()
 	----local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
 	self.timer2 = CurTime()
-	
+
 	self.Inputs = Wire_CreateInputs(self, { "Fire", "SwapAmmo","Reload", "Indicator [ENTITY]", "FuzeDelay" })
 	self.Outputs = WireLib.CreateOutputs( self, { "Cooldown" , "CooldownPercent", "MaxCooldown", "ReloadTime", "Ammo", "MagazineRounds", "AmmoType [STRING]", "MuzzleVel", "ShellMass", "Penetration" } )
  	self.Held = false
@@ -108,7 +108,7 @@ end
 
 function ENT:Think()
 	self.FuzeDelay = self.Inputs.FuzeDelay.Value
-	if self.ScaleSet == true then 
+	if self.ScaleSet == true then
 		if self.DakGunType == nil then self:Remove() end
 		if not(self:GetModel() == self.DakModel) then
 			self:SetModel(self.DakModel)
@@ -141,7 +141,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5
 				self.DakMass = math.Round(((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmCAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmCHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmCHEATAmmo"
@@ -216,7 +216,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -306,7 +306,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -397,7 +397,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -484,7 +484,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/h420.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -572,7 +572,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/m600.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -834,7 +834,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.0125
 				self.DakMass = math.Round(0.0125*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmLAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmLHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmLHEATAmmo"
@@ -886,7 +886,7 @@ function ENT:Think()
 				if self.DakFireSound1 == nil then
 					self.DakFireSound1 = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -902,7 +902,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.02
 				self.DakMass = math.Round(0.02*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmLAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmLHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmLHEATAmmo"
@@ -955,7 +955,7 @@ function ENT:Think()
 				if self.DakFireSound1 == nil then
 					self.DakFireSound1 = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -972,7 +972,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.2
 				self.DakMass = math.Round(0.2*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*25))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*25)))*0.001*7.8125)/1000)
-				
+
 				self.recoilless = true
 
 				self.DakAP = math.Round(self.DakCaliber,2).."mmRRAPAmmo"
@@ -1040,7 +1040,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/new/cannons/120mm/cannon_120mm_rh120_shot_01.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1175,7 +1175,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5
 				self.DakMass = math.Round(((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmCAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmCHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmCHEATAmmo"
@@ -1250,7 +1250,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1340,7 +1340,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1431,7 +1431,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/c200.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1518,7 +1518,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/h420.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1606,7 +1606,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/m600.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1868,7 +1868,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.0125
 				self.DakMass = math.Round(0.0125*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmLAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmLHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmLHEATAmmo"
@@ -1920,7 +1920,7 @@ function ENT:Think()
 				if self.DakFireSound1 == nil then
 					self.DakFireSound1 = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -1936,7 +1936,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.02
 				self.DakMass = math.Round(0.02*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*50))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*50)))*0.001*7.8125)/1000)
-				
+
 				self.DakAP = math.Round(self.DakCaliber,2).."mmLAPAmmo"
 				self.DakHE = math.Round(self.DakCaliber,2).."mmLHEAmmo"
 				self.DakHEAT = math.Round(self.DakCaliber,2).."mmLHEATAmmo"
@@ -1989,7 +1989,7 @@ function ENT:Think()
 				if self.DakFireSound1 == nil then
 					self.DakFireSound1 = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -2006,7 +2006,7 @@ function ENT:Think()
 				self.DakMaxHealth = self.DakCaliber
 				self.DakArmor = self.DakCaliber*5*0.2
 				self.DakMass = math.Round(0.2*((((self.DakCaliber*6.5)*(self.DakCaliber*3)*(self.DakCaliber*3))+(math.pi*(self.DakCaliber^2)*(self.DakCaliber*25))-(math.pi*((self.DakCaliber/2)^2)*(self.DakCaliber*25)))*0.001*7.8125)/1000)
-				
+
 				self.recoilless = true
 
 				self.DakAP = math.Round(self.DakCaliber,2).."mmRRAPAmmo"
@@ -2074,7 +2074,7 @@ function ENT:Think()
 						self.DakFireSound1 = "daktanks/new/cannons/120mm/cannon_120mm_rh120_shot_01.mp3"
 					end
 				end
-				
+
 				self.IsAutoLoader = 1
 				if self.DakTankCore then
 					if self.DakTankCore.Modern == 1 or self.DakTankCore.ColdWar == 1 then
@@ -2290,7 +2290,7 @@ function ENT:DakTEAutoAmmoCheck()
 		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 	if IsValid(self.DakTankCore) then
-		self.AmmoCount = 0 
+		self.AmmoCount = 0
 		self.SortedAmmo = {}
 		local breechoffset
 		breechoffset, _ = self:GetModelBounds()
@@ -2341,7 +2341,7 @@ util.AddNetworkString( "daktankshotfired" )
 function ENT:DakTEAutoFire()
 	if self.Firing and self.DakIsReloading==0 and (self.Loaded==1 or self.DoubleFire == true) and self.DakDead ~= true then
 		if IsValid(self.DakTankCore) then
-			self.AmmoCount = 0 
+			self.AmmoCount = 0
 			if not(self.SortedAmmo == nil) then
 				for i = 1, #self.SortedAmmo do
 					if IsValid(self.SortedAmmo[i][1]) then
@@ -2395,7 +2395,7 @@ function ENT:DakTEAutoFire()
 				end
 
 				local shootDir = shootAngles:Forward()
-				
+
 				local Propellant = math.Clamp(self:GetPropellant(),10,100)*0.01
  				local Shell = {}
  				Shell.Pos = shootOrigin + ( self:GetForward() * 1 )
@@ -2422,7 +2422,7 @@ function ENT:DakTEAutoFire()
 				end
 				if self.CurrentAmmoType == 8 or self.CurrentAmmoType == 10 then
 					Shell.DakCaliber = self.DakMaxHealth/4
-				end			
+				end
 				Shell.DakFireSound = self.DakFireSound1
 				Shell.DakFirePitch = self.DakFirePitch
 				Shell.DakGun = self
@@ -2572,7 +2572,7 @@ function ENT:DakTEAutoFire()
 		end
 	end
 	if IsValid(self.DakTankCore) then
-		self.AmmoCount = 0 
+		self.AmmoCount = 0
 		if not(self.DakTankCore.Ammoboxes == nil) and IsValid(self.TurretController) then
 			for i = 1, #self.DakTankCore.Ammoboxes do
 				if IsValid(self.DakTankCore.Ammoboxes[i]) then
@@ -2803,7 +2803,7 @@ function ENT:DakTEAutoGunAmmoSwap()
 		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 	if IsValid(self.DakTankCore) then
-		self.AmmoCount = 0 
+		self.AmmoCount = 0
 		if not(self.DakTankCore.Ammoboxes == nil) and IsValid(self.TurretController) then
 			for i = 1, #self.DakTankCore.Ammoboxes do
 				if IsValid(self.DakTankCore.Ammoboxes[i]) and IsValid(self.DakTankCore.Ammoboxes[i]:GetParent()) and IsValid(self.DakTankCore.Ammoboxes[i]:GetParent():GetParent()) then
@@ -2959,7 +2959,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
@@ -2967,7 +2967,7 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 		if Ent.EntityMods.DakTek.AutoLoaderIDs then
 			if #Ent.EntityMods.DakTek.AutoLoaderIDs > 0 then
 				for i = 1, #Ent.EntityMods.DakTek.AutoLoaderIDs do
-					self.AutoLoaders[#self.AutoLoaders+1] = CreatedEntities[ Ent.EntityMods.DakTek.AutoLoaderIDs[i] ] 
+					self.AutoLoaders[#self.AutoLoaders+1] = CreatedEntities[ Ent.EntityMods.DakTek.AutoLoaderIDs[i] ]
 				end
 			end
 		end

@@ -6,7 +6,6 @@ ENT.AdminOnly = false
 ENT.Editable = true
 
 function ENT:SetupDataTables()
-
 	self:NetworkVar( "Float", 	0, "Elevation", 	{ KeyName = "elevation", 	Edit = {category = "Basic", title = "Elevation", type = "Float", 		order = 1, min = 0, max = 90 } } )
 	self:NetworkVar( "Float", 	1, "Depression", 	{ KeyName = "depression", 	Edit = {category = "Basic", title = "Depression", type = "Float", 		order = 2, min = 0, max = 90 } } )
 	self:NetworkVar( "Float", 	2, "YawMin", 	{ KeyName = "yawmin", 	Edit = {category = "Basic", title = "Minimum Yaw", type = "Float", 		order = 3, min = 0, max = 360 } } )

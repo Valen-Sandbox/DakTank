@@ -1,8 +1,7 @@
- 
 TOOL.Category = "DakTank"
 TOOL.Name = "#Tool.daktanksoundreplacer.listname"
 TOOL.Command = nil
-TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud 
+TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 TOOL.LastLeftClick = CurTime()
 TOOL.LastRightClick = CurTime()
 TOOL.LastReload = CurTime()
@@ -17,7 +16,7 @@ TOOL.ClientConVar[ "DakTankSound1" ] = ""
 TOOL.ClientConVar[ "DakTankSound2" ] = ""
 TOOL.ClientConVar[ "DakTankSound3" ] = ""
 --TOOL.ClientConVar[ "myparameter" ] = "fubar"
- 
+
 function TOOL:LeftClick( trace )
 	if CurTime()>self.LastLeftClick then
 		local Target = trace.Entity
@@ -79,7 +78,7 @@ function TOOL:RightClick( trace )
 	self.LastRightClick = CurTime()
 	end
 end
- 
+
 function TOOL.BuildCPanel(panel)
 	local wide = panel:GetWide()
 	local SoundPre = vgui.Create("DPanel")

@@ -1,8 +1,7 @@
- 
 TOOL.Category = "DakTank"
 TOOL.Name = "#Tool.daktanklinker.listname"
 TOOL.Command = nil
-TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud 
+TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 
 TOOL.EntList = {}
 TOOL.ColorList = {}
@@ -114,7 +113,7 @@ function TOOL:LeftClick( trace )
 	self.LastLeftClick = CurTime()
 	end
 end
- 
+
 function TOOL:RightClick( trace )
 	if CurTime()>self.LastRightClick then
 		local Target = trace.Entity
@@ -251,7 +250,7 @@ function TOOL:RightClick( trace )
 						end
 					end
 				end
-			else	
+			else
 				if(Target:GetClass() == "dak_tankcore") then
 					if self.EntList[1]:GetClass() == "prop_physics" then
 						if self:GetClientInfo("ArmorType") ~= "ERA" then
@@ -354,7 +353,7 @@ function TOOL:RightClick( trace )
 					if self.EntList[1]:GetClass() == "dak_turretmotor" then
 						for i = 1, #self.EntList do
 							if self.EntList[i]:GetClass() == "dak_turretmotor" then
-								self.EntList[i].TurretController = Target 
+								self.EntList[i].TurretController = Target
 							end
 						end
 						table.Add( Target.DakTurretMotors, self.EntList )
@@ -384,13 +383,13 @@ function TOOL:RightClick( trace )
 							self:GetOwner():ChatPrint("This is not a valid link.")
 						end
 					end
-				end	
+				end
 			end
 		end
 	self.LastRightClick = CurTime()
 	end
 end
- 
+
 function TOOL:Reload()
 	if CurTime()>self.LastReload then
 		if table.Count(self.EntList)>0 then
@@ -414,7 +413,7 @@ function TOOL:Reload()
 end
 
 function TOOL.BuildCPanel( panel )
-	panel:AddControl("Header",{Text = "DakTank Linker", Description	= "This tool just links magazines to autoloaders, and turret motors to turret controls, also links crew to things. Ammo is automatically found on the contraption by the gun."})	
+	panel:AddControl("Header",{Text = "DakTank Linker", Description	= "This tool just links magazines to autoloaders, and turret motors to turret controls, also links crew to things. Ammo is automatically found on the contraption by the gun."})
 	panel:AddControl("CheckBox", {Label = "Chat Feedback", Description ="Check for feedback in chat when actions are completed with this tool.", Command = "daktanklinker_DakChatFeedback"})
 
 	panel:AddControl("CheckBox", {Label = "Composite Override", Description ="When checked this will cause any composite changes to override the current composite table of the tankcore, when unchecked it will add.", Command = "daktanklinker_DakCompOverride"})
@@ -461,4 +460,4 @@ function TOOL.BuildCPanel( panel )
 	ArmorDesc:SetWide( 200 )
 	ArmorDesc:SetWrap( true )
 end
- 
+

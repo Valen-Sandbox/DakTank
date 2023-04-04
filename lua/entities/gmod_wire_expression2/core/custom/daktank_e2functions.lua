@@ -22,7 +22,7 @@ e2function number entity:daktankArmor()
 			this.DakArmor = this:OBBMaxs().x/2
 			this.DakIsTread = 1
 		else
-			if this:GetClass()=="prop_physics" then 
+			if this:GetClass()=="prop_physics" then
 				if this.DakBurnStacks then
 					if not(this.DakArmor == 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA) - this.DakBurnStacks*0.25) then
 						this.DakArmor = 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA) - this.DakBurnStacks*0.25
@@ -32,7 +32,7 @@ e2function number entity:daktankArmor()
 						this.DakArmor = 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA)
 					end
 				end
-				
+
 			end
 		end
 	end

@@ -36,14 +36,14 @@ ENT.muzzle = NULL
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
 	self.DakHealth = self.DakMaxHealth
-	
+
 	self:PhysicsInit(SOLID_VPHYSICS)
 	--self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
 	--local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
-	
+
 	self.Inputs = Wire_CreateInputs(self, { "Fire", "FuzeDelay" })
 	self.Outputs = WireLib.CreateOutputs( self, { "Cooldown" , "CooldownPercent", "MaxCooldown", "Ammo", "AmmoType [STRING]", "MuzzleVel", "ShellMass", "Penetration" } )
  	self.Held = false
@@ -83,7 +83,7 @@ end
 
 function ENT:Think()
 	self.FuzeDelay = self.Inputs.FuzeDelay.Value
-	if self.ScaleSet == true then 
+	if self.ScaleSet == true then
 		if self.DakGunType == nil then self:Remove() end
 		if not(self:GetModel() == self.DakModel) then
 			self:SetModel(self.DakModel)
@@ -170,7 +170,7 @@ function ENT:Think()
 					end
 				end
 			end
-			
+
 			--SmokeLauncher
 			if self.DakGunType == "Smoke Launcher" then
 				self.DakName = self.DakCaliber.."mm Smoke Launcher"
@@ -333,7 +333,7 @@ function ENT:Think()
 					end
 				end
 			end
-			
+
 			--SmokeLauncher
 			if self.DakGunType == "Smoke Launcher" then
 				self.DakName = self.DakCaliber.."mm Smoke Launcher"
@@ -476,7 +476,7 @@ util.AddNetworkString( "daktankshotfired" )
 function ENT:DakTEFire()
 	if ( self.Firing and self.DakDead ~= true) then
 		if IsValid(self.DakTankCore) then
-			self.AmmoCount = 0 
+			self.AmmoCount = 0
 			if not(self.DakTankCore.Ammoboxes == nil) then
 				for i = 1, #self.DakTankCore.Ammoboxes do
 					if IsValid(self.DakTankCore.Ammoboxes[i]) then
@@ -599,7 +599,7 @@ function ENT:DakTEFire()
 				--else
 				--	sound.Play( FiringSound[math.random(1,3)], self:GetPos(), 100, 100*math.Rand(0.95, 1.05), 1 )
 				--end
-							
+
 
 				local effectdata = EffectData()
 				local muzzlepos1
@@ -635,7 +635,7 @@ function ENT:DakTEFire()
 		end
 	end
 	if IsValid(self.DakTankCore) then
-		self.AmmoCount = 0 
+		self.AmmoCount = 0
 		if not(self.DakTankCore.Ammoboxes == nil) then
 			for i = 1, #self.DakTankCore.Ammoboxes do
 				if IsValid(self.DakTankCore.Ammoboxes[i]) then
@@ -713,7 +713,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
@@ -752,13 +752,13 @@ end
 --[[
 function GetAncestor ( Entity )
     if not IsValid(Entity) return end
-    
+
     local Parent = Entity
-    
+
     while Parent:GetParent() do
         Parent = Parent:GetParent()
     end
-    
+
     return Parent
 end
 ]]--

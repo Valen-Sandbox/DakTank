@@ -276,7 +276,7 @@ net.Receive("daktankhud", function()
 	InfoTable1 = util.JSONToTable(net.ReadString())
 	InfoTable2 = util.JSONToTable(net.ReadString())
 	InfoTable3 = util.JSONToTable(net.ReadString())
-	
+
 	Tally = #InfoTable1 + #InfoTable2 + #InfoTable3
 end)
 net.Receive("daktankhud3", function()

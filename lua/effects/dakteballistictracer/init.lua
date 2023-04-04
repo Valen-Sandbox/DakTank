@@ -18,26 +18,26 @@ function EFFECT:Init( data )
 
 	for i = 1,25 do
 		local frontmult = math.Rand(0,self.Dist*0.25)
-		local particle = emitter:Add( "sprites/light_glow02_add.vmt", self.StartPos) 
-		 
+		local particle = emitter:Add( "sprites/light_glow02_add.vmt", self.StartPos)
+
 		if particle == nil then particle = emitter:Add( "sprites/light_glow02_add.vmt", self.StartPos)  end
-		
+
 		if (particle) then
 			--particle:SetVelocity(self.Dir*self.Dist*10)
 			particle:SetVelocity(self.Dir*math.Rand(5*self.Dist*0.95,5*self.Dist*1.05) + Vector(math.Rand(-5,5),math.Rand(-5,5),math.Rand(-5,5)))
 			--particle:SetVelocity(Vector(0,0,0))
-			particle:SetLifeTime(0) 
-			particle:SetDieTime(0.2) 
+			particle:SetLifeTime(0)
+			particle:SetDieTime(0.2)
 			particle:SetStartAlpha(200)
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(5+(self.Caliber*2.5)) 
+			particle:SetStartSize(5+(self.Caliber*2.5))
 			particle:SetEndSize(5+(self.Caliber*2.5))
 			particle:SetAngles( Angle(0,0,0) )
-			particle:SetAngleVelocity( Angle(0,0,0) ) 
+			particle:SetAngleVelocity( Angle(0,0,0) )
 			particle:SetRoll(math.Rand( 0, 360 ))
 			particle:SetColor(255,65,0,math.random(200,255))
-			particle:SetGravity( Vector(0,0,0) ) 
-			particle:SetAirResistance(0)  
+			particle:SetGravity( Vector(0,0,0) )
+			particle:SetAirResistance(0)
 			particle:SetCollide(false)
 			particle:SetBounce(0)
 			--particle.startpos = self.StartPos
@@ -52,25 +52,25 @@ function EFFECT:Init( data )
 	end
 
 	for i = 1, math.Clamp(math.Round((self.Caliber/0.0393701)/10,0),1,20) do
-		local particle = emitter:Add( "dak/smokey", self.StartPos + self.Dir*math.Rand(0,self.Dist) ) 
-		 
+		local particle = emitter:Add( "dak/smokey", self.StartPos + self.Dir*math.Rand(0,self.Dist) )
+
 		if particle == nil then particle = emitter:Add( "dak/smokey", self.StartPos + self.Dir*math.Rand(0,self.Dist) ) end
-		
+
 		if (particle) then
 			particle:SetVelocity(Vector(math.Rand(-5,5),math.Rand(-5,5),math.Rand(-5,5)))
-			particle:SetLifeTime(0) 
-			particle:SetDieTime(1.0) 
+			particle:SetLifeTime(0)
+			particle:SetDieTime(1.0)
 			particle:SetStartAlpha(50)
 			particle:SetEndAlpha(0)
 			particle:SetStartSize(1*math.Clamp(math.Round((self.Caliber/0.0393701)/10,0),1,20))
 			particle:SetEndSize(3*math.Clamp(math.Round((self.Caliber/0.0393701)/10,0),1,20))
 			particle:SetAngles( Angle(0,0,0) )
-			particle:SetAngleVelocity( Angle(0,0,0) ) 
+			particle:SetAngleVelocity( Angle(0,0,0) )
 			particle:SetRoll(math.Rand( 0, 360 ))
 			local CVal = math.random(50,100)
 			particle:SetColor(CVal,CVal,CVal,math.random(50,50))
-			particle:SetGravity( Vector(0,0,math.random(5,25)) ) 
-			particle:SetAirResistance(20) 
+			particle:SetGravity( Vector(0,0,math.random(5,25)) )
+			particle:SetAirResistance(20)
 			particle:SetCollide(true)
 			particle:SetBounce(0)
 		end

@@ -1,4 +1,3 @@
-
 do
 	local tblRow = vgui.RegisterTable({
 		Init = function(self)

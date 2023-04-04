@@ -106,7 +106,7 @@ net.Receive( "daktankcoredie", function()
 	if locPly[tostring( core )] ~= nil and locPly[tostring( core )].Detail ~= nil then
 		if #locPly[tostring( core )].Detail > 0 then
 			for i=1, #locPly[tostring( core )].Detail do
-				if locPly[tostring( core )].Detail[i]:IsValid() then 
+				if locPly[tostring( core )].Detail[i]:IsValid() then
 					locPly[tostring( core )].Detail[i]:SetMaterial("models/props_buildings/plasterwall021a")
 					locPly[tostring( core )].Detail[i]:SetColor(Color(100,100,100,255))
 				end
@@ -117,7 +117,7 @@ net.Receive( "daktankcoredie", function()
 	if core.ERA ~= nil then
 		if #core.ERA > 0 then
 			for i=1, #core.ERA do
-				if core.ERA[i]:IsValid() then 
+				if core.ERA[i]:IsValid() then
 					core.ERA[i]:SetMaterial("models/props_buildings/plasterwall021a")
 					core.ERA[i]:SetColor(Color(100,100,100,255))
 				end
