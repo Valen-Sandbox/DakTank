@@ -1263,7 +1263,7 @@ function ENT:Think()
 							end
 							for i = 1, #self.Crew do
 								for j = i, #self.Crew[i].Heightaimpoints do
-									local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]+up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]-up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
+									local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]+up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]-up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1273,7 +1273,7 @@ function ENT:Think()
 											end
 										end
 									end
-									_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]-up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]+up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
+									_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j]-up*self.BestHeight*2, self.Crew[i].Heightaimpoints[j]+up*25, self.MaxSize*2, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1365,7 +1365,7 @@ function ENT:Think()
 							for i=1, #self.Crew do
 								for j=1, #self.Crew[i].aimpoints do
 									aimpos = self.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].aimpoints[j]+forward*self.BestLength*2, self.Crew[i].aimpoints[j]-forward*25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].aimpoints[j]+forward*self.BestLength*2, self.Crew[i].aimpoints[j]-forward*25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1434,7 +1434,7 @@ function ENT:Think()
 							for i=1, #self.Crew do
 								for j=1, #self.Crew[i].aimpoints do
 									aimpos = self.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].aimpoints[j]-forward*self.BestLength*2, self.Crew[i].aimpoints[j]+forward*25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].aimpoints[j]-forward*self.BestLength*2, self.Crew[i].aimpoints[j]+forward*25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1504,7 +1504,7 @@ function ENT:Think()
 							for i=1, #self.Crew do
 								for j=1, #self.Crew[i].aimpoints do
 									aimpos = self.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].aimpoints[j]-right*self.BestWidth*2, self.Crew[i].aimpoints[j]+right*25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].aimpoints[j]-right*self.BestWidth*2, self.Crew[i].aimpoints[j]+right*25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1530,7 +1530,7 @@ function ENT:Think()
 							for i=1, #self.Crew do
 								for j=1, #self.Crew[i].aimpoints do
 									aimpos = self.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTGetArmorRecurseNoStop(self.Crew[i].aimpoints[j]+right*self.BestWidth*2, self.Crew[i].aimpoints[j]-right*25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].aimpoints[j]+right*self.BestWidth*2, self.Crew[i].aimpoints[j]-right*25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
 										if ent.Controller == self and ent:GetClass() == "dak_crew" then
 											if HitCrit == 1 then
@@ -1863,7 +1863,7 @@ function ENT:Think()
 												end
 												local TraceStart = ForwardHit
 												local TraceEnd = ForwardHit + ((BackwardHit-ForwardHit)*0.5)
-												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTGetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, true, false)
+												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, true, false)
 
 												local addval = 0
 
@@ -1948,7 +1948,7 @@ function ENT:Think()
 												end
 												local TraceStart = ForwardHit
 												local TraceEnd = ForwardHit + ((BackwardHit-ForwardHit)*0.5)
-												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTGetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, false)
+												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, false)
 
 												local addval = 0
 
@@ -2034,7 +2034,7 @@ function ENT:Think()
 												end
 												local TraceStart = ForwardHit
 												local TraceEnd = ForwardHit + ((BackwardHit-ForwardHit)*0.5)
-												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTGetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, true)
+												curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, true)
 
 												local addval = 0
 
@@ -2703,7 +2703,7 @@ function ENT:Think()
 											if CurrentRes.ClipData[1].physics ~= true then
 												local Clips = {}
 												local curEnt = CurrentRes
-												DTArmorSanityCheck(CurrentRes)
+												DTTE.ArmorSanityCheck(CurrentRes)
 												local CurArmor = CurrentRes.DakArmor
 												for j=1, #CurrentRes.ClipData do
 													local num = #self.Clips+1

@@ -1697,7 +1697,7 @@ function TOOL:RightClick( trace )
 						trace.Entity.DakIsTread = 1
 					else
 						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
-							DTArmorSanityCheck(trace.Entity)
+							DTTE.ArmorSanityCheck(trace.Entity)
 						end
 					end
 				end

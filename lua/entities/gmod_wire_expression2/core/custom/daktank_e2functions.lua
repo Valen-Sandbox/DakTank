@@ -474,7 +474,7 @@ e2function number entity:daktankGetGunLoaded()
 end
 
 e2function number daktankHitCrit(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTGetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if Ent:IsWorld() and ArmorVal > 0 then
 		ArmorVal = 1000000
 	end
@@ -483,7 +483,7 @@ e2function number daktankHitCrit(vector Start, vector End, string ShellType, num
 end
 
 e2function number daktankRecurseArmor(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTGetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if not(ArmorVal>-1) then return 1000000 end
 	return ArmorVal
 end

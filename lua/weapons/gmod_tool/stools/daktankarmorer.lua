@@ -65,7 +65,7 @@ function TOOL:LeftClick( trace )
 						trace.Entity.DakIsTread = 1
 					else
 						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
-							DTArmorSanityCheck(trace.Entity)
+							DTTE.ArmorSanityCheck(trace.Entity)
 						end
 					end
 				end
@@ -144,10 +144,10 @@ function TOOL:RightClick( trace )
 		if (SERVER) then
 			if trace.Entity:IsSolid() and IsValid(trace.Entity) then
 				local ply = self:GetOwner()
-				local APArmor, APEnt, APShatters = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()})
-				local HEATArmor, HEATEnt, HEATShatters, HEATRico = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()})
-				local HVAPArmor, HVAPEnt, HVAPShatters = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()})
-				local APFSDSArmor, APFSDSEnt, APFSDSShatters, APFSDSRico = DTGetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()})
+				local APArmor, APEnt, APShatters = DTTE.GetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()})
+				local HEATArmor, HEATEnt, HEATShatters, HEATRico = DTTE.GetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()})
+				local HVAPArmor, HVAPEnt, HVAPShatters = DTTE.GetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()})
+				local APFSDSArmor, APFSDSEnt, APFSDSShatters, APFSDSRico = DTTE.GetArmorRecurse(trace.StartPos, trace.HitPos+trace.Normal*5000, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()})
 				local StandoffMult = DTGetStandoffMult(trace.StartPos, trace.HitPos+trace.Normal*5000, self:GetClientInfo("DakArmor"), {self:GetOwner()}, "HEAT",true)
 				local StandoffMult2 = DTGetStandoffMult(trace.StartPos, trace.HitPos+trace.Normal*5000, self:GetClientInfo("DakArmor"), {self:GetOwner()}, "HEATFS",true)
 				ply:ChatPrint("<><><>-------------------------------------------------------------------<><><>")
@@ -280,7 +280,7 @@ function TOOL:Think()
 						trace.Entity.DakIsTread = 1
 					else
 						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
-							DTArmorSanityCheck(trace.Entity)
+							DTTE.ArmorSanityCheck(trace.Entity)
 						end
 					end
 				end
@@ -302,10 +302,10 @@ function TOOL:Think()
 					self.Weapon:SetNWFloat("HVAP",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 					self.Weapon:SetNWFloat("APFSDS",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 				else
-					local APArmor, _, _, _ = DTGetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
-					local HEATArmor, _, _, _ = DTGetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
-					local HVAPArmor, _, _, _ = DTGetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()},nil,true)
-					local APFSDSArmor, _, _, _ = DTGetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()},nil,true)
+					local APArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
+					local HEATArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
+					local HVAPArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()},nil,true)
+					local APFSDSArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()},nil,true)
 					self.Weapon:SetNWFloat("Armor",math.Round(trace.Entity.DakArmor,2))
 					self.Weapon:SetNWFloat("AP",math.Round(APArmor,2))
 					self.Weapon:SetNWFloat("HEAT",math.Round(HEATArmor,2))
