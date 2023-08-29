@@ -325,7 +325,7 @@ function ENT:Think()
 										if self.DakName == "Flamethrower" then
 											shell.DakIsFlame = 1
 										end
-										DakTankShellList[#DakTankShellList+1] = Shell
+										DTTE.ShellList[#DTTE.ShellList+1] = Shell
 										local effectdata = EffectData()
 										effectdata:SetOrigin( self:GetPos() )
 										effectdata:SetEntity(self)

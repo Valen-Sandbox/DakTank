@@ -2466,7 +2466,7 @@ function ENT:DakTEAutoFire()
 					end
 				end
 
-				DakTankShellList[#DakTankShellList+1] = Shell
+				DTTE.ShellList[#DTTE.ShellList+1] = Shell
 
 				local FiringSound = {self.DakFireSound1,self.DakFireSound2,self.DakFireSound3}
 
