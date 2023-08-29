@@ -46,39 +46,39 @@ function ENT:Initialize()
 
 	self.Inputs = Wire_CreateInputs(self, { "Fire", "FuzeDelay" })
 	self.Outputs = WireLib.CreateOutputs( self, { "Cooldown" , "CooldownPercent", "MaxCooldown", "Ammo", "AmmoType [STRING]", "MuzzleVel", "ShellMass", "Penetration" } )
- 	self.Held = false
- 	self.Soundtime = CurTime()
- 	self.SlowThinkTime = 0
- 	self.MidThinkTime = CurTime()
- 	self.LastFireTime = CurTime()
- 	self.CurrentAmmoType = 1
- 	self.DakBurnStacks = 0
- 	self.BasicVelocity = 29527.6
- 	self.truefire = false
+	self.Held = false
+	self.Soundtime = CurTime()
+	self.SlowThinkTime = 0
+	self.MidThinkTime = CurTime()
+	self.LastFireTime = CurTime()
+	self.CurrentAmmoType = 1
+	self.DakBurnStacks = 0
+	self.BasicVelocity = 29527.6
+	self.truefire = false
 
 	function self:SetupDataTables()
- 		self:NetworkVar("Bool",0,"Firing")
- 		self:NetworkVar("Float",0,"Timer")
- 		self:NetworkVar("Float",1,"Cooldown")
- 		self:NetworkVar("String",0,"Model")
- 	end
- 	self:SetNWFloat("Caliber",self.DakCaliber)
- 	self.FireRateMod = math.Clamp(self:GetRateOfFire(),0,1)
+		self:NetworkVar("Bool",0,"Firing")
+		self:NetworkVar("Float",0,"Timer")
+		self:NetworkVar("Float",1,"Cooldown")
+		self:NetworkVar("String",0,"Model")
+	end
+	self:SetNWFloat("Caliber",self.DakCaliber)
+	self.FireRateMod = math.Clamp(self:GetRateOfFire(),0,1)
 
- 	self.muzzle = ents.Create("prop_physics")
- 	self.muzzle:SetAngles(self:GetForward():Angle()+Angle(0,-90,0))
- 	self.muzzle:SetPos(self:GetPos())
- 	self.muzzle:SetMoveType(MOVETYPE_NONE)
- 	self.muzzle:PhysicsInit(SOLID_NONE)
- 	self.muzzle:SetParent(self)
- 	self.muzzle:SetModel( "models/daktanks/smokelauncher40mm.mdl" )
- 	self.muzzle:DrawShadow(false)
- 	self.muzzle:SetColor( Color(255, 255, 255, 0) )
- 	self.muzzle:SetRenderMode( RENDERMODE_TRANSCOLOR )
- 	self.muzzle:Spawn()
- 	self.muzzle:Activate()
- 	self.muzzle:SetMoveType(MOVETYPE_NONE)
- 	self.muzzle:PhysicsInit(SOLID_NONE)
+	self.muzzle = ents.Create("prop_physics")
+	self.muzzle:SetAngles(self:GetForward():Angle()+Angle(0,-90,0))
+	self.muzzle:SetPos(self:GetPos())
+	self.muzzle:SetMoveType(MOVETYPE_NONE)
+	self.muzzle:PhysicsInit(SOLID_NONE)
+	self.muzzle:SetParent(self)
+	self.muzzle:SetModel( "models/daktanks/smokelauncher40mm.mdl" )
+	self.muzzle:DrawShadow(false)
+	self.muzzle:SetColor( Color(255, 255, 255, 0) )
+	self.muzzle:SetRenderMode( RENDERMODE_TRANSCOLOR )
+	self.muzzle:Spawn()
+	self.muzzle:Activate()
+	self.muzzle:SetMoveType(MOVETYPE_NONE)
+	self.muzzle:PhysicsInit(SOLID_NONE)
 end
 
 function ENT:Think()
@@ -747,18 +747,3 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 	end
 	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
 end
-
-
---[[
-function GetAncestor ( Entity )
-    if not IsValid(Entity) return end
-
-    local Parent = Entity
-
-    while Parent:GetParent() do
-        Parent = Parent:GetParent()
-    end
-
-    return Parent
-end
-]]--

@@ -36,7 +36,6 @@ local function InMapCheck(vec)
 end
 
 DTTE.ShellList = {} -- Create Entity list for storing things people spawn
-local ShellList = DTTE.ShellList
 
 -- Setup global daktek function for setting up affected entities.
 function DTTE.SetupNewEnt(ent)
@@ -111,6 +110,7 @@ end
 --end )
 
 hook.Add( "Think", "DakTankShellTableFunction", function()
+	local ShellList = DTTE.ShellList
 	local RemoveList = {}
 	for i = 1, #ShellList do
 		local DakTankBulletThinkDelay = 0.1

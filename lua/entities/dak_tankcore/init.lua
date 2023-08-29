@@ -47,42 +47,21 @@ concommand.Add("daktank_unmake", function()
 		end
 	end
 end)
---[[
-function Average(Table)
-	local Ave = 0
-	for i=1, #Table do
-		Ave = Ave + Table[i]
-	end
-	return Ave/#Table
-end
-]]
+
 local function AverageNoOutliers(Table)
 	if #Table == 0 then return 0 end
 	local Ave = 0
 	local count = 0
-	for i=1, #Table do
-		if i > #Table*0.25 and i < #Table*0.75 then
+	for i = 1, #Table do
+		if i > #Table * 0.25 and i < #Table * 0.75 then
 			Ave = Ave + Table[i]
 			count = count + 1
 		end
 	end
 	if count == 0 then return 0 end
-	return Ave/count
+	return Ave / count
 end
---[[
-function SplitTableByNegPos(Table)
-	local neg = {}
-	local pos = {}
-	for i=1, #Table do
-		if Table[i] > 0 then
-			pos[#pos+1] = Table[i]
-		else
-			neg[#neg+1] = Table[i]
-		end
-	end
-	return pos, neg
-end
-]]
+
 local function InRange(x, min, max) -- how is this not standard???
 	return (x > min and x < max) or (x < min and x > max)
 end
