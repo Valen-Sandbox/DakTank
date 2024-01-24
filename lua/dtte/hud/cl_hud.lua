@@ -6,9 +6,11 @@ local InfoTable3 = {}
 local FrontArmor = {}
 local SideArmor = {}
 local Tally      = 0
-local CanDraw    = CreateClientConVar("EnableDakTankInfoScanner", "1", true, true):GetBool()
-local DisplayMode   = CreateClientConVar("DakTankInfoScannerMode", "4", true, true):GetBool()
-local DelayTime   = CreateClientConVar("DakTankInfoScannerCycleTime", "3", true, true):GetFloat()
+local CanDraw    = CreateClientConVar("EnableDakTankInfoScanner", "1", true, true)
+local DisplayMode   = CreateClientConVar("DakTankInfoScannerMode", "4", true, true)
+local DelayTime   = CreateClientConVar("DakTankInfoScannerCycleTime", "3", true, true)
+local Color1 = Color(0, 255, 0, 255)
+local Color2 = Color(255, 0, 0, 255)
 local LastChange = 0
 local mode = 4
 
@@ -56,7 +58,7 @@ hook.Add("PopulateToolMenu", "DakTankInfoScannerPopulateToolMenu", function()
 	spawnmenu.AddToolMenuOption("Utilities", "DakTank", "DakTankInfoScannerMenu", "#DakTank Info Scanner", "", "", function(panel)
 		panel:ClearControls()
 		panel:CheckBox("Enable DakTank Info Scanner", "EnableDakTankInfoScanner")
-		local combobox, label = panel:ComboBox("Scanner Mode","DakTankInfoScannerMode")
+		local combobox, _ = panel:ComboBox("Scanner Mode","DakTankInfoScannerMode")
 		combobox:AddChoice( "Hybrid", 1 )
 		combobox:AddChoice( "Pure Armor", 2 )
 		combobox:AddChoice( "Component Highlight", 3 )
@@ -84,22 +86,22 @@ local function DrawReadout()
 		local spacing = 0
 
 		for i = 1, #InfoTable1 do
-			draw.DrawText(InfoTable1[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText(InfoTable1[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color1, TEXT_ALIGN_LEFT)
 			spacing = spacing + 25
 		end
 
 		for i = 1, #InfoTable2 do
-			draw.DrawText(InfoTable2[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText(InfoTable2[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color1, TEXT_ALIGN_LEFT)
 			spacing = spacing + 25
 		end
 
 		for i = 1, #InfoTable3 do
-			draw.DrawText(InfoTable3[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color(255, 0, 0, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText(InfoTable3[i], "DakTankHudFont1", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color2, TEXT_ALIGN_LEFT)
 			spacing = spacing + 25
 		end
 
 		spacing = spacing + 25
-		draw.DrawText("This panel can be disabled at any time via the utilities menu.", "DakTankHudFont2", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT)
+		draw.DrawText("This panel can be disabled at any time via the utilities menu.", "DakTankHudFont2", x * 0.05 + 10, y * 0.2 + 5 + spacing, Color1, TEXT_ALIGN_LEFT)
 		local yadd = 60 + 25 * Tally - 200
 		surface.SetDrawColor(0, 0, 0, 200)
 		surface.DrawRect(x * 0.05 + 475, y * 0.2 + yadd, 200, 200)
@@ -110,9 +112,11 @@ local function DrawReadout()
 		surface.SetDrawColor(0, 255, 0, 255)
 		surface.DrawOutlinedRect(x * 0.05 + 475, y * 0.2 + yadd - 250, 200, 200)
 
-		DelayTime = GetConVar( "DakTankInfoScannerCycleTime" ):GetFloat()
-		if GetConVar( "DakTankInfoScannerMode" ):GetInt() == 4 then
-			if LastChange + DelayTime < CurTime() then
+		local CurDelayTime = DelayTime:GetFloat()
+		local CurDisplayMode = DisplayMode:GetInt()
+
+		if CurDisplayMode == 4 then
+			if LastChange + CurDelayTime < CurTime() then
 				mode = mode + 1
 				if mode > 3 then
 					mode = 1
@@ -120,7 +124,7 @@ local function DrawReadout()
 				LastChange = CurTime()
 			end
 		else
-			mode = GetConVar( "DakTankInfoScannerMode" ):GetInt()
+			mode = CurDisplayMode
 		end
 
 		local pixels = 40
@@ -190,10 +194,10 @@ local function DrawReadout()
 				end
 			end
 			surface.SetDrawColor(255, 0, 0, 200)
-			for i=1, (10000-#FrontArmor)*0.1 do
+			for i = 1, (10000 - #FrontArmor) * 0.1 do
 				surface.DrawRect(x * 0.05 + 475 + 200 - (1 * pixelsize * math.random(1,pixels)), y * 0.2 + yadd - 250 + (1 * pixelsize * math.random(1,pixels)), pixelsize, pixelsize)
 			end
-			draw.DrawText("Scanning...", "DakTankHudFont1", x * 0.05 + 475, y * 0.2 + yadd - 250, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText("Scanning...", "DakTankHudFont1", x * 0.05 + 475, y * 0.2 + yadd - 250, Color1, TEXT_ALIGN_LEFT)
 		end
 		local curpixel = 0
 		if #SideArmor > pixels * pixels then
@@ -260,10 +264,10 @@ local function DrawReadout()
 				end
 			end
 			surface.SetDrawColor(255, 0, 0, 200)
-			for i=1, (10000-#SideArmor)*0.1 do
+			for i = 1, (10000 - #SideArmor) * 0.1 do
 				surface.DrawRect(x * 0.05 + 475 + 200 - (1 * pixelsize * math.random(1,pixels)), y * 0.2 + yadd + (1 * pixelsize * math.random(1,pixels)), pixelsize, pixelsize)
 			end
-			draw.DrawText("Scanning...", "DakTankHudFont1", x * 0.05 + 475, y * 0.2 + yadd, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText("Scanning...", "DakTankHudFont1", x * 0.05 + 475, y * 0.2 + yadd, Color1, TEXT_ALIGN_LEFT)
 		end
 	end
 end
@@ -281,10 +285,10 @@ net.Receive("daktankhud", function()
 end)
 net.Receive("daktankhud3", function()
 	FrontArmor = util.JSONToTable(net.ReadString())
-	if FrontArmor==nil then
+	if FrontArmor == nil then
 		StopDrawing()
 	else
-		if CanDraw and #FrontArmor == 0 then
+		if CanDraw:GetBool() and #FrontArmor == 0 then
 			StopDrawing()
 		else
 			StartDrawing()
@@ -297,9 +301,8 @@ end)
 
 cvars.AddChangeCallback("EnableDakTankInfoScanner", function(_, _, New)
 	local Value = tobool(New)
-	CanDraw = Value
 
-	if not CanDraw then
+	if not Value then
 		StopDrawing()
 	end
 end)
