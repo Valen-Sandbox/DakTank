@@ -231,6 +231,8 @@ end
 local function DTDealDamage(Ent, Damage, Dealer, entbased)
 	if Ent:GetClass() == "daktank_cap" then return end
 	Ent.DakHealth = Ent.DakHealth - Damage
+	if isfunction(Ent.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end 
+
 	if entbased == true then
 		if Dealer.LastDamagedBy == nil or Dealer.LastDamagedBy == NULL then
 			Ent.LastDamagedBy = game.GetWorld()
@@ -641,7 +643,7 @@ local function DTShellContinue(Start, End, Shell, Normal, HitNonHitable)
 				Shell.Filter[#Shell.Filter + 1] = HitEnt
 				DTShellContinue(Start,End,Shell,Normal,true)
 			end
-			if (HitEnt:IsValid() and HitEnt:GetPhysicsObject():IsValid() and not(HitEnt:IsPlayer()) and not(HitEnt:IsNPC()) and not(HitEnt.Base == "base_nextbot") and (HitEnt.DakHealth ~= nil and HitEnt.DakHealth > 0)) or (HitEnt.DakName == "Damaged Component")  then
+			if (HitEnt:IsValid() and HitEnt:GetPhysicsObject():IsValid() and not(HitEnt:IsPlayer()) and not(HitEnt:IsNPC()) and not(HitEnt.Base == "base_nextbot") and HitEnt.DakHealth ~= nil ) or (HitEnt.DakName == "Damaged Component")  then --and HitEnt.DakHealth > 0
 				if (DTCheckClip(HitEnt,ContShellTrace.HitPos)) or (HitEnt:GetPhysicsObject():GetMass() <= 1 and not(HitEnt:IsVehicle()) and HitEnt.IsDakTekFutureTech ~= 1) or HitEnt.DakName == "Damaged Component" then
 				--if (HitEnt:GetPhysicsObject():GetMass() <= 1 and not(HitEnt:IsVehicle()) and not(HitEnt.IsDakTekFutureTech == 1)) or HitEnt.DakName == "Damaged Component" or HitEnt.DakDead == true then
 					if HitEnt.DakArmor == nil or HitEnt.DakBurnStacks == nil then

@@ -10,17 +10,14 @@ ENT.DakMaxHealth = 5
 ENT.DakHealth = 5
 ENT.DakArmor = 2.5
 ENT.DakName = "Crew"
---ENT.DakModel = "models/daktanks/crew.mdl"
 ENT.DakMass = 75
 ENT.DakPooled = 0
 
 function ENT:Initialize()
-	--self:SetModel(self.DakModel)
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self.DakHealth = self.DakMaxHealth
-	--local phys = self:GetPhysicsObject()
 
 	self.Soundtime = CurTime()
  	self.SparkTime = CurTime()
@@ -74,17 +71,13 @@ function ENT:Think()
 	self.DakMaxHealth = 5
 	self.DakArmor = 2.5
 	self.DakMass = 75
-	--self.DakModel = "models/daktanks/crew.mdl"
 	if self.DakHealth > self.DakMaxHealth then
 		self.DakHealth = self.DakMaxHealth
 	end
-	if self.DakModel then
-		if not(self:GetModel() == self.DakModel) then
-			self:SetModel(self.DakModel)
-			--self:PhysicsInit(SOLID_VPHYSICS)
-			self:SetMoveType(MOVETYPE_VPHYSICS)
-			self:SetSolid(SOLID_VPHYSICS)
-		end
+	if self.DakModel and not(self:GetModel() == self.DakModel) then
+		self:SetModel(self.DakModel)
+		self:SetMoveType(MOVETYPE_VPHYSICS)
+		self:SetSolid(SOLID_VPHYSICS)
 	end
 	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
 
@@ -92,7 +85,7 @@ function ENT:Think()
  	if self.VO == 0 then
 		self.VO = math.random(1,6)
 	end
-	if self.DakDead == true then
+	if self.DakDead then
 		self.DakHealth = 0
 		if self.Screamed == nil then self.Screamed = false end
 		if self.Screamed == false then
@@ -209,93 +202,70 @@ function ENT:Think()
 			self.RequestedReplacement = true
 		end
 	else
-		if self.DakHealth ~= self.LastHealth then
-			if (self.LastHealth - self.DakHealth) > 0 then
-				if (self.LastHealth - self.DakHealth) < 2 then
-					--light damage
-					if self.VO == 1 then
-						sound.Play( "daktanks/crew/aus/"..self.VO1Pain[math.random(1,#self.VO1Pain)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 2 then
-						sound.Play( "daktanks/crew/fre/"..self.VO2Pain[math.random(1,#self.VO2Pain)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 3 then
-						sound.Play( "daktanks/crew/ger/"..self.VO3Pain[math.random(1,#self.VO3Pain)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 4 then
-						sound.Play( "daktanks/crew/rus/"..self.VO4Pain[math.random(1,#self.VO4Pain)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 5 then
-						sound.Play( "daktanks/crew/sco/"..self.VO5Pain[math.random(1,#self.VO5Pain)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 6 then
-						sound.Play( "daktanks/crew/us/"..self.VO6Pain[math.random(1,#self.VO6Pain)], self:GetPos(), 75, 100, 1 )
-					end
-				else
-					--heavy damage
-					if self.VO == 1 then
-						sound.Play( "daktanks/crew/aus/"..self.VO1Suffer[math.random(1,#self.VO1Suffer)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 2 then
-						sound.Play( "daktanks/crew/fre/"..self.VO2Suffer[math.random(1,#self.VO2Suffer)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 3 then
-						sound.Play( "daktanks/crew/ger/"..self.VO3Suffer[math.random(1,#self.VO3Suffer)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 4 then
-						sound.Play( "daktanks/crew/rus/"..self.VO4Suffer[math.random(1,#self.VO4Suffer)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 5 then
-						sound.Play( "daktanks/crew/sco/"..self.VO5Suffer[math.random(1,#self.VO5Suffer)], self:GetPos(), 75, 100, 1 )
-					elseif self.VO == 6 then
-						sound.Play( "daktanks/crew/us/"..self.VO6Suffer[math.random(1,#self.VO6Suffer)], self:GetPos(), 75, 100, 1 )
-					end
+		if self.DakHealth ~= self.LastHealth and (self.LastHealth - self.DakHealth) > 0 then
+			if (self.LastHealth - self.DakHealth) < 2 then
+				--light damage
+				if self.VO == 1 then
+					sound.Play( "daktanks/crew/aus/"..self.VO1Pain[math.random(1,#self.VO1Pain)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 2 then
+					sound.Play( "daktanks/crew/fre/"..self.VO2Pain[math.random(1,#self.VO2Pain)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 3 then
+					sound.Play( "daktanks/crew/ger/"..self.VO3Pain[math.random(1,#self.VO3Pain)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 4 then
+					sound.Play( "daktanks/crew/rus/"..self.VO4Pain[math.random(1,#self.VO4Pain)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 5 then
+					sound.Play( "daktanks/crew/sco/"..self.VO5Pain[math.random(1,#self.VO5Pain)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 6 then
+					sound.Play( "daktanks/crew/us/"..self.VO6Pain[math.random(1,#self.VO6Pain)], self:GetPos(), 75, 100, 1 )
+				end
+			else
+				--heavy damage
+				if self.VO == 1 then
+					sound.Play( "daktanks/crew/aus/"..self.VO1Suffer[math.random(1,#self.VO1Suffer)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 2 then
+					sound.Play( "daktanks/crew/fre/"..self.VO2Suffer[math.random(1,#self.VO2Suffer)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 3 then
+					sound.Play( "daktanks/crew/ger/"..self.VO3Suffer[math.random(1,#self.VO3Suffer)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 4 then
+					sound.Play( "daktanks/crew/rus/"..self.VO4Suffer[math.random(1,#self.VO4Suffer)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 5 then
+					sound.Play( "daktanks/crew/sco/"..self.VO5Suffer[math.random(1,#self.VO5Suffer)], self:GetPos(), 75, 100, 1 )
+				elseif self.VO == 6 then
+					sound.Play( "daktanks/crew/us/"..self.VO6Suffer[math.random(1,#self.VO6Suffer)], self:GetPos(), 75, 100, 1 )
 				end
 			end
 		end
 		self.LastHealth = self.DakHealth
-	end
 
-
-    if IsValid(self.DakEntity) then
-	    if IsValid(self) then
-		    self.DakEntity.DakCrew = self
-		    if self.DakEntity:GetClass() == "dak_turretcontrol" then self.Job = 1 end
-		    if self.DakEntity:GetClass() == "dak_tegearbox" or self.DakEntity:GetClass() == "dak_tegearboxnew" then self.Job = 2 end
-		    if self.DakEntity:GetClass() == "dak_tegun" or self.DakEntity:GetClass() == "dak_teautogun" or self.DakEntity:GetClass() == "dak_temachinegun" then self.Job = 3 end
-		end
-    end
-
-    if self.DakDead ~= true then
-    	if self.DakHealth <= 0 then
-			if self.DakOwner:IsPlayer() then
-				if self.Job == 1 then
-					self.DakOwner:ChatPrint("Gunner Killed!")
-				elseif self.Job == 2 then
-					self.DakOwner:ChatPrint("Driver Killed!")
-				elseif self.Job == 3 then
-					self.DakOwner:ChatPrint("Loader Killed!")
-				else
-					self.DakOwner:ChatPrint("Passenger Killed!")
-				end
-			end
-			self:SetMaterial("models/flesh")
-			self.DakDead = true
-		end
-    end
-
-    if self:IsOnFire() and self.DakDead ~= true then
-		self.DakHealth = self.DakHealth - 0.5
-		if self.DakHealth <= 0 then
-			if self.DakOwner:IsPlayer() then
-				if self.Job == 1 then
-					self.DakOwner:ChatPrint("Gunner Killed!")
-				elseif self.Job == 2 then
-					self.DakOwner:ChatPrint("Driver Killed!")
-				elseif self.Job == 3 then
-					self.DakOwner:ChatPrint("Loader Killed!")
-				else
-					self.DakOwner:ChatPrint("Passenger Killed!")
-				end
-			end
-			self:SetMaterial("models/flesh")
-			self.DakDead = true
+		if self:IsOnFire() then
+			self.DakHealth = self.DakHealth - 0.5
+			self:DTOnTakeDamage(0.5)
 		end
 	end
+
+    if IsValid(self.DakEntity) and IsValid(self) then --Wouldn't self.DakEntity being valid imply that self is too?
+		self.DakEntity.DakCrew = self
+		if self.DakEntity:GetClass() == "dak_turretcontrol" then self.Job = 1 end
+		if self.DakEntity:GetClass() == "dak_tegearbox" or self.DakEntity:GetClass() == "dak_tegearboxnew" then self.Job = 2 end
+		if self.DakEntity:GetClass() == "dak_tegun" or self.DakEntity:GetClass() == "dak_teautogun" or self.DakEntity:GetClass() == "dak_temachinegun" then self.Job = 3 end
+    end
 
     self:NextThink(CurTime()+0.25)
     return true
+end
+
+function ENT:DTOnTakeDamage(Damage)
+	if self.DakDead then return end 
+	if self.DakHealth <= 0 then
+		if self.DakOwner:IsPlayer() then
+			local jobs = {"Gunner", "Driver", "Loader", "Passenger"}
+			self.DakOwner:ChatPrint(jobs[self.Job or 4].." Killed!")
+		end
+		self:SetMaterial("models/flesh")
+		self.DakDead = true
+		return
+	end
+
 end
 
 function ENT:PreEntityCopy()
@@ -314,7 +284,7 @@ function ENT:PreEntityCopy()
 
 	duplicator.StoreEntityModifier( self, "DakTek", info )
 
-	//Wire dupe info
+	--Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
 
 end
@@ -339,11 +309,6 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 		else
 			self:SetColor(Ent.EntityMods.DakTek.DakColor)
 		end
-		--self:PhysicsDestroy()
-		--self:SetModel(self.DakModel)
-		--self:PhysicsInit(SOLID_VPHYSICS)
-		--self:SetMoveType(MOVETYPE_VPHYSICS)
-		--self:SetSolid(SOLID_VPHYSICS)
 
 		self:Activate()
 
@@ -354,23 +319,6 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 end
 
 function ENT:OnRemove()
-	--[[
-	if self.DakHealth <= 0 then
-		if self.VO == 1 then
-			sound.Play( "daktanks/crew/aus/"..self.VO1Death[math.random(1,#self.VO1Death)], self:GetPos(), 75, 100, 1 )
-		elseif self.VO == 2 then
-			sound.Play( "daktanks/crew/fre/"..self.VO2Death[math.random(1,#self.VO2Death)], self:GetPos(), 75, 100, 1 )
-		elseif self.VO == 3 then
-			sound.Play( "daktanks/crew/ger/"..self.VO3Death[math.random(1,#self.VO3Death)], self:GetPos(), 75, 100, 1 )
-		elseif self.VO == 4 then
-			sound.Play( "daktanks/crew/rus/"..self.VO4Death[math.random(1,#self.VO4Death)], self:GetPos(), 75, 100, 1 )
-		elseif self.VO == 5 then
-			sound.Play( "daktanks/crew/sco/"..self.VO5Death[math.random(1,#self.VO5Death)], self:GetPos(), 75, 100, 1 )
-		elseif self.VO == 6 then
-			sound.Play( "daktanks/crew/us/"..self.VO6Death[math.random(1,#self.VO6Death)], self:GetPos(), 75, 100, 1 )
-		end
-	end
-	]]--
 	if IsValid(self.DakEntity) then
 	    self.DakEntity.DakCrew = NULL
     end

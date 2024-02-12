@@ -18,8 +18,6 @@ function ENT:Initialize()
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
-	--local phys = self:GetPhysicsObject()
-
 	self.DakArmor = 10
 	self.DakMass = 1000
 	self.Soundtime = CurTime()
@@ -35,100 +33,49 @@ end
 function ENT:Think()
 	DTTE.CheckSpherical(self)
 	if CurTime() >= self.SparkTime + 0.33 then
-		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
+		local scale
+
+		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then 
+			scale = 1
+		elseif self.DakHealth<=(self.DakMaxHealth*0.60) and self.DakHealth>(self.DakMaxHealth*0.40) then
+			scale = 2
+		elseif self.DakHealth<=(self.DakMaxHealth*0.40) and self.DakHealth>(self.DakMaxHealth*0.20) then
+			scale = 3
+		elseif self.DakHealth<=(self.DakMaxHealth*0.20) then
+			scale = 4 
+		end
+
+		if scale then 
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
 			effectdata:SetAttachment(1)
 			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(1)
+			effectdata:SetScale(scale)
 			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+3 then
-				self:EmitSound( "daktanks/shock.mp3", 60, math.Rand(60,150), 0.4, 6)
-				self.Soundtime=CurTime()
-			end
 		end
-		if self.DakHealth<=(self.DakMaxHealth*0.60) and self.DakHealth>(self.DakMaxHealth*0.40) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(2)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+2 then
-				self:EmitSound( "daktanks/shock.mp3", 60, math.Rand(60,150), 0.5, 6)
-				self.Soundtime=CurTime()
-			end
-		end
-		if self.DakHealth<=(self.DakMaxHealth*0.40) and self.DakHealth>(self.DakMaxHealth*0.20) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(3)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+1 then
-				self:EmitSound( "daktanks/shock.mp3", 60, math.Rand(60,150), 0.6, 6)
-				self.Soundtime=CurTime()
-			end
-		end
-		if self.DakHealth<=(self.DakMaxHealth*0.20) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(4)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+0.5 then
-				self:EmitSound( "daktanks/shock.mp3", 60, math.Rand(60,150), 0.75, 6)
-				self.Soundtime=CurTime()
-			end
-		end
+
 		self.SparkTime=CurTime()
 	end
-	if self.DakName == "Small Autoloader Clip" then
-		self.DakName = "Small Autoloader Magazine"
-	end
-	if self.DakName == "Medium Autoloader Clip" then
-		self.DakName = "Medium Autoloader Magazine"
-	end
-	if self.DakName == "Large Autoloader Clip" then
-		self.DakName = "Large Autoloader Magazine"
-	end
-	if self.DakName == "Small Autoloader Magazine" then
-		self.DakMass = 1000
-	end
-	if self.DakName == "Medium Autoloader Magazine" then
-		self.DakMass = 2000
-	end
-	if self.DakName == "Large Autoloader Magazine" then
-		self.DakMass = 3000
-	end
-	if IsValid(self.DakGun) then
-		if self.DakGun.IsAutoLoader == 1 then
-			if self.DakGun.TurretController then
-				if self:GetParent() then
-					if self:GetParent():GetParent() == self.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == self.DakGun:GetParent():GetParent() or (self.DakGun.TurretController:GetYawMin()<=45 and self.DakGun.TurretController:GetYawMax()<=45) then
-						self.DakGun.DakMagazine = math.floor(0.27*self:GetPhysicsObject():GetVolume()/(((self.DakGun.DakCaliber*0.0393701)^2)*(self.DakGun.DakCaliber*0.0393701*13*self.DakGun.ShellLengthMult)))
-						if self.DakGun.DakMagazine > 0 then
-							self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
-							self.DakGun.HasMag = 1
-							self.DakGun.Loaded = 1
-						else
-							self.DakGun.HasMag = 0
-							self.DakGun.Loaded = 0
-						end
-					else
-						self.DakGun.HasMag = 0
-						self.DakGun.Loaded = 0
-					end
-				end
-			else
+
+	local magNames = {
+		["Small Autoloader Clip"] = "Small Autoloader Magazine",
+		["Medium Autoloader Clip"] = "Medium Autoloader Magazine",
+		["Large Autoloader Clip"] = "Large Autoloader Magazine"
+	}
+	self.DakName = magNames[self.DakName] or self.DakName
+
+	local magStats = {
+		["Small Autoloader Magazine"] = 1000,
+		["Medium Autoloader Magazine"] = 2000,
+		["Large Autoloader Magazine"] = 3000
+	}
+	self.DakMass = magStats[self.DakName]
+
+	if IsValid(self.DakGun) and self.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
+		if self.DakGun.TurretController and if self:GetParent() then
+			if self:GetParent():GetParent() == self.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == self.DakGun:GetParent():GetParent() or (self.DakGun.TurretController:GetYawMin()<=45 and self.DakGun.TurretController:GetYawMax()<=45) then
 				self.DakGun.DakMagazine = math.floor(0.27*self:GetPhysicsObject():GetVolume()/(((self.DakGun.DakCaliber*0.0393701)^2)*(self.DakGun.DakCaliber*0.0393701*13*self.DakGun.ShellLengthMult)))
-				self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
 				if self.DakGun.DakMagazine > 0 then
 					self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
 					self.DakGun.HasMag = 1
@@ -137,6 +84,20 @@ function ENT:Think()
 					self.DakGun.HasMag = 0
 					self.DakGun.Loaded = 0
 				end
+			else
+				self.DakGun.HasMag = 0
+				self.DakGun.Loaded = 0
+			end
+		else
+			self.DakGun.DakMagazine = math.floor(0.27*self:GetPhysicsObject():GetVolume()/(((self.DakGun.DakCaliber*0.0393701)^2)*(self.DakGun.DakCaliber*0.0393701*13*self.DakGun.ShellLengthMult)))
+			self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
+			if self.DakGun.DakMagazine > 0 then
+				self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
+				self.DakGun.HasMag = 1
+				self.DakGun.Loaded = 1
+			else
+				self.DakGun.HasMag = 0
+				self.DakGun.Loaded = 0
 			end
 		end
 	end
@@ -148,44 +109,50 @@ function ENT:Think()
 	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
 
 	if self.DakDead ~= true then
-		if self.DakHealth<self.DakMaxHealth/2 and self.DakIsExplosive then
-
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(500)
-			effectdata:SetNormal( Vector(0,0,-1) )
-			util.Effect("daktescalingexplosion", effectdata, true, true)
-
-			self:DTExplosion(self:GetPos(),20000,500,200,100,self.DakOwner)
-
-			self:EmitSound( "daktanks/ammoexplode.mp3", 100, 75, 1)
-			if self.DakOwner:IsPlayer() and self.DakOwner~=NULL then self.DakOwner:ChatPrint(self.DakName.." Exploded!") end
-			self:SetMaterial("models/props_buildings/plasterwall021a")
-			self:SetColor(Color(100,100,100,255))
-			self.DakDead = true
-			if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
+		if self:IsOnFire() then
+			self.DakHealth = self.DakHealth - 5
+			self:DTOnTakeDamage(5)
 		end
 	else
 		if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
 		self.DakHealth = 0
 	end
 
-	if self:IsOnFire() and self.DakDead ~= true then
-		self.DakHealth = self.DakHealth - 5
-		if self.DakHealth <= 0 then
-			if self.DakOwner:IsPlayer() and self.DakOwner~=NULL then self.DakOwner:ChatPrint(self.DakName.." Destroyed!") end
-			self:SetMaterial("models/props_buildings/plasterwall021a")
-			self:SetColor(Color(100,100,100,255))
-			self.DakDead = true
-			if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
-		end
-	end
-
 	self:NextThink(CurTime()+1)
     return true
+end
+
+function ENT:DTOnTakeDamage(Damage)
+	if self.DakDead then return end 
+	if self.DakHealth <= 0 then
+		if self.DakOwner:IsPlayer() and self.DakOwner~=NULL then self.DakOwner:ChatPrint(self.DakName.." Destroyed!") end
+		self:SetMaterial("models/props_buildings/plasterwall021a")
+		self:SetColor(Color(100,100,100,255))
+		self.DakDead = true
+		if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
+		return
+	end
+
+	if self.DakHealth<self.DakMaxHealth/2 and self.DakIsExplosive then
+
+		local effectdata = EffectData()
+		effectdata:SetOrigin(self:GetPos())
+		effectdata:SetEntity(self)
+		effectdata:SetAttachment(1)
+		effectdata:SetMagnitude(.5)
+		effectdata:SetScale(500)
+		effectdata:SetNormal( Vector(0,0,-1) )
+		util.Effect("daktescalingexplosion", effectdata, true, true)
+
+		self:DTExplosion(self:GetPos(),20000,500,200,100,self.DakOwner)
+
+		self:EmitSound( "daktanks/ammoexplode.mp3", 100, 75, 1)
+		if self.DakOwner:IsPlayer() and self.DakOwner~=NULL then self.DakOwner:ChatPrint(self.DakName.." Exploded!") end
+		self:SetMaterial("models/props_buildings/plasterwall021a")
+		self:SetColor(Color(100,100,100,255))
+		self.DakDead = true
+		if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
+	end
 end
 
 function ENT:PreEntityCopy()
