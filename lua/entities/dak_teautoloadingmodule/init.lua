@@ -73,7 +73,7 @@ function ENT:Think()
 	self.DakMass = magStats[self.DakName]
 
 	if IsValid(self.DakGun) and self.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
-		if self.DakGun.TurretController and if self:GetParent() then
+		if self.DakGun.TurretController and self:GetParent() then
 			if self:GetParent():GetParent() == self.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == self.DakGun:GetParent():GetParent() or (self.DakGun.TurretController:GetYawMin()<=45 and self.DakGun.TurretController:GetYawMax()<=45) then
 				self.DakGun.DakMagazine = math.floor(0.27*self:GetPhysicsObject():GetVolume()/(((self.DakGun.DakCaliber*0.0393701)^2)*(self.DakGun.DakCaliber*0.0393701*13*self.DakGun.ShellLengthMult)))
 				if self.DakGun.DakMagazine > 0 then

@@ -258,147 +258,110 @@ function ENT:Think()
 			self.DakModel = "models/daktanks/gearbox1f1.mdl"
 			self.Torque = 1
 			self.MaxHP = 80
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Small Frontal Mount Gearbox" then
+		elseif self.DakName == "Small Frontal Mount Gearbox" then
 			self.DakMaxHealth = 25
 			self.DakArmor = 25
 			self.DakMass = 265
 			self.DakModel = "models/daktanks/gearbox1f2.mdl"
 			self.Torque = 1
 			self.MaxHP = 250
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Standard Frontal Mount Gearbox" then
+		elseif self.DakName == "Standard Frontal Mount Gearbox" then
 			self.DakMaxHealth = 60
 			self.DakArmor = 60
 			self.DakMass = 630
 			self.DakModel = "models/daktanks/gearbox1f3.mdl"
 			self.Torque = 1
 			self.MaxHP = 600
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Large Frontal Mount Gearbox" then
+		elseif self.DakName == "Large Frontal Mount Gearbox" then
 			self.DakMaxHealth = 120
 			self.DakArmor = 120
 			self.DakMass = 1230
 			self.DakModel = "models/daktanks/gearbox1f4.mdl"
 			self.Torque = 1
 			self.MaxHP = 1200
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Huge Frontal Mount Gearbox" then
+		elseif self.DakName == "Huge Frontal Mount Gearbox" then
 			self.DakMaxHealth = 200
 			self.DakArmor = 200
 			self.DakMass = 2130
 			self.DakModel = "models/daktanks/gearbox1f5.mdl"
 			self.Torque = 1
 			self.MaxHP = 2000
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Ultra Frontal Mount Gearbox" then
+		elseif self.DakName == "Ultra Frontal Mount Gearbox" then
 			self.DakMaxHealth = 480
 			self.DakArmor = 480
 			self.DakMass = 5050
 			self.DakModel = "models/daktanks/gearbox1f6.mdl"
 			self.Torque = 1
 			self.MaxHP = 4800
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Micro Rear Mount Gearbox" then
+		elseif self.DakName == "Micro Rear Mount Gearbox" then
 			self.DakMaxHealth = 7.5
 			self.DakArmor = 7.5
 			self.DakMass = 80
 			self.DakModel = "models/daktanks/gearbox1r1.mdl"
 			self.Torque = 1
 			self.MaxHP = 80
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Small Rear Mount Gearbox" then
+		elseif self.DakName == "Small Rear Mount Gearbox" then
 			self.DakMaxHealth = 25
 			self.DakArmor = 25
 			self.DakMass = 265
 			self.DakModel = "models/daktanks/gearbox1r2.mdl"
 			self.Torque = 1
 			self.MaxHP = 250
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Standard Rear Mount Gearbox" then
+		elseif self.DakName == "Standard Rear Mount Gearbox" then
 			self.DakMaxHealth = 60
 			self.DakArmor = 60
 			self.DakMass = 630
 			self.DakModel = "models/daktanks/gearbox1r3.mdl"
 			self.Torque = 1
 			self.MaxHP = 600
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Large Rear Mount Gearbox" then
+		elseif self.DakName == "Large Rear Mount Gearbox" then
 			self.DakMaxHealth = 120
 			self.DakArmor = 120
 			self.DakMass = 1230
 			self.DakModel = "models/daktanks/gearbox1r4.mdl"
 			self.Torque = 1
 			self.MaxHP = 1200
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Huge Rear Mount Gearbox" then
+		elseif self.DakName == "Huge Rear Mount Gearbox" then
 			self.DakMaxHealth = 200
 			self.DakArmor = 200
 			self.DakMass = 2130
 			self.DakModel = "models/daktanks/gearbox1r5.mdl"
 			self.Torque = 1
 			self.MaxHP = 2000
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
-		end
-		if self.DakName == "Ultra Rear Mount Gearbox" then
+		elseif self.DakName == "Ultra Rear Mount Gearbox" then
 			self.DakMaxHealth = 480
 			self.DakArmor = 480
 			self.DakMass = 5050
 			self.DakModel = "models/daktanks/gearbox1r6.mdl"
 			self.Torque = 1
 			self.MaxHP = 4800
-			--self.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
 		end
 	end
 
 	if CurTime() >= self.SparkTime + 0.33 then
-		if self.DakHealth <= ( self.DakMaxHealth * 0.80 ) and self.DakHealth > ( self.DakMaxHealth * 0.60 ) then
+		local scale
+
+		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then 
+			scale = 1
+		elseif self.DakHealth<=(self.DakMaxHealth*0.60) and self.DakHealth>(self.DakMaxHealth*0.40) then
+			scale = 2
+		elseif self.DakHealth<=(self.DakMaxHealth*0.40) and self.DakHealth>(self.DakMaxHealth*0.20) then
+			scale = 3
+		elseif self.DakHealth<=(self.DakMaxHealth*0.20) then
+			scale = 4 
+		end
+
+		if scale then 
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
 			effectdata:SetAttachment(1)
 			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(1)
+			effectdata:SetScale(scale)
 			util.Effect("daktedamage", effectdata)
 		end
-		if self.DakHealth <= ( self.DakMaxHealth * 0.60 ) and self.DakHealth > ( self.DakMaxHealth * 0.40 ) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(2)
-			util.Effect("daktedamage", effectdata)
-		end
-		if self.DakHealth <= ( self.DakMaxHealth * 0.40 ) and self.DakHealth > ( self.DakMaxHealth * 0.20 ) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(3)
-			util.Effect("daktedamage", effectdata)
-		end
-		if self.DakHealth <= ( self.DakMaxHealth * 0.20 ) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(4)
-			util.Effect("daktedamage", effectdata)
-		end
-		self.SparkTime = CurTime()
+
+		self.SparkTime=CurTime()
 	end
 
 	if not self.FirstCheck and self.DakMaxHealth ~= 25 then
@@ -437,20 +400,15 @@ function ENT:Think()
 		end
 		self.DakSpeed = (self.DakSpeed * 2 * Clamp(self.DakFuel / self.DakFuelReq, 0, 1)) * Clamp(self.MaxHP / self.DakHP, 0, 1)
 
-		self.CrewAlive = 1
-		if self.DakCrew == NULL then
+		self.CrewAlive = 1 --TODO: This should probably be a boolean. I can't be bothered to find where it's used right now to check.
+		if self.DakCrew == NULL or self.DakCrew.DakEntity ~= self then
 			self.DakSpeed = 0
 			self.CrewAlive = 0
 		else
-			if self.DakCrew.DakEntity ~= self then
+			self.DakCrew.Job = 2
+			if self.DakCrew.DakDead then
 				self.DakSpeed = 0
 				self.CrewAlive = 0
-			else
-				self.DakCrew.Job = 2
-				if self.DakCrew.DakDead == true then
-					self.DakSpeed = 0
-					self.CrewAlive = 0
-				end
 			end
 		end
 		if not(self:IsSolid()) then self.DakSpeed = 0 end
@@ -1390,22 +1348,16 @@ function ENT:Think()
 
 		if self.DakBurnStacks > 40 then
 			self.DakBurnStacks = 40
-		end
-
-		if self.DakBurnStacks > 0 and not(self:IsOnFire()) then
+		elseif self.DakBurnStacks > 0 and not(self:IsOnFire()) then
 			self.DakBurnStacks = self.DakBurnStacks - 0.1
 		end
 
 		if self:IsOnFire() and self.DakDead ~= true then
-			self.DakHealth = self.DakHealth - self.DakMaxHealth * 0.025 * engine.TickInterval()
-			if self.DakHealth <= 0 then
-				if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
-				self:SetMaterial("models/props_buildings/plasterwall021a")
-				self:SetColor(Color(100,100,100,255))
-				self.DakDead = true
-			end
+			local Dmg = self.DakMaxHealth * 0.025 * engine.TickInterval()
+			self.DakHealth = self.DakHealth - Dmg
+			self:DTOnTakeDamage(Dmg)
 		end
-		if self.SpeedTable == nil then self.SpeedTable = {} end
+		if self.SpeedTable == nil then self.SpeedTable = {} end --Why is this defined here and not in init?
 		if self.LastAccel == nil then self.LastAccel = 0 end
 
 		self.SpeedTable[#self.SpeedTable + 1] = (self.LastYaw - self.base:GetAngles().yaw) / self.TimeMult
@@ -1424,6 +1376,18 @@ function ENT:Think()
 	self:NextThink(CurTime())
 
 	return true
+end
+
+
+function ENT:DTOnTakeDamage(Damage)
+	if self.DakDead then return end
+	if self.DakHealth <= 0 then
+		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
+		self:SetMaterial("models/props_buildings/plasterwall021a")
+		self:SetColor(Color(100,100,100,255))
+		self.DakDead = true
+		return
+	end
 end
 
 function ENT:PreEntityCopy()
