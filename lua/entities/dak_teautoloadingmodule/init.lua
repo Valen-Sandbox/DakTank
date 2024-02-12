@@ -70,7 +70,9 @@ function ENT:Think()
 		["Medium Autoloader Magazine"] = 2000,
 		["Large Autoloader Magazine"] = 3000
 	}
-	self.DakMass = magStats[self.DakName]
+	if magStats[self.DakName] then
+		self.DakMass = magStats[self.DakName]
+	end
 
 	if IsValid(self.DakGun) and self.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
 		if self.DakGun.TurretController and self:GetParent() then
