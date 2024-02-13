@@ -180,8 +180,7 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 		self.DakSpeed = Ent.EntityMods.DakTek.DakSpeed
 		self.DakSound = Ent.EntityMods.DakTek.DakSound
 		self.DakOwner = Player
-		if not Ent.EntityMods.DakTek.DakColor then
-		else
+		if Ent.EntityMods.DakTek.DakColor then
 			self:SetColor(Ent.EntityMods.DakTek.DakColor)
 		end
 

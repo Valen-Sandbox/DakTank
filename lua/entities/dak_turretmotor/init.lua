@@ -121,8 +121,7 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
 		self.DakHealth = self.DakMaxHealth
 		self.DakOwner = Player
-		if Ent.EntityMods.DakTek.DakColor == nil then
-		else
+		if Ent.EntityMods.DakTek.DakColor then
 			self:SetColor(Ent.EntityMods.DakTek.DakColor)
 		end
 
