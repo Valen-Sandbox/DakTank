@@ -60,10 +60,10 @@ function ENT:Initialize()
 	self.LeftBrakesEnabled = 0
 	self.RightBrakesEnabled = 0
 	self.Gear = 0
-	self.SideDist = self:GetSideDist()
-	self.TrackLength = self:GetTrackLength()
+	self.SideDist = self:GetWheelOffsetY()
+	self.TrackLength = self:GetWheelBase()
 	self.WheelsPerSide = Clamp(self:GetWheelsPerSide(), 2, 20)
-	self.RideHeight = self:GetRideHeight()
+	self.RideHeight = self:GetWheelOffsetZ()
 	self.RideLimit = Clamp(self:GetRideLimit(), 50, 200)
 	self.SuspensionBias = Clamp(self:GetSuspensionBias(), -0.99, 0.99)
 	self.RightChanges = {}
@@ -126,46 +126,6 @@ local rearcount = {
 
 function ENT:GetRearTurningWheels()
 	return rearcount[self:GetVehicleMode()] or self:GetRoadWTurnRear()
-end
-
-function ENT:GetTurnAngle()
-	return self:GetRoadWTurnAngle()
-end
-
-function ENT:GetTrackLength()
-	return self:GetWheelBase()
-end
-
-function ENT:GetWheelHeight()
-	return self:GetRoadWDiameter()
-end
-
-function ENT:GetFrontWheelHeight()
-	return self:GetDriveWDiameter()
-end
-
-function ENT:GetFrontWheelRaise()
-	return self:GetDriveWOffsetZ()
-end
-
-function ENT:GetRearWheelHeight()
-	return self:GetIdlerWDiameter()
-end
-
-function ENT:GetRearWheelRaise()
-	return self:GetIdlerWOffsetZ()
-end
-
-function ENT:GetForwardOffset()
-	return self:GetWheelOffsetX()
-end
-
-function ENT:GetSideDist()
-	return self:GetWheelOffsetY()
-end
-
-function ENT:GetRideHeight()
-	return self:GetWheelOffsetZ()
 end
 
 local m_to_in = 100 / 2.54 -- meters to inches
@@ -236,19 +196,19 @@ function ENT:Think()
 		return
 	end
 
-	selfTbl.SideDist = self:GetSideDist()
-	selfTbl.TrackLength = self:GetTrackLength()
+	selfTbl.SideDist = self:GetWheelOffsetY()
+	selfTbl.TrackLength = self:GetWheelBase()
 	selfTbl.WheelsPerSide = Clamp(self:GetWheelsPerSide(), 2, 20)
-	selfTbl.RideHeight = self:GetRideHeight()
+	selfTbl.RideHeight = self:GetWheelOffsetZ()
 	selfTbl.RideLimit = Clamp(self:GetRideLimit(), 50, 200)
 	selfTbl.SuspensionBias = Clamp(self:GetSuspensionBias(), -0.99, 0.99)
-	selfTbl.FrontWheelRaise = self:GetFrontWheelRaise()
-	selfTbl.RearWheelRaise = self:GetRearWheelRaise()
-	selfTbl.ForwardOffset = self:GetForwardOffset()
+	selfTbl.FrontWheelRaise = self:GetDriveWOffsetZ()
+	selfTbl.RearWheelRaise = self:GetIdlerWOffsetZ()
+	selfTbl.ForwardOffset = self:GetWheelOffsetX()
 	selfTbl.GearRatio = Clamp(self:GetGearRatio(), 50, 100) * 0.01
-	selfTbl.WheelHeight = self:GetWheelHeight()
-	selfTbl.FrontWheelHeight = self:GetFrontWheelHeight()
-	selfTbl.RearWheelHeight = self:GetRearWheelHeight()
+	selfTbl.WheelHeight = self:GetRoadWDiameter()
+	selfTbl.FrontWheelHeight = self:GetDriveWDiameter()
+	selfTbl.RearWheelHeight = self:GetIdlerWDiameter()
 	if CurTime() >= selfTbl.SlowThinkTime + 1 then
 		selfTbl.SlowThinkTime = CurTime()
 		if selfTbl.DakName == "Micro Frontal Mount Gearbox" then
@@ -416,7 +376,8 @@ function ENT:Think()
 			self:SetSolid(SOLID_VPHYSICS)
 		end
 
-		if selfTbl.AddonMass and self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass + selfTbl.AddonMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass + selfTbl.AddonMass) end
+		local physObj = self:GetPhysicsObject()
+		if selfTbl.AddonMass and physObj:GetMass() ~= selfTbl.DakMass + selfTbl.AddonMass then physObj:SetMass(selfTbl.DakMass + selfTbl.AddonMass) end
 		selfTbl.MoveForward = selfTbl.Inputs.Forward.Value
 		selfTbl.MoveReverse = selfTbl.Inputs.Reverse.Value
 		selfTbl.MoveLeft = selfTbl.Inputs.Left.Value
@@ -814,9 +775,7 @@ function ENT:Think()
 									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
 									--RIGHT FORWARD
 									--LEFT BACKWARD
-								end
-
-								if selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
+								elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
 									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									--RIGHT BACKWARD
@@ -828,9 +787,7 @@ function ENT:Think()
 									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
 									--RIGHT BACKWARD
 									--LEFT FORWARD
-								end
-
-								if selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
+								elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
 									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									--RIGHT FORWARD
@@ -840,9 +797,9 @@ function ENT:Think()
 						end
 					else
 						if selfTbl.MoveLeft > 0 and selfTbl.MoveRight == 0 then
-							if selfTbl.WheelYaw > -Clamp(self:GetTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult end
+							if selfTbl.WheelYaw > -Clamp(self:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult end
 						elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
-							if selfTbl.WheelYaw < Clamp(self:GetTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw + 1 * TimeMult end
+							if selfTbl.WheelYaw < Clamp(self:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw + 1 * TimeMult end
 						elseif selfTbl.MoveRight == 0 and selfTbl.MoveLeft == 0 then
 							if selfTbl.WheelYaw > 0 then
 								selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult
