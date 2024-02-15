@@ -11,14 +11,14 @@ hook.Add( "InitPostEntity", "DakTekTankEditionRunOnLoadHook", function()
 	print("DakTekTankEditionLoaded")
 end )
 
-function DTTE.CheckSpherical(ent)
+function DTTE.CheckSpherical(ent) --This function has a bit of a performance impact due to how often it's called. Not sure how to improve it though as most of that seems to come from getting the physics object.
 	local PhysObj = ent:GetPhysicsObject()
 	if not PhysObj:GetMesh() then
 		if ent.SentSphereMessage == nil and IsValid(ent.DakOwner) then
 			ent.DakOwner:ChatPrint(ent.DakName .. " is made spherical and will be removed if unfrozen.")
 			ent.SentSphereMessage = true
 		end
-		if PhysObj:IsMotionEnabled() == true then
+		if PhysObj:IsMotionEnabled() then
 			ent:Remove()
 		end
 	else

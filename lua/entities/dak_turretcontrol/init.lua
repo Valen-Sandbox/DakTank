@@ -94,98 +94,101 @@ local function GetParents(ent, Results)
 end
 
 function ENT:Think()
+	local self = self
+	local selfTbl = self:GetTable()
+
 	local RotMult = 0.1
-	self.WiredGun = self.Inputs.Gun.Value
-	self.WiredTurret = self.Inputs.Turret.Value
-	if #self.DakContraption > 0 then
-		local GunEnt = self.Inputs.Gun.Value
-		if IsValid(GunEnt) and self.Controller.Off ~= true then
+	selfTbl.WiredGun = selfTbl.Inputs.Gun.Value
+	selfTbl.WiredTurret = selfTbl.Inputs.Turret.Value
+	if #selfTbl.DakContraption > 0 then
+		local GunEnt = selfTbl.Inputs.Gun.Value
+		if IsValid(GunEnt) and selfTbl.Controller.Off ~= true then
 			GunEnt.TurretController = self
-			if IsValid(GunEnt:GetParent()) and IsValid(GunEnt:GetParent():GetParent()) then self.DakGun = GunEnt:GetParent():GetParent() end
-			local DakGun = self.DakGun
+			if IsValid(GunEnt:GetParent()) and IsValid(GunEnt:GetParent():GetParent()) then selfTbl.DakGun = GunEnt:GetParent():GetParent() end
+			local DakGun = selfTbl.DakGun
 			if IsValid(DakGun) then
 				local Elevation = math.Clamp(self:GetElevation(), 0, 90)
 				local Depression = math.Clamp(self:GetDepression(), 0, 90)
 				local YawMin = math.Clamp(self:GetYawMin(), 0, 360)
 				local YawMax = math.Clamp(self:GetYawMax(), 0, 360)
 				local RotationMult = math.Clamp(self:GetRotationSpeedMultiplier(), 0, 1)
-				if self.FCS ~= true then
-					if self:GetTable().Inputs.CamTrace.Path and self:GetTable().Inputs.CamTrace.Path[1].Entity:GetClass() ~= "gmod_wire_cameracontroller" then self.FCS = true end
-					if self:GetTable().Inputs.CamTrace2.Path and self:GetTable().Inputs.CamTrace2.Path[1].Entity:GetClass() ~= "gmod_wire_cameracontroller" then self.FCS = true end
-					if self.FCS == true then self.DakOwner:ChatPrint("Custom FCS E2 detected, gun handling multiplier affected.") end
-					self.CustomFCS = true
+				if selfTbl.FCS ~= true then
+					if self:GetTable().Inputs.CamTrace.Path and self:GetTable().Inputs.CamTrace.Path[1].Entity:GetClass() ~= "gmod_wire_cameracontroller" then selfTbl.FCS = true end
+					if self:GetTable().Inputs.CamTrace2.Path and self:GetTable().Inputs.CamTrace2.Path[1].Entity:GetClass() ~= "gmod_wire_cameracontroller" then selfTbl.FCS = true end
+					if selfTbl.FCS == true then selfTbl.DakOwner:ChatPrint("Custom FCS E2 detected, gun handling multiplier affected.") end
+					selfTbl.CustomFCS = true
 				end
 
-				self.DakActive = self.Inputs.Active.Value
-				self.DakActive2 = self.Inputs.Active2.Value
-				local DakTurret = self.Inputs.Turret.Value
-				self.DakTurret = DakTurret
+				selfTbl.DakActive = selfTbl.Inputs.Active.Value
+				selfTbl.DakActive2 = selfTbl.Inputs.Active2.Value
+				local DakTurret = selfTbl.Inputs.Turret.Value
+				selfTbl.DakTurret = DakTurret
 				local hash = {}
 				local res = {}
-				for _, v in ipairs(self.DakTurretMotors) do
+				for _, v in ipairs(selfTbl.DakTurretMotors) do
 					if not hash[v] then
 						res[#res + 1] = v
 						hash[v] = true
 					end
 				end
 
-				self.DakTurretMotors = res
-				if #self.DakTurretMotors > 0 then
-					for i = 1, #self.DakTurretMotors do
-						if IsValid(self.DakTurretMotors[i]) then RotMult = RotMult + self.DakTurretMotors[i].DakRotMult end
+				selfTbl.DakTurretMotors = res
+				if #selfTbl.DakTurretMotors > 0 then
+					for i = 1, #selfTbl.DakTurretMotors do
+						if IsValid(selfTbl.DakTurretMotors[i]) then RotMult = RotMult + selfTbl.DakTurretMotors[i].DakRotMult end
 					end
 				end
 
-				if self.DakParented ~= 1 then
+				if selfTbl.DakParented ~= 1 then
 					if IsValid(GunEnt:GetParent()) then
 						if IsValid(GunEnt:GetParent():GetParent()) then DakGun = GunEnt:GetParent():GetParent() end
-						self.Turret = {}
+						selfTbl.Turret = {}
 						if IsValid(DakTurret) then
-							table.Add(self.Turret, GetTurretParents(GunEnt))
+							table.Add(selfTbl.Turret, GetTurretParents(GunEnt))
 							for _, v in pairs(GetTurretParents(GunEnt)) do
-								table.Add(self.Turret, GetTurretPhysCons(v))
+								table.Add(selfTbl.Turret, GetTurretPhysCons(v))
 							end
 
 							if IsValid(DakTurret) then
-								table.Add(self.Turret, GetTurretParents(DakTurret))
+								table.Add(selfTbl.Turret, GetTurretParents(DakTurret))
 								for _, v in pairs(GetTurretParents(DakTurret)) do
-									table.Add(self.Turret, GetTurretPhysCons(v))
+									table.Add(selfTbl.Turret, GetTurretPhysCons(v))
 								end
 							end
 
-							for i = 1, #self.Turret do
-								table.Add(self.Turret, self.Turret[i]:GetChildren())
-								table.Add(self.Turret, self.Turret[i]:GetParent())
+							for i = 1, #selfTbl.Turret do
+								table.Add(selfTbl.Turret, selfTbl.Turret[i]:GetChildren())
+								table.Add(selfTbl.Turret, selfTbl.Turret[i]:GetParent())
 							end
 
 							local Children = {}
-							for i2 = 1, #self.Turret do
-								if table.Count(self.Turret[i2]:GetChildren()) > 0 then table.Add(Children, self.Turret[i2]:GetChildren()) end
+							for i2 = 1, #selfTbl.Turret do
+								if table.Count(selfTbl.Turret[i2]:GetChildren()) > 0 then table.Add(Children, selfTbl.Turret[i2]:GetChildren()) end
 							end
 
-							table.Add(self.Turret, Children)
+							table.Add(selfTbl.Turret, Children)
 						else
-							table.Add(self.Turret, DakGun:GetChildren())
+							table.Add(selfTbl.Turret, DakGun:GetChildren())
 							for _, v in pairs(DakGun:GetChildren()) do
-								table.Add(self.Turret, v:GetChildren())
+								table.Add(selfTbl.Turret, v:GetChildren())
 							end
 						end
 
 						local hash = {}
 						local res = {}
-						for _, v in ipairs(self.Turret) do
+						for _, v in ipairs(selfTbl.Turret) do
 							if not hash[v] then
 								res[#res + 1] = v
 								hash[v] = true
 							end
 						end
 
-						self.Turret = res
-						self.TurretBase = DakTurret
+						selfTbl.Turret = res
+						selfTbl.TurretBase = DakTurret
 						DakGun.DakMovement = true
-						self.TurretBase.DakMovement = true
+						selfTbl.TurretBase.DakMovement = true
 						local Mass = 0
-						self.Guns = {}
+						selfTbl.Guns = {}
 						for i = 1, #res do
 							if res[i]:IsSolid() then
 								if res[i]:GetClass() == "dak_tegun" or res[i]:GetClass() == "dak_teautogun" or res[i]:GetClass() == "dak_temachinegun" then
@@ -199,87 +202,82 @@ function ENT:Think()
 								if res[i]:GetClass() == "dak_tegun" or res[i]:GetClass() == "dak_teautogun" or res[i]:GetClass() == "dak_temachinegun" then
 									res[i].TurretController = self
 									res[i].TurretBase = DakTurret
-									self.Guns[#self.Guns + 1] = res[i]
+									selfTbl.Guns[#selfTbl.Guns + 1] = res[i]
 								end
 							end
 						end
 
-						self.GunMass = Mass
-						self.DakParented = 1
-						if IsValid(DakTurret) then self.YawDiff = DakTurret:GetAngles().yaw - DakGun:GetAngles().yaw end
+						selfTbl.GunMass = Mass
+						selfTbl.DakParented = 1
+						if IsValid(DakTurret) then selfTbl.YawDiff = DakTurret:GetAngles().yaw - DakGun:GetAngles().yaw end
 					else
-						self.DakParented = 0
+						selfTbl.DakParented = 0
 					end
 				end
 
 				if IsValid(DakGun) then
-					local BasePlate = self.Controller:GetParent():GetParent()
-					if self.LastVel == nil then self.LastVel = 0 end
-					if self.DakParented == 0 then
-						if self.SentError == 0 then
-							self.SentError = 1
-							self.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
-							self.ErrorTime = CurTime()
+					local BasePlate = selfTbl.Controller:GetParent():GetParent()
+					if selfTbl.LastVel == nil then selfTbl.LastVel = 0 end
+					if selfTbl.DakParented == 0 then
+						if selfTbl.SentError == 0 then
+							selfTbl.SentError = 1
+							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
+							selfTbl.ErrorTime = CurTime()
 						else
-							if CurTime() >= self.ErrorTime + 10 then
-								self.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
-								self.ErrorTime = CurTime()
+							if CurTime() >= selfTbl.ErrorTime + 10 then
+								selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
+								selfTbl.ErrorTime = CurTime()
 							end
 						end
 					end
 
 					local Class = GunEnt:GetClass()
 					if Class ~= "dak_tegun" and Class ~= "dak_teautogun" and Class ~= "dak_temachinegun" then
-						if self.SentError2 == 0 then
-							self.SentError2 = 1
-							self.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
-							self.ErrorTime2 = CurTime()
+						if selfTbl.SentError2 == 0 then
+							selfTbl.SentError2 = 1
+							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
+							selfTbl.ErrorTime2 = CurTime()
 						else
-							if CurTime() >= self.ErrorTime2 + 10 then
-								self.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
-								self.ErrorTime2 = CurTime()
+							if CurTime() >= selfTbl.ErrorTime2 + 10 then
+								selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
+								selfTbl.ErrorTime2 = CurTime()
 							end
 						end
 					end
 
-					self.RotationSpeed = math.min(RotMult * (15000 / self.GunMass) * RotationMult, 5)
-					--if self.Controller.ColdWar == 1 then
-					--	self.RotationSpeed = self.RotationSpeed * 1.5
-					--elseif self.Controller.Modern == 1 then
-					--	self.RotationSpeed = self.RotationSpeed * 2
-					--end
+					selfTbl.RotationSpeed = math.min(RotMult * (15000 / selfTbl.GunMass) * RotationMult, 5)
 					local TimeScale = 66 / (1 / engine.TickInterval())
-					if self.DakCrew == NULL then
-						self.RotationSpeed = 0
-						if self.GunnerErrorMessageSent1 == nil then
-							self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " gunner not detected, gun unable to move. Please link a crew member to the turret controller.")
-							self.GunnerErrorMessageSent1 = true
+					if selfTbl.DakCrew == NULL then
+						selfTbl.RotationSpeed = 0
+						if selfTbl.GunnerErrorMessageSent1 == nil then
+							selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " gunner not detected, gun unable to move. Please link a crew member to the turret controller.")
+							selfTbl.GunnerErrorMessageSent1 = true
 						end
 					else
-						if self.DakCrew.DakEntity ~= self then
-							self.RotationSpeed = 0
+						if selfTbl.DakCrew.DakEntity ~= self then
+							selfTbl.RotationSpeed = 0
 						else
-							self.DakCrew.Job = 1
-							if self.DakCrew.DakDead == true or self.DakCrew.Busy == true then self.RotationSpeed = 0 end
-							if not (self.Controller.ColdWar == 1 or self.Controller.Modern == 1) then
+							selfTbl.DakCrew.Job = 1
+							if selfTbl.DakCrew.DakDead == true or selfTbl.DakCrew.Busy == true then selfTbl.RotationSpeed = 0 end
+							if not (selfTbl.Controller.ColdWar == 1 or selfTbl.Controller.Modern == 1) then
 								--check for both gun itself and pivot point
-								if self.RemoteWeapon == true then
-									self.RotationSpeed = 0
-									if self.FloatGunErrorMessageSent == nil then
-										self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " Gun not within turret, remote weapon systems are cold war and modern only.")
-										self.FloatGunErrorMessageSent = true
+								if selfTbl.RemoteWeapon == true then
+									selfTbl.RotationSpeed = 0
+									if selfTbl.FloatGunErrorMessageSent == nil then
+										selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " Gun not within turret, remote weapon systems are cold war and modern only.")
+										selfTbl.FloatGunErrorMessageSent = true
 									end
 								end
 
-								if IsValid(self.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
-									if self.DakCrew:IsValid() then
-										if self.DakCrew:GetParent():IsValid() then
-											if self.DakCrew:GetParent():GetParent():IsValid() then
-												if self.DakCrew:GetParent():GetParent() ~= self.TurretBase and self.DakCrew:GetParent():GetParent() ~= DakGun then
-													self.RotationSpeed = 0
-													if self.GunnerErrorMessageSent2 == nil then
-														self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " gunner not in turret, remote weapon systems are cold war and modern only.")
-														self.GunnerErrorMessageSent2 = true
+								if IsValid(selfTbl.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
+									if selfTbl.DakCrew:IsValid() then
+										if selfTbl.DakCrew:GetParent():IsValid() then
+											if selfTbl.DakCrew:GetParent():GetParent():IsValid() then
+												if selfTbl.DakCrew:GetParent():GetParent() ~= selfTbl.TurretBase and selfTbl.DakCrew:GetParent():GetParent() ~= DakGun then
+													selfTbl.RotationSpeed = 0
+													if selfTbl.GunnerErrorMessageSent2 == nil then
+														selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " gunner not in turret, remote weapon systems are cold war and modern only.")
+														selfTbl.GunnerErrorMessageSent2 = true
 													end
 												end
 											end
@@ -287,15 +285,15 @@ function ENT:Think()
 									end
 								end
 
-								if not IsValid(self.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
-									if self.DakCrew:IsValid() then
-										if self.DakCrew:GetParent():IsValid() then
-											if self.DakCrew:GetParent():GetParent():IsValid() then
-												if self.DakCrew:GetParent():GetParent() == self:GetParent():GetParent() or self.DakCrew:GetParent():GetParent() == DakGun then
-													self.RotationSpeed = 0
-													if self.GunnerErrorMessageSent3 == nil then
-														self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " gunner not in hull, remote weapon systems are cold war and modern only.")
-														self.GunnerErrorMessageSent3 = true
+								if not IsValid(selfTbl.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
+									if selfTbl.DakCrew:IsValid() then
+										if selfTbl.DakCrew:GetParent():IsValid() then
+											if selfTbl.DakCrew:GetParent():GetParent():IsValid() then
+												if selfTbl.DakCrew:GetParent():GetParent() == self:GetParent():GetParent() or selfTbl.DakCrew:GetParent():GetParent() == DakGun then
+													selfTbl.RotationSpeed = 0
+													if selfTbl.GunnerErrorMessageSent3 == nil then
+														selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " gunner not in hull, remote weapon systems are cold war and modern only.")
+														selfTbl.GunnerErrorMessageSent3 = true
 													end
 												end
 											end
@@ -304,25 +302,25 @@ function ENT:Think()
 								end
 							else
 								--check for both gun itself and pivot point
-								if self.RemoteWeapon == true then
-									self.RotationSpeed = self.RotationSpeed * self.CoreRemoteMult
-									if self.nonWWIIRemoteGunErrorMessageSent == nil then
-										self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
-										self.nonWWIIRemoteGunErrorMessageSent = true
-										self.RemoteWeapon = true
+								if selfTbl.RemoteWeapon == true then
+									selfTbl.RotationSpeed = selfTbl.RotationSpeed * selfTbl.CoreRemoteMult
+									if selfTbl.nonWWIIRemoteGunErrorMessageSent == nil then
+										selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
+										selfTbl.nonWWIIRemoteGunErrorMessageSent = true
+										selfTbl.RemoteWeapon = true
 									end
 								end
 
-								if IsValid(self.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
-									if self.DakCrew:IsValid() then
-										if self.DakCrew:GetParent():IsValid() then
-											if self.DakCrew:GetParent():GetParent():IsValid() then
-												if self.DakCrew:GetParent():GetParent() ~= self.TurretBase and self.DakCrew:GetParent():GetParent() ~= DakGun then
-													self.RotationSpeed = self.RotationSpeed * self.CoreRemoteMult
-													if self.nonWWIIRemoteGunErrorMessageSent == nil then
-														self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
-														self.nonWWIIRemoteGunErrorMessageSent = true
-														self.RemoteWeapon = true
+								if IsValid(selfTbl.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
+									if selfTbl.DakCrew:IsValid() then
+										if selfTbl.DakCrew:GetParent():IsValid() then
+											if selfTbl.DakCrew:GetParent():GetParent():IsValid() then
+												if selfTbl.DakCrew:GetParent():GetParent() ~= selfTbl.TurretBase and selfTbl.DakCrew:GetParent():GetParent() ~= DakGun then
+													selfTbl.RotationSpeed = selfTbl.RotationSpeed * selfTbl.CoreRemoteMult
+													if selfTbl.nonWWIIRemoteGunErrorMessageSent == nil then
+														selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
+														selfTbl.nonWWIIRemoteGunErrorMessageSent = true
+														selfTbl.RemoteWeapon = true
 													end
 												end
 											end
@@ -330,16 +328,16 @@ function ENT:Think()
 									end
 								end
 
-								if not IsValid(self.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
-									if self.DakCrew:IsValid() then
-										if self.DakCrew:GetParent():IsValid() then
-											if self.DakCrew:GetParent():GetParent():IsValid() then
-												if self.DakCrew:GetParent():GetParent() == self:GetParent():GetParent() or self.DakCrew:GetParent():GetParent() == DakGun then
-													self.RotationSpeed = self.RotationSpeed * self.CoreRemoteMult
-													if self.nonWWIIRemoteGunErrorMessageSent == nil then
-														self.DakOwner:ChatPrint(self.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
-														self.nonWWIIRemoteGunErrorMessageSent = true
-														self.RemoteWeapon = true
+								if not IsValid(selfTbl.TurretBase) and (math.Clamp(self:GetYawMin(), 0, 360) + math.Clamp(self:GetYawMax(), 0, 360) > 90) then
+									if selfTbl.DakCrew:IsValid() then
+										if selfTbl.DakCrew:GetParent():IsValid() then
+											if selfTbl.DakCrew:GetParent():GetParent():IsValid() then
+												if selfTbl.DakCrew:GetParent():GetParent() == self:GetParent():GetParent() or selfTbl.DakCrew:GetParent():GetParent() == DakGun then
+													selfTbl.RotationSpeed = selfTbl.RotationSpeed * selfTbl.CoreRemoteMult
+													if selfTbl.nonWWIIRemoteGunErrorMessageSent == nil then
+														selfTbl.DakOwner:ChatPrint(selfTbl.DakName .. " #" .. self:EntIndex() .. " remote weapon system detected, 50% cost increase added to gun handling multiplier for this turret.")
+														selfTbl.nonWWIIRemoteGunErrorMessageSent = true
+														selfTbl.RemoteWeapon = true
 													end
 												end
 											end
@@ -350,75 +348,75 @@ function ENT:Think()
 						end
 					end
 
-					if self.DakActive > 0 then self.DakCamTrace = self.Inputs.CamTrace.Value end
-					if self.DakActive2 > 0 then self.DakCamTrace = self.Inputs.CamTrace2.Value end
+					if selfTbl.DakActive > 0 then selfTbl.DakCamTrace = selfTbl.Inputs.CamTrace.Value end
+					if selfTbl.DakActive2 > 0 then selfTbl.DakCamTrace = selfTbl.Inputs.CamTrace2.Value end
 					if Class == "dak_tegun" or Class == "dak_teautogun" or Class == "dak_temachinegun" then
-						if not self.Parented and self.FixedGun == false then
+						if not selfTbl.Parented and selfTbl.FixedGun == false then
 							timer.Simple(engine.TickInterval() * 1, function()
 								constraint.RemoveAll(DakGun)
 								if IsValid(DakTurret) then
-									self.turretaimer = ents.Create("prop_physics")
-									self.turretaimer:SetAngles(self:GetAngles())
-									self.turretaimer:SetPos(DakTurret:GetPos())
-									self.turretaimer:SetMoveType(MOVETYPE_NONE)
-									self.turretaimer:PhysicsInit(SOLID_NONE)
-									self.turretaimer:SetParent(self)
-									self.turretaimer:SetModel("models/daktanks/smokelauncher100mm.mdl")
-									self.turretaimer:DrawShadow(false)
-									self.turretaimer:SetColor(Color(255, 255, 255, 0))
-									self.turretaimer:SetRenderMode(RENDERMODE_TRANSCOLOR)
-									self.turretaimer:Spawn()
-									self.turretaimer:Activate()
-									self.turretaimer:SetMoveType(MOVETYPE_NONE)
-									self.turretaimer:PhysicsInit(SOLID_NONE)
-									self.turretaimer.turretaimer = true
+									selfTbl.turretaimer = ents.Create("prop_physics")
+									selfTbl.turretaimer:SetAngles(self:GetAngles())
+									selfTbl.turretaimer:SetPos(DakTurret:GetPos())
+									selfTbl.turretaimer:SetMoveType(MOVETYPE_NONE)
+									selfTbl.turretaimer:PhysicsInit(SOLID_NONE)
+									selfTbl.turretaimer:SetParent(self)
+									selfTbl.turretaimer:SetModel("models/daktanks/smokelauncher100mm.mdl")
+									selfTbl.turretaimer:DrawShadow(false)
+									selfTbl.turretaimer:SetColor(Color(255, 255, 255, 0))
+									selfTbl.turretaimer:SetRenderMode(RENDERMODE_TRANSCOLOR)
+									selfTbl.turretaimer:Spawn()
+									selfTbl.turretaimer:Activate()
+									selfTbl.turretaimer:SetMoveType(MOVETYPE_NONE)
+									selfTbl.turretaimer:PhysicsInit(SOLID_NONE)
+									selfTbl.turretaimer.turretaimer = true
 									DakTurret:SetParent()
 									DakGun:SetParent()
 									constraint.RemoveAll(DakTurret)
-									constraint.AdvBallsocket(DakTurret, self.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
+									constraint.AdvBallsocket(DakTurret, selfTbl.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
 									constraint.AdvBallsocket(DakGun, DakTurret, 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
-									constraint.AdvBallsocket(self.turretaimer, self.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
-									DakTurret:SetParent(self.turretaimer)
-									DakGun:SetParent(self.turretaimer)
+									constraint.AdvBallsocket(selfTbl.turretaimer, selfTbl.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
+									DakTurret:SetParent(selfTbl.turretaimer)
+									DakGun:SetParent(selfTbl.turretaimer)
 								else
 									DakGun:SetParent()
-									constraint.AdvBallsocket(DakGun, self.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
+									constraint.AdvBallsocket(DakGun, selfTbl.Controller:GetParent():GetParent(), 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 1, 0)
 									DakGun:SetParent(self:GetParent())
 								end
 							end)
 
-							self.Parented = 1
+							selfTbl.Parented = 1
 						end
 
-						if self.Parented == 1 then
-							if self.DakActive > 0 or self.DakActive2 > 0 then
-								if self.Inputs.Lock.Value > 0 then
-									self.LastAngles = self:GetAngles()
-									if self.LastPos == nil then self.LastPos = BasePlate:GetPos() end
-									if IsValid(self.DakCore.Base) then if self.Locked == 0 then self.Locked = 1 end end
+						if selfTbl.Parented == 1 then
+							if selfTbl.DakActive > 0 or selfTbl.DakActive2 > 0 then
+								if selfTbl.Inputs.Lock.Value > 0 then
+									selfTbl.LastAngles = self:GetAngles()
+									if selfTbl.LastPos == nil then selfTbl.LastPos = BasePlate:GetPos() end
+									if IsValid(selfTbl.DakCore.Base) then if selfTbl.Locked == 0 then selfTbl.Locked = 1 end end
 								else
-									if self.Locked == 1 then self.Locked = 0 end
-									if self.DakCamTrace then
-										if self.FCS == true and not (self.CustomFCS == true) and not (GunEnt.DakShellAmmoType == "HEATFS" and GunEnt.DakShellPenetration == GunEnt.DakMaxHealth * 6.40) then --atgm has 6.40 maxhealth for pen and HEATFS ammo type
-											local AirBurst = self.Inputs.AirBurst.Value
+									if selfTbl.Locked == 1 then selfTbl.Locked = 0 end
+									if selfTbl.DakCamTrace then
+										if selfTbl.FCS == true and not (selfTbl.CustomFCS == true) and not (GunEnt.DakShellAmmoType == "HEATFS" and GunEnt.DakShellPenetration == GunEnt.DakMaxHealth * 6.40) then --atgm has 6.40 maxhealth for pen and HEATFS ammo type
+											local AirBurst = selfTbl.Inputs.AirBurst.Value
 											local AddZ = 0
 											if AirBurst ~= 0 then
 												AddZ = self:GetAirburstHeight() * 39.3701
-												for i = 1, #self.Guns do
-													self.Guns[i].FuzeOverride = true
+												for i = 1, #selfTbl.Guns do
+													selfTbl.Guns[i].FuzeOverride = true
 												end
 											else
-												for i = 1, #self.Guns do
-													self.Guns[i].FuzeOverride = false
+												for i = 1, #selfTbl.Guns do
+													selfTbl.Guns[i].FuzeOverride = false
 												end
 											end
 
 											local traceFCS = {}
-											traceFCS.start = self.DakCamTrace.StartPos
-											traceFCS.endpos = self.DakCamTrace.StartPos + self.DakCamTrace.Normal * 9999999999
-											traceFCS.filter = self.DakContraption
+											traceFCS.start = selfTbl.DakCamTrace.StartPos
+											traceFCS.endpos = selfTbl.DakCamTrace.StartPos + selfTbl.DakCamTrace.Normal * 9999999999
+											traceFCS.filter = selfTbl.DakContraption
 											local PreCamTrace = util.TraceLine(traceFCS)
-											if self.NoTarTicks == nil then self.NoTarTicks = 0 end
+											if selfTbl.NoTarTicks == nil then selfTbl.NoTarTicks = 0 end
 											local G = math.abs(physenv.GetGravity().z)
 											local Caliber = GunEnt.DakMaxHealth
 											local ShellType = GunEnt.DakShellAmmoType
@@ -434,31 +432,31 @@ function ENT:Think()
 												VelLoss = (Drag / (ShellMass / 2)) * 39.37
 											end
 
-											if PreCamTrace.Entity and not PreCamTrace.Entity:IsWorld() or self.Tar == nil then
-												self.Tar = PreCamTrace.Entity
-												self.CamTarPos = PreCamTrace.HitPos
+											if PreCamTrace.Entity and not PreCamTrace.Entity:IsWorld() or selfTbl.Tar == nil then
+												selfTbl.Tar = PreCamTrace.Entity
+												selfTbl.CamTarPos = PreCamTrace.HitPos
 											else
-												self.NoTarTicks = self.NoTarTicks + 1
+												selfTbl.NoTarTicks = selfTbl.NoTarTicks + 1
 											end
 
-											if self.NoTarTicks > 15 then
-												self.Tar = PreCamTrace.Entity
-												self.NoTarTicks = 0
+											if selfTbl.NoTarTicks > 15 then
+												selfTbl.Tar = PreCamTrace.Entity
+												selfTbl.NoTarTicks = 0
 											end
 
 											local TarPos0
 											local GunPos = GunEnt:GetPos()
-											self.TarVel = Vector(0, 0, 0)
-											if self.Tar and self.Tar:IsValid() then
-												TarPos0 = self.Tar:GetPos() + (self.CamTarPos - self.Tar:GetPos()) + Vector(0, 0, AddZ)
-												self.TarVel = self.Tar:GetVelocity()
+											selfTbl.TarVel = Vector(0, 0, 0)
+											if selfTbl.Tar and selfTbl.Tar:IsValid() then
+												TarPos0 = selfTbl.Tar:GetPos() + (selfTbl.CamTarPos - selfTbl.Tar:GetPos()) + Vector(0, 0, AddZ)
+												selfTbl.TarVel = selfTbl.Tar:GetVelocity()
 											else
 												TarPos0 = PreCamTrace.HitPos + Vector(0, 0, AddZ)
 											end
 
 											local basefound = false
-											local base = self.Tar
-											if IsValid(self.Tar) then
+											local base = selfTbl.Tar
+											if IsValid(selfTbl.Tar) then
 												while basefound == false do
 													if IsValid(base:GetParent()) then
 														base = base:GetParent()
@@ -469,12 +467,12 @@ function ENT:Think()
 											end
 
 											if base ~= NULL and base:IsValid() then
-												self.TarVel = base:GetVelocity()
+												selfTbl.TarVel = base:GetVelocity()
 											else
-												self.TarVel = Vector(0, 0, 0)
+												selfTbl.TarVel = Vector(0, 0, 0)
 											end
 
-											local SelfVel = self.Controller:GetParent():GetParent():GetVelocity()
+											local SelfVel = selfTbl.Controller:GetParent():GetParent():GetVelocity()
 											local VelValue = V
 											local VelLossFull = VelLoss
 											local TravelTime = 0
@@ -486,7 +484,7 @@ function ENT:Think()
 											local TarPos
 											for i = 1, 2 do
 												VelValue = V - VelLossFull
-												TarPos = TarPos0 + ((self.TarVel - SelfVel) * (TravelTime + 0.1))
+												TarPos = TarPos0 + ((selfTbl.TarVel - SelfVel) * (TravelTime + 0.1))
 												Diff = TarPos - GunPos
 												X = Vector(Diff.x, Diff.y, 0):Length()
 												Y = Diff.z
@@ -497,8 +495,8 @@ function ENT:Think()
 											end
 
 											if AirBurst ~= 0 then
-												for i = 1, #self.Guns do
-													self.Guns[i].FuzeOverrideDelay = TravelTime
+												for i = 1, #selfTbl.Guns do
+													selfTbl.Guns[i].FuzeOverrideDelay = TravelTime
 												end
 											end
 
@@ -510,51 +508,50 @@ function ENT:Think()
 											local traceFCS2 = {}
 											traceFCS2.start = GunPos
 											traceFCS2.endpos = GunPos + Angle(Ang, yaw, 0):Forward() * 100000000
-											traceFCS2.filter = self.DakContraption
-											self.CamTrace = util.TraceLine(traceFCS2)
+											traceFCS2.filter = selfTbl.DakContraption
+											selfTbl.CamTrace = util.TraceLine(traceFCS2)
 										else
 											local trace = {}
-											trace.start = self.DakCamTrace.StartPos
-											trace.endpos = self.DakCamTrace.StartPos + self.DakCamTrace.Normal * 9999999999
-											trace.filter = self.DakContraption
-											self.CamTrace = util.TraceLine(trace)
+											trace.start = selfTbl.DakCamTrace.StartPos
+											trace.endpos = selfTbl.DakCamTrace.StartPos + selfTbl.DakCamTrace.Normal * 9999999999
+											trace.filter = selfTbl.DakContraption
+											selfTbl.CamTrace = util.TraceLine(trace)
 										end
 
-										self.Shake = Angle(0, 0, 0)
-										if self.Stabilizer == false then
-											if self.LastPos == nil then self.LastPos = BasePlate:GetPos() end
-											if self.LastAngles == nil then self.LastAngles = Angle(0, 0, 0) end
-											local Speed = Vector(0, 0, 0):Distance(BasePlate:GetPos() - self.LastPos)
-											if self.ShakeAmpX == nil then self.ShakeAmpX = 0 end
-											self.ShakeAmpX = self.ShakeAmpX + math.random(-1, 1)
-											if self.ShakeAmpX > 5 then self.ShakeAmpX = 5 end
-											if self.ShakeAmpX < -5 then self.ShakeAmpX = -5 end
-											if self.ShakeAmpX > 0 then self.ShakeAmpX = self.ShakeAmpX - 0.05 end
-											if self.ShakeAmpX < 0 then self.ShakeAmpX = self.ShakeAmpX + 0.05 end
-											if self.ShakeAmpY == nil then self.ShakeAmpY = 0 end
-											self.ShakeAmpY = self.ShakeAmpY + math.random(-1, 1)
-											if self.ShakeAmpY > 5 then self.ShakeAmpY = 5 end
-											if self.ShakeAmpY < -5 then self.ShakeAmpY = -5 end
-											if self.ShakeAmpY > 0 then self.ShakeAmpY = self.ShakeAmpY - 0.05 end
-											if self.ShakeAmpY < 0 then self.ShakeAmpY = self.ShakeAmpY + 0.05 end
+										selfTbl.Shake = Angle(0, 0, 0)
+										if selfTbl.Stabilizer == false then
+											if selfTbl.LastPos == nil then selfTbl.LastPos = BasePlate:GetPos() end
+											if selfTbl.LastAngles == nil then selfTbl.LastAngles = Angle(0, 0, 0) end
+											local Speed = Vector(0, 0, 0):Distance(BasePlate:GetPos() - selfTbl.LastPos)
+											if selfTbl.ShakeAmpX == nil then selfTbl.ShakeAmpX = 0 end
+											selfTbl.ShakeAmpX = selfTbl.ShakeAmpX + math.random(-1, 1)
+											if selfTbl.ShakeAmpX > 5 then selfTbl.ShakeAmpX = 5 end
+											if selfTbl.ShakeAmpX < -5 then selfTbl.ShakeAmpX = -5 end
+											if selfTbl.ShakeAmpX > 0 then selfTbl.ShakeAmpX = selfTbl.ShakeAmpX - 0.05 end
+											if selfTbl.ShakeAmpX < 0 then selfTbl.ShakeAmpX = selfTbl.ShakeAmpX + 0.05 end
+											if selfTbl.ShakeAmpY == nil then selfTbl.ShakeAmpY = 0 end
+											selfTbl.ShakeAmpY = selfTbl.ShakeAmpY + math.random(-1, 1)
+											if selfTbl.ShakeAmpY > 5 then selfTbl.ShakeAmpY = 5 end
+											if selfTbl.ShakeAmpY < -5 then selfTbl.ShakeAmpY = -5 end
+											if selfTbl.ShakeAmpY > 0 then selfTbl.ShakeAmpY = selfTbl.ShakeAmpY - 0.05 end
+											if selfTbl.ShakeAmpY < 0 then selfTbl.ShakeAmpY = selfTbl.ShakeAmpY + 0.05 end
 											local Shake
-											if self.ShortStop == false then
-												self.Accel = math.Clamp(self.Accel, -0.15, 0.15)
-												Shake = (Angle(1 * self.ShakeAmpX, 0.1 * self.ShakeAmpY, 0) * (Speed * 0.025)) + Angle(-self.Accel * 25, 0, 0) --+(Angle(((self:GetAngles().pitch - self.LastAngles.pitch))*5,0,0))
+											if selfTbl.ShortStop == false then
+												selfTbl.Accel = math.Clamp(selfTbl.Accel, -0.15, 0.15)
+												Shake = (Angle(1 * selfTbl.ShakeAmpX, 0.1 * selfTbl.ShakeAmpY, 0) * (Speed * 0.025)) + Angle(-selfTbl.Accel * 25, 0, 0)
 											else
-												Shake = Angle(1 * self.ShakeAmpX, 0.1 * self.ShakeAmpY, 0) * (Speed * 0.0125)
+												Shake = Angle(1 * selfTbl.ShakeAmpX, 0.1 * selfTbl.ShakeAmpY, 0) * (Speed * 0.0125)
 											end
 
-											self.Shake = Shake
+											selfTbl.Shake = Shake
 										end
 
-										--local HullAngleMovement = -self:WorldToLocalAngles(self.LastAngles)
-										self.LastAngles = self:GetAngles()
+										selfTbl.LastAngles = self:GetAngles()
 										--get angle that self has changed in last tick, infact this is done above in last angles
-										local GunDir = normalizedVector(self.CamTrace.HitPos - self.CamTrace.StartPos + (self.CamTrace.StartPos - DakGun:GetPos()))
+										local GunDir = normalizedVector(selfTbl.CamTrace.HitPos - selfTbl.CamTrace.StartPos + (selfTbl.CamTrace.StartPos - DakGun:GetPos()))
 										if self:GetSetPitchOnLoading() and not (GunEnt.ShellLoaded == 1 or GunEnt.ShellLoaded2 == 1) then
 											if IsValid(DakTurret) then
-												GunDir = (self.turretaimer:GetAngles() + Angle(-self:GetLoadingAngle(), 0, 0)):Forward()
+												GunDir = (selfTbl.turretaimer:GetAngles() + Angle(-self:GetLoadingAngle(), 0, 0)):Forward()
 											else
 												GunDir = (self:GetAngles() + Angle(-self:GetLoadingAngle(), 0, 0)):Forward()
 											end
@@ -581,26 +578,26 @@ function ENT:Think()
 											end
 										end
 
-										local Ang = angNumClamp(angClamp(self:WorldToLocalAngles(GunDir:Angle() + self.Shake), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(DakGun:GetAngles()), -self.RotationSpeed * TimeScale, self.RotationSpeed * TimeScale)
+										local Ang = angNumClamp(angClamp(self:WorldToLocalAngles(GunDir:Angle() + selfTbl.Shake), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(DakGun:GetAngles()), -selfTbl.RotationSpeed * TimeScale, selfTbl.RotationSpeed * TimeScale)
 										if IsValid(DakTurret) then
 											--turn both turret and gun
-											local TurDir = normalizedVector(self.CamTrace.HitPos - self.CamTrace.StartPos + (self.CamTrace.StartPos - self.turretaimer:GetPos()))
+											local TurDir = normalizedVector(selfTbl.CamTrace.HitPos - selfTbl.CamTrace.StartPos + (selfTbl.CamTrace.StartPos - selfTbl.turretaimer:GetPos()))
 											local TurClamp = self:LocalToWorldAngles(angClamp(self:WorldToLocalAngles(TurDir:Angle()), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)))
-											local TurAng = angNumClamp(self.turretaimer:WorldToLocalAngles(TurClamp), -self.RotationSpeed * TimeScale, self.RotationSpeed * TimeScale)
-											if self.Off == true then
-												self.OffTicks = self.OffTicks + 1
-												if self.OffTicks > 70 then self.Off = false end
+											local TurAng = angNumClamp(selfTbl.turretaimer:WorldToLocalAngles(TurClamp), -selfTbl.RotationSpeed * TimeScale, selfTbl.RotationSpeed * TimeScale)
+											if selfTbl.Off == true then
+												selfTbl.OffTicks = selfTbl.OffTicks + 1
+												if selfTbl.OffTicks > 70 then selfTbl.Off = false end
 											else
-												if self.Locked == 0 then
-													self.turretaimer:SetAngles(self:LocalToWorldAngles(Angle(0, self:WorldToLocalAngles(self.turretaimer:GetAngles()).yaw, 0)) + Angle(0, TurAng.yaw, 0))
-													local yawdiff = math.abs(self.turretaimer:WorldToLocalAngles(TurClamp).yaw)
+												if selfTbl.Locked == 0 then
+													selfTbl.turretaimer:SetAngles(self:LocalToWorldAngles(Angle(0, self:WorldToLocalAngles(selfTbl.turretaimer:GetAngles()).yaw, 0)) + Angle(0, TurAng.yaw, 0))
+													local yawdiff = math.abs(selfTbl.turretaimer:WorldToLocalAngles(TurClamp).yaw)
 													local pitch = Ang.pitch
 													local Limit = 180
 													local max = 0.5
-													if self.Controller.Modern == 1 then
+													if selfTbl.Controller.Modern == 1 then
 														Limit = 90
 														max = 1
-													elseif self.Controller.ColdWar == 1 then
+													elseif selfTbl.Controller.ColdWar == 1 then
 														Limit = 45
 														max = 0.5
 													else
@@ -614,13 +611,13 @@ function ENT:Think()
 														pitch = pitch * math.min((Limit - yawdiff) / Limit, max)
 													end
 
-													DakGun:SetAngles(self.turretaimer:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, 0, 0)) + Angle(pitch, 0, 0))
+													DakGun:SetAngles(selfTbl.turretaimer:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, 0, 0)) + Angle(pitch, 0, 0))
 												end
 											end
 										else
-											if self.Off == true then
-												self.OffTicks = self.OffTicks + 1
-												if self.OffTicks > 70 / (66 / (1 / engine.TickInterval())) then self.Off = false end
+											if selfTbl.Off == true then
+												selfTbl.OffTicks = selfTbl.OffTicks + 1
+												if selfTbl.OffTicks > 70 / (66 / (1 / engine.TickInterval())) then selfTbl.Off = false end
 											else
 												--turn gun
 												DakGun:SetAngles(self:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, self:WorldToLocalAngles(DakGun:GetAngles()).yaw, 0)) + Angle(Ang.pitch, Ang.yaw, 0))
@@ -629,40 +626,40 @@ function ENT:Think()
 									end
 								end
 							else
-								if self.Locked == 1 then self.Locked = 0 end
+								if selfTbl.Locked == 1 then selfTbl.Locked = 0 end
 								--reposition to forward facing
 								local GunDir = self:GetForward()
-								local Ang = angNumClamp(angClamp(self:WorldToLocalAngles(GunDir:Angle() + Angle(-self:GetIdleElevation(), self:GetIdleYaw(), 0)), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(DakGun:GetAngles()), -self.RotationSpeed * TimeScale, self.RotationSpeed * TimeScale)
-								if IsValid(DakTurret) and IsValid(self.turretaimer) then
+								local Ang = angNumClamp(angClamp(self:WorldToLocalAngles(GunDir:Angle() + Angle(-self:GetIdleElevation(), self:GetIdleYaw(), 0)), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(DakGun:GetAngles()), -selfTbl.RotationSpeed * TimeScale, selfTbl.RotationSpeed * TimeScale)
+								if IsValid(DakTurret) and IsValid(selfTbl.turretaimer) then
 									local TurDir = self:GetForward()
-									local TurAng = angNumClamp(angClamp(self:WorldToLocalAngles(TurDir:Angle() + Angle(0, math.Clamp(self:GetIdleYaw(), -179.99, 179.99), 0)), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(self.turretaimer:GetAngles()), -self.RotationSpeed * TimeScale, self.RotationSpeed * TimeScale)
-									self.turretaimer:SetAngles(self:LocalToWorldAngles(Angle(0, self:WorldToLocalAngles(self.turretaimer:GetAngles()).yaw, 0)) + Angle(0, TurAng.yaw, 0))
-									DakGun:SetAngles(self.turretaimer:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, 0, 0)) + Angle(Ang.pitch, 0, 0))
+									local TurAng = angNumClamp(angClamp(self:WorldToLocalAngles(TurDir:Angle() + Angle(0, math.Clamp(self:GetIdleYaw(), -179.99, 179.99), 0)), Angle(-Elevation, -YawMin, -1), Angle(Depression, YawMax, 1)) - self:WorldToLocalAngles(selfTbl.turretaimer:GetAngles()), -selfTbl.RotationSpeed * TimeScale, selfTbl.RotationSpeed * TimeScale)
+									selfTbl.turretaimer:SetAngles(self:LocalToWorldAngles(Angle(0, self:WorldToLocalAngles(selfTbl.turretaimer:GetAngles()).yaw, 0)) + Angle(0, TurAng.yaw, 0))
+									DakGun:SetAngles(selfTbl.turretaimer:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, 0, 0)) + Angle(Ang.pitch, 0, 0))
 								else
 									DakGun:SetAngles(self:LocalToWorldAngles(Angle(self:WorldToLocalAngles(DakGun:GetAngles()).pitch, self:WorldToLocalAngles(DakGun:GetAngles()).yaw, 0)) + Angle(Ang.pitch, Ang.yaw, 0))
 								end
 
-								self.Off = true
-								self.OffTicks = 0
-								if self.LastPos == nil then self.LastPos = BasePlate:GetPos() end
-								self.LastAngles = self:GetAngles()
+								selfTbl.Off = true
+								selfTbl.OffTicks = 0
+								if selfTbl.LastPos == nil then selfTbl.LastPos = BasePlate:GetPos() end
+								selfTbl.LastAngles = self:GetAngles()
 							end
 						end
 					end
 
-					if self.FixedGun == false then
-						if self.SpeedTable == nil then self.SpeedTable = {} end
-						if self.LastAccel == nil then self.LastAccel = 0 end
-						self.SpeedTable[#self.SpeedTable + 1] = Vector(0, 0, 0):Distance(BasePlate:GetPos() - self.LastPos) - self.LastVel
-						if #self.SpeedTable >= 5 then table.remove(self.SpeedTable, 1) end
+					if selfTbl.FixedGun == false then
+						if selfTbl.SpeedTable == nil then selfTbl.SpeedTable = {} end
+						if selfTbl.LastAccel == nil then selfTbl.LastAccel = 0 end
+						selfTbl.SpeedTable[#selfTbl.SpeedTable + 1] = Vector(0, 0, 0):Distance(BasePlate:GetPos() - selfTbl.LastPos) - selfTbl.LastVel
+						if #selfTbl.SpeedTable >= 5 then table.remove(selfTbl.SpeedTable, 1) end
 						local totalspeed = 0
-						for i = 1, #self.SpeedTable do
-							totalspeed = totalspeed + self.SpeedTable[i]
+						for i = 1, #selfTbl.SpeedTable do
+							totalspeed = totalspeed + selfTbl.SpeedTable[i]
 						end
 
-						self.Accel = totalspeed / #self.SpeedTable
-						self.LastVel = Vector(0, 0, 0):Distance(BasePlate:GetPos() - self.LastPos)
-						self.LastPos = BasePlate:GetPos()
+						selfTbl.Accel = totalspeed / #selfTbl.SpeedTable
+						selfTbl.LastVel = Vector(0, 0, 0):Distance(BasePlate:GetPos() - selfTbl.LastPos)
+						selfTbl.LastPos = BasePlate:GetPos()
 					end
 				end
 			end
