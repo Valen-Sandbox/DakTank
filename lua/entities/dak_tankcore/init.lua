@@ -379,8 +379,9 @@ end
 
 function ENT:Think() --converting self. calls into selfTbl. is going to take awhile here, because this is like 3000 lines, and converting every instance of self. breaks it somehow.
 	local self = self
+	local selfTbl = self:GetTable()
 
-	if CurTime() - 1 >= self.SlowThinkTime then
+	if CurTime() - 1 >= selfTbl.SlowThinkTime then
 		if self:GetTankName() == "" then
 			if self:GetAmerican() == true then
 				local basedesignation = "M" .. tostring(math.random(1, 119))
@@ -407,42 +408,43 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 			end
 		end
 
-		local systime = SysTime()
-		if IsValid(self) and self.Off ~= true then
-			if IsValid(self:GetParent()) then
-				if IsValid(self:GetParent():GetParent()) then
-					self.Base = self:GetParent():GetParent()
-					if not self.PreCostTimerFirst then
-						self.PreCostTimerFirst = CurTime()
-						self.PreCostTimer = 0
+		if IsValid(self) and selfTbl.Off ~= true then
+			local selfParent = self:GetParent()
+			if IsValid(selfParent) then
+				selfParent = selfParent:GetParent()
+				if IsValid(selfParent) then
+					selfTbl.Base = selfParent
+					if not selfTbl.PreCostTimerFirst then
+						selfTbl.PreCostTimerFirst = CurTime()
+						selfTbl.PreCostTimer = 0
 					end
 
-					self.PreCostTimer = CurTime() - self.PreCostTimerFirst
-					if self.DakFinishedPasting == 1 and self.CanSpawn ~= true and (IsValid(self.Gearbox) or (self.TurretControls ~= nil and IsValid(self.TurretControls[1]))) then
-						self.CanSpawn = true
+					selfTbl.PreCostTimer = CurTime() - selfTbl.PreCostTimerFirst
+					if selfTbl.DakFinishedPasting == 1 and selfTbl.CanSpawn ~= true and (IsValid(selfTbl.Gearbox) or (selfTbl.TurretControls ~= nil and IsValid(selfTbl.TurretControls[1]))) then
+						selfTbl.CanSpawn = true
 						--First portion
 						do
 							--Get forced era setting
-							if self:GetForceColdWar() == true then self.ColdWar = 1 end
-							if self:GetForceModern() == true then self.Modern = 1 end
+							if self:GetForceColdWar() == true then selfTbl.ColdWar = 1 end
+							if self:GetForceModern() == true then selfTbl.Modern = 1 end
 						end
 
 						do
 							--Get Active Protection System costs
-							self.APSEnable = self:GetEnableAPS()
-							self.APSFrontalArc = self:GetAPSFrontalArc()
-							self.APSSideArc = self:GetAPSSideArc()
-							self.APSRearArc = self:GetAPSRearArc()
-							self.APSShots = math.Clamp(self:GetAPSShots(), 0, 20)
-							self.APSMinCaliber = self:GetAPSMinCaliber()
-							if self.APSEnable == true then self.Modern = 1 end
-							self.APSCost = 0
-							if self.APSEnable == true then
+							selfTbl.APSEnable = self:GetEnableAPS()
+							selfTbl.APSFrontalArc = self:GetAPSFrontalArc()
+							selfTbl.APSSideArc = self:GetAPSSideArc()
+							selfTbl.APSRearArc = self:GetAPSRearArc()
+							selfTbl.APSShots = math.Clamp(self:GetAPSShots(), 0, 20)
+							selfTbl.APSMinCaliber = self:GetAPSMinCaliber()
+							if selfTbl.APSEnable == true then selfTbl.Modern = 1 end
+							selfTbl.APSCost = 0
+							if selfTbl.APSEnable == true then
 								local roundcost = 0
-								if self.APSFrontalArc == true then roundcost = roundcost + 1 end
-								if self.APSSideArc == true then roundcost = roundcost + 1 end
-								if self.APSRearArc == true then roundcost = roundcost + 1 end
-								self.APSCost = self.APSShots * roundcost
+								if selfTbl.APSFrontalArc == true then roundcost = roundcost + 1 end
+								if selfTbl.APSSideArc == true then roundcost = roundcost + 1 end
+								if selfTbl.APSRearArc == true then roundcost = roundcost + 1 end
+								selfTbl.APSCost = selfTbl.APSShots * roundcost
 							end
 						end
 
@@ -451,122 +453,119 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						local up
 						do
 							--Get orientation and forward entity
-							if IsValid(self.TurretControls[1]) then
-								self.MainTurret = self.TurretControls[1]
-								if #self.TurretControls > 1 and self.MainTurret.GunMass ~= nil then
-									for i = 1, #self.TurretControls do
-										if self.TurretControls[i].GunMass ~= nil then if self.TurretControls[i].GunMass > self.MainTurret.GunMass then self.MainTurret = self.TurretControls[i] end end
+							if IsValid(selfTbl.TurretControls[1]) then
+								selfTbl.MainTurret = selfTbl.TurretControls[1]
+								if #selfTbl.TurretControls > 1 and selfTbl.MainTurret.GunMass ~= nil then
+									for i = 1, #selfTbl.TurretControls do
+										if selfTbl.TurretControls[i].GunMass ~= nil then if selfTbl.TurretControls[i].GunMass > selfTbl.MainTurret.GunMass then selfTbl.MainTurret = selfTbl.TurretControls[i] end end
 									end
 								end
 							end
 
-							if IsValid(self.Gearbox) then
-								forward = Angle(0, self.Gearbox.ForwardEnt:GetAngles().yaw, 0):Forward()
-								right = Angle(0, self.Gearbox.ForwardEnt:GetAngles().yaw, 0):Right()
-								up = Angle(0, self.Gearbox.ForwardEnt:GetAngles().yaw, 0):Up()
-								self.ForwardEnt = self.Gearbox.ForwardEnt
-							elseif IsValid(self.MainTurret) then
-								forward = Angle(0, self.MainTurret:GetAngles().yaw, 0):Forward()
-								right = Angle(0, self.MainTurret:GetAngles().yaw, 0):Right()
-								up = Angle(0, self.MainTurret:GetAngles().yaw, 0):Up()
-								self.ForwardEnt = self.MainTurret
+							if IsValid(selfTbl.Gearbox) then
+								local yaw = selfTbl.Gearbox.ForwardEnt:GetAngles().yaw
+								forward = Angle(0, yaw, 0):Forward()
+								right = Angle(0, yaw, 0):Right()
+								up = Angle(0, yaw, 0):Up()
+								selfTbl.ForwardEnt = selfTbl.Gearbox.ForwardEnt
+							elseif IsValid(selfTbl.MainTurret) then
+								local yaw = selfTbl.MainTurret:GetAngles().yaw
+								forward = Angle(0, yaw, 0):Forward()
+								right = Angle(0, yaw, 0):Right()
+								up = Angle(0, yaw, 0):Up()
+								selfTbl.ForwardEnt = selfTbl.MainTurret
 							end
 
-							self.Forward = forward
+							selfTbl.Forward = forward
 						end
 
 						do
 							--Get basic hitbox done, note: this is full bounds of spawn, not real armor bounds
-							if self.HitBoxMins == nil then self.HitBoxMins = Vector(-1, -1, -1) end
-							if self.HitBoxMaxs == nil then self.HitBoxMaxs = Vector(1, 1, 1) end
-							self.HitBoxMins = self.ForwardEnt:WorldToLocal(self:LocalToWorld(self.HitBoxMins))
-							self.HitBoxMaxs = self.ForwardEnt:WorldToLocal(self:LocalToWorld(self.HitBoxMaxs))
+							if selfTbl.HitBoxMins == nil then selfTbl.HitBoxMins = Vector(-1, -1, -1) end
+							if selfTbl.HitBoxMaxs == nil then selfTbl.HitBoxMaxs = Vector(1, 1, 1) end
+							selfTbl.HitBoxMins = selfTbl.ForwardEnt:WorldToLocal(self:LocalToWorld(selfTbl.HitBoxMins))
+							selfTbl.HitBoxMaxs = selfTbl.ForwardEnt:WorldToLocal(self:LocalToWorld(selfTbl.HitBoxMaxs))
 							local temp
-							if self.HitBoxMins.x > self.HitBoxMaxs.x then
-								temp = self.HitBoxMaxs.x
-								self.HitBoxMaxs.x = self.HitBoxMins.x
-								self.HitBoxMins.x = temp
+							if selfTbl.HitBoxMins.x > selfTbl.HitBoxMaxs.x then
+								temp = selfTbl.HitBoxMaxs.x
+								selfTbl.HitBoxMaxs.x = selfTbl.HitBoxMins.x
+								selfTbl.HitBoxMins.x = temp
 							end
 
-							if self.HitBoxMins.y > self.HitBoxMaxs.y then
-								temp = self.HitBoxMaxs.y
-								self.HitBoxMaxs.y = self.HitBoxMins.y
-								self.HitBoxMins.y = temp
+							if selfTbl.HitBoxMins.y > selfTbl.HitBoxMaxs.y then
+								temp = selfTbl.HitBoxMaxs.y
+								selfTbl.HitBoxMaxs.y = selfTbl.HitBoxMins.y
+								selfTbl.HitBoxMins.y = temp
 							end
 
-							if self.HitBoxMins.z > self.HitBoxMaxs.z then
-								temp = self.HitBoxMaxs.z
-								self.HitBoxMaxs.z = self.HitBoxMins.z
-								self.HitBoxMins.z = temp
+							if selfTbl.HitBoxMins.z > selfTbl.HitBoxMaxs.z then
+								temp = selfTbl.HitBoxMaxs.z
+								selfTbl.HitBoxMaxs.z = selfTbl.HitBoxMins.z
+								selfTbl.HitBoxMins.z = temp
 							end
 
-							self.BoxSize = self.HitBoxMaxs - self.HitBoxMins
-							self.BoxCenter = 0.5 * (self.HitBoxMaxs + self.HitBoxMins)
-							--print("Spawn Box Size: "..tostring(self.BoxSize))
-							self.DakVolume = math.Round(math.abs(self.BoxSize.x * self.BoxSize.y * self.BoxSize.z) * 0.005, 2)
-							self.BestLength = self.BoxSize.x
-							self.BestWidth = self.BoxSize.y
-							self.BestHeight = self.BoxSize.z
-							self.MaxSize = math.max(self.BestLength, self.BestWidth, self.BestHeight)
+							selfTbl.BoxSize = selfTbl.HitBoxMaxs - selfTbl.HitBoxMins
+							selfTbl.BoxCenter = 0.5 * (selfTbl.HitBoxMaxs + selfTbl.HitBoxMins)
+							selfTbl.DakVolume = math.Round(math.abs(selfTbl.BoxSize.x * selfTbl.BoxSize.y * selfTbl.BoxSize.z) * 0.005, 2)
+							selfTbl.BestLength = selfTbl.BoxSize.x
+							selfTbl.BestWidth = selfTbl.BoxSize.y
+							selfTbl.BestHeight = selfTbl.BoxSize.z
+							selfTbl.MaxSize = math.max(selfTbl.BestLength, selfTbl.BestWidth, selfTbl.BestHeight)
 						end
 
-						do
-							--Setup crew armor and bounds tables
-							for i = 1, #self.Crew do
-								self.Crew[i].FrontArmorTable = {}
-								self.Crew[i].RearArmorTable = {}
-								self.Crew[i].SideArmorTable = {}
-								self.Crew[i].FrontalAverage = {}
-								self.Crew[i].RearAverage = {}
-								self.Crew[i].SideAverage = {}
-								self.Crew[i].FrontBounds = {}
-								self.Crew[i].RearBounds = {}
-								self.Crew[i].LeftBounds = {}
-								self.Crew[i].RightBounds = {}
-								self.Crew[i].TopBounds = {}
-								self.Crew[i].BottomBounds = {}
-							end
+						--Setup crew armor and bounds tables
+						for i, crew in ipairs(selfTbl.Crew) do 
+							crew.FrontArmorTable = {}
+							crew.RearArmorTable = {}
+							crew.SideArmorTable = {}
+							crew.FrontalAverage = {}
+							crew.RearAverage = {}
+							crew.SideAverage = {}
+							crew.FrontBounds = {}
+							crew.RearBounds = {}
+							crew.LeftBounds = {}
+							crew.RightBounds = {}
+							crew.TopBounds = {}
+							crew.BottomBounds = {}
 						end
 
-						do
-							--Check top and bottom bounds of vehicle for each crew position
-							self.RealBounds = {}
-							-- local ent, HitCrit, ThickestPos
-							for i = 1, #self.Crew do
-								local mins = self.Crew[i]:OBBMins() * 0.9
-								local maxs = self.Crew[i]:OBBMaxs() * 0.9
-								self.Crew[i].Heightaimpoints = {self.Crew[i]:GetPos(), self.Crew[i]:GetPos() + Vector(mins.x, 0, 0), self.Crew[i]:GetPos() + Vector(maxs.x, 0, 0), self.Crew[i]:GetPos() + Vector(0, mins.y, 0), self.Crew[i]:GetPos() + Vector(0, maxs.y, 0), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, 0), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, 0), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, 0), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, 0),}
-							end
+						--Check top and bottom bounds of vehicle for each crew position
+						selfTbl.RealBounds = {}
+						-- local ent, HitCrit, ThickestPos
+						for i, crew in ipairs(selfTbl.Crew) do 
+							local mins = crew:OBBMins() * 0.9
+							local maxs = crew:OBBMaxs() * 0.9
+							local pos = crew:GetPos()
+							crew.Heightaimpoints = {pos, pos + Vector(mins.x, 0, 0), pos + Vector(maxs.x, 0, 0), pos + Vector(0, mins.y, 0), pos + Vector(0, maxs.y, 0), pos + Vector(mins.x * 0.5, 0, 0), pos + Vector(maxs.x * 0.5, 0, 0), pos + Vector(0, mins.y * 0.5, 0), pos + Vector(0, maxs.y * 0.5, 0),}
+						end
 
-							for i = 1, #self.Crew do
-								for j = i, #self.Crew[i].Heightaimpoints do
-									local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j] + up * self.BestHeight * 2, self.Crew[i].Heightaimpoints[j] - up * 25, self.MaxSize * 2, "AP", 75, player.GetAll(), self)
-									if IsValid(ent) then if ent.Controller == self and ent:GetClass() == "dak_crew" then if HitCrit == 1 then if ThickestPos ~= self.Crew[i].Heightaimpoints[j] + up * self.BestHeight * 2 then self.Crew[i].TopBounds[#self.Crew[i].TopBounds + 1] = ThickestPos end end end end
-									_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].Heightaimpoints[j] - up * self.BestHeight * 2, self.Crew[i].Heightaimpoints[j] + up * 25, self.MaxSize * 2, "AP", 75, player.GetAll(), self)
-									if IsValid(ent) then if ent.Controller == self and ent:GetClass() == "dak_crew" then if HitCrit == 1 then if not (ThickestPos == self.Crew[i].Heightaimpoints[j] - up * self.BestHeight * 2) then self.Crew[i].BottomBounds[#self.Crew[i].BottomBounds + 1] = ThickestPos end end end end
+						for i = 1, #selfTbl.Crew do 
+							for j = i, #selfTbl.Crew[i].Heightaimpoints do
+								local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2, selfTbl.Crew[i].Heightaimpoints[j] - up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
+								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
+									selfTbl.Crew[i].TopBounds[#selfTbl.Crew[i].TopBounds + 1] = ThickestPos 
+								end
+								_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].Heightaimpoints[j] - up * selfTbl.BestHeight * 2, selfTbl.Crew[i].Heightaimpoints[j] + up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
+								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
+									selfTbl.Crew[i].BottomBounds[#selfTbl.Crew[i].BottomBounds + 1] = ThickestPos
 								end
 							end
 						end
 
-						do
-							--Setup crew armor checking positions
-							-- local aimpos
-							for i = 1, #self.Crew do
-								local mins = self.Crew[i]:OBBMins() * 0.9
-								local maxs = self.Crew[i]:OBBMaxs() * 0.9
-								self.Crew[i].aimpoints = {self.Crew[i]:GetPos() + Vector(0, 0, mins.z), self.Crew[i]:GetPos() + Vector(mins.x, 0, mins.z), self.Crew[i]:GetPos() + Vector(maxs.x, 0, mins.z), self.Crew[i]:GetPos() + Vector(0, mins.y, mins.z), self.Crew[i]:GetPos() + Vector(0, maxs.y, mins.z), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, mins.z), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, mins.z), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, mins.z), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, mins.z), self.Crew[i]:GetPos() + Vector(0, 0, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(mins.x, 0, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(maxs.x, 0, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(0, mins.y, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(0, maxs.y, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, mins.z * 0.5), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, mins.z * 0.5), self.Crew[i]:GetPos(), self.Crew[i]:GetPos() + Vector(mins.x, 0, 0), self.Crew[i]:GetPos() + Vector(maxs.x, 0, 0), self.Crew[i]:GetPos() + Vector(0, mins.y, 0), self.Crew[i]:GetPos() + Vector(0, maxs.y, 0), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, 0), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, 0), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, 0), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, 0), self.Crew[i]:GetPos() + Vector(0, 0, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(mins.x, 0, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(maxs.x, 0, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(0, mins.y, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(0, maxs.y, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, maxs.z * 0.5), self.Crew[i]:GetPos() + Vector(0, 0, maxs.z), self.Crew[i]:GetPos() + Vector(mins.x, 0, maxs.z), self.Crew[i]:GetPos() + Vector(maxs.x, 0, maxs.z), self.Crew[i]:GetPos() + Vector(0, mins.y, maxs.z), self.Crew[i]:GetPos() + Vector(0, maxs.y, maxs.z), self.Crew[i]:GetPos() + Vector(mins.x * 0.5, 0, maxs.z), self.Crew[i]:GetPos() + Vector(maxs.x * 0.5, 0, maxs.z), self.Crew[i]:GetPos() + Vector(0, mins.y * 0.5, maxs.z), self.Crew[i]:GetPos() + Vector(0, maxs.y * 0.5, maxs.z)}
-							end
+						--Setup crew armor checking positions
+						for i, crew in ipairs(selfTbl.Crew) do 
+							local mins = crew:OBBMins() * 0.9
+							local maxs = crew:OBBMaxs() * 0.9
+							local pos = crew:GetPos()
+							crew.aimpoints = {pos + Vector(0, 0, mins.z), pos + Vector(mins.x, 0, mins.z), pos + Vector(maxs.x, 0, mins.z), pos + Vector(0, mins.y, mins.z), pos + Vector(0, maxs.y, mins.z), pos + Vector(mins.x * 0.5, 0, mins.z), pos + Vector(maxs.x * 0.5, 0, mins.z), pos + Vector(0, mins.y * 0.5, mins.z), pos + Vector(0, maxs.y * 0.5, mins.z), pos + Vector(0, 0, mins.z * 0.5), pos + Vector(mins.x, 0, mins.z * 0.5), pos + Vector(maxs.x, 0, mins.z * 0.5), pos + Vector(0, mins.y, mins.z * 0.5), pos + Vector(0, maxs.y, mins.z * 0.5), pos + Vector(mins.x * 0.5, 0, mins.z * 0.5), pos + Vector(maxs.x * 0.5, 0, mins.z * 0.5), pos + Vector(0, mins.y * 0.5, mins.z * 0.5), pos + Vector(0, maxs.y * 0.5, mins.z * 0.5), pos, pos + Vector(mins.x, 0, 0), pos + Vector(maxs.x, 0, 0), pos + Vector(0, mins.y, 0), pos + Vector(0, maxs.y, 0), pos + Vector(mins.x * 0.5, 0, 0), pos + Vector(maxs.x * 0.5, 0, 0), pos + Vector(0, mins.y * 0.5, 0), pos + Vector(0, maxs.y * 0.5, 0), pos + Vector(0, 0, maxs.z * 0.5), pos + Vector(mins.x, 0, maxs.z * 0.5), pos + Vector(maxs.x, 0, maxs.z * 0.5), pos + Vector(0, mins.y, maxs.z * 0.5), pos + Vector(0, maxs.y, maxs.z * 0.5), pos + Vector(mins.x * 0.5, 0, maxs.z * 0.5), pos + Vector(maxs.x * 0.5, 0, maxs.z * 0.5), pos + Vector(0, mins.y * 0.5, maxs.z * 0.5), pos + Vector(0, maxs.y * 0.5, maxs.z * 0.5), pos + Vector(0, 0, maxs.z), pos + Vector(mins.x, 0, maxs.z), pos + Vector(maxs.x, 0, maxs.z), pos + Vector(0, mins.y, maxs.z), pos + Vector(0, maxs.y, maxs.z), pos + Vector(mins.x * 0.5, 0, maxs.z), pos + Vector(maxs.x * 0.5, 0, maxs.z), pos + Vector(0, mins.y * 0.5, maxs.z), pos + Vector(0, maxs.y * 0.5, maxs.z)}
 						end
 
 						do
 							--Frontal armor check
-							local distance = self.MaxSize * 2
+							local distance = selfTbl.MaxSize * 2
 							local HitTable = {}
 							local ArmorVal1 = 0
 							local ent
-							local aimpos
-							local gunhit = 0
-							local gearhit = 0
 							local HitCrit = 0
 							local hitpos
 							local SpallLiner = 0
@@ -575,63 +574,58 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local ThickestPos
 							local ArmorValTable = {}
 							local SpallLinerCount = 0
-							for i = 1, #self.Crew do
-								for j = 1, #self.Crew[i].aimpoints do
-									aimpos = self.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(self.Crew[i].aimpoints[j] + forward * self.BestLength * 2, self.Crew[i].aimpoints[j] - forward * 25, distance, "AP", 75, player.GetAll(), self)
-									if IsValid(ent) then
-										if ent.Controller == self and ent:GetClass() == "dak_crew" then
-											if HitCrit == 1 then
-												for k = 1, #Crews do
-													Crews[k].FrontArmorTable[#Crews[k].FrontArmorTable + 1] = Armors[k]
-												end
-
-												self.Crew[i].FrontBounds[#self.Crew[i].FrontBounds + 1] = ThickestPos
-												ArmorValTable[#ArmorValTable + 1] = ArmorVal1
-												if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
-											end
+							for i, crew in ipairs(selfTbl.Crew) do
+								for j, aimpoint in ipairs(crew.aimpoints) do
+									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(aimpoint + forward * selfTbl.BestLength * 2, aimpoint - forward * 25, distance, "AP", 75, player.GetAll(), self)
+									if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 then
+										for k = 1, #Crews do
+											Crews[k].FrontArmorTable[#Crews[k].FrontArmorTable + 1] = Armors[k]
 										end
+
+										crew.FrontBounds[#crew.FrontBounds + 1] = ThickestPos
+										ArmorValTable[#ArmorValTable + 1] = ArmorVal1
+										if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
 
 										HitTable[#HitTable + 1] = hitpos
 									end
 								end
 							end
 
-							for i = 1, #self.Crew do
-								table.sort(self.Crew[i].FrontArmorTable)
+							for i = 1, #selfTbl.Crew do
+								table.sort(selfTbl.Crew[i].FrontArmorTable)
 								local Ave = 0
 								local AveCount = 0
-								for j = 1, #self.Crew[i].FrontArmorTable do
-									if (j >= #self.Crew[i].FrontArmorTable / 4 and j <= (#self.Crew[i].FrontArmorTable / 4) * 3) or #self.Crew[i].FrontArmorTable < 4 then
-										Ave = Ave + math.min(self.Crew[i].FrontArmorTable[j], 10000)
+								for j = 1, #selfTbl.Crew[i].FrontArmorTable do
+									if (j >= #selfTbl.Crew[i].FrontArmorTable / 4 and j <= (#selfTbl.Crew[i].FrontArmorTable / 4) * 3) or #selfTbl.Crew[i].FrontArmorTable < 4 then
+										Ave = Ave + math.min(selfTbl.Crew[i].FrontArmorTable[j], 10000)
 										AveCount = AveCount + 1
 									end
 								end
 
-								self.Crew[i].FrontalAverage = Ave / AveCount
+								selfTbl.Crew[i].FrontalAverage = Ave / AveCount
 							end
 
-							table.sort(self.Crew, function(a, b) return a.FrontalAverage > b.FrontalAverage end)
-							if #self.Crew >= 2 then self.FrontalArmor = (self.Crew[1].FrontalAverage + self.Crew[2].FrontalAverage) * 0.5 end
-							for i = 1, #self.Crew do
-								if i <= 2 or self.Crew[i].FrontalAverage >= self.Crew[1].FrontalAverage * 0.5 then
-									for j = 1, #self.Crew[i].FrontBounds do
-										self.RealBounds[#self.RealBounds + 1] = self.Crew[i].FrontBounds[j]
+							table.sort(selfTbl.Crew, function(a, b) return a.FrontalAverage > b.FrontalAverage end)
+							if #selfTbl.Crew >= 2 then selfTbl.FrontalArmor = (selfTbl.Crew[1].FrontalAverage + selfTbl.Crew[2].FrontalAverage) * 0.5 end
+							for i = 1, #selfTbl.Crew do
+								if i <= 2 or selfTbl.Crew[i].FrontalAverage >= selfTbl.Crew[1].FrontalAverage * 0.5 then
+									for j = 1, #selfTbl.Crew[i].FrontBounds do
+										selfTbl.RealBounds[#selfTbl.RealBounds + 1] = selfTbl.Crew[i].FrontBounds[j]
 									end
 
-									for j = 1, #self.Crew[i].TopBounds do
-										self.RealBounds[#self.RealBounds + 1] = self.Crew[i].TopBounds[j]
+									for j = 1, #selfTbl.Crew[i].TopBounds do
+										selfTbl.RealBounds[#selfTbl.RealBounds + 1] = selfTbl.Crew[i].TopBounds[j]
 									end
 
-									for j = 1, #self.Crew[i].BottomBounds do
-										self.RealBounds[#self.RealBounds + 1] = self.Crew[i].BottomBounds[j]
+									for j = 1, #selfTbl.Crew[i].BottomBounds do
+										selfTbl.RealBounds[#selfTbl.RealBounds + 1] = selfTbl.Crew[i].BottomBounds[j]
 									end
 								end
 							end
 
-							if self.FrontalArmor == 0 then self.FrontalArmor = 10000 end
-							self.FrontalSpallLinerCoverage = SpallLinerCount / #ArmorValTable
-							if #ArmorValTable == 0 then self.FrontalSpallLinerCoverage = 1 end
+							if selfTbl.FrontalArmor == 0 then selfTbl.FrontalArmor = 10000 end
+							selfTbl.FrontalSpallLinerCoverage = SpallLinerCount / #ArmorValTable
+							if #ArmorValTable == 0 then selfTbl.FrontalSpallLinerCoverage = 1 end
 						end
 
 						do
@@ -1496,19 +1490,21 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						end)
 					end
 
-					if not self.Dead and (self.DakFinishedPasting == 1 or self.dupespawned == nil) then
-						if not self.DakMaxHealth then self.DakMaxHealth = 10 end
-						if table.Count(self.HitBox) == 0 then if self.DakHealth > self.DakMaxHealth then self.DakHealth = self.DakMaxHealth end end
-						if self.recheckmass == nil then
+					if not selfTbl.Dead and (selfTbl.DakFinishedPasting == 1 or selfTbl.dupespawned == nil) then
+						selfTbl.DakMaxHealth = selfTbl.DakMaxHealth or 10
+						if table.Count(selfTbl.HitBox) == 0 and selfTbl.DakHealth > selfTbl.DakMaxHealth then
+							selfTbl.DakHealth = selfTbl.DakMaxHealth
+						end
+						if selfTbl.recheckmass == nil then
 							local Mass = 0
 							local ParentMass = 0
 							local SA = 0
-							self.Contraption = {self.Base}
+							selfTbl.Contraption = {selfTbl.Base}
 							local turrets = {}
-							for k, v in pairs(self.Base:GetChildren()) do
-								self.Contraption[#self.Contraption + 1] = v
+							for k, v in pairs(selfTbl.Base:GetChildren()) do
+								selfTbl.Contraption[#selfTbl.Contraption + 1] = v
 								for k2, v2 in pairs(v:GetChildren()) do
-									self.Contraption[#self.Contraption + 1] = v2
+									selfTbl.Contraption[#selfTbl.Contraption + 1] = v2
 									if v2:GetClass() == "dak_turretcontrol" then turrets[#turrets + 1] = v2 end
 								end
 							end
@@ -1979,22 +1975,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								CurrentRes = self.Contraption[i]
 								if CurrentRes ~= NULL and CurrentRes ~= nil and CurrentRes:IsValid() then
 									local physobj = CurrentRes:GetPhysicsObject()
-									--[[
-									if CurrentRes.PhysicsClipped == true then
-										if CurrentRes.DakMassSet ~= true then
-											if CurrentRes.EntityMods.DakClippedArmor ~= nil then
-												local SA = physobj:GetSurfaceArea()
-												local mass = math.ceil(((CurrentRes.EntityMods.DakClippedArmor/1/(288/SA))/7.8125)*4.6311781,0)
-												if mass > 0 then
-													SetMass( self.DakOwner, CurrentRes, { Mass = mass } )
-													physobj:SetMass(mass)
-												end
-												CurrentRes.DakMassSet = true
-											end
-										end
-									end
-									]]
-									--
 									if physobj:IsValid() then
 										local physmass = physobj:GetMass()
 										Mass = Mass + physmass
@@ -2847,23 +2827,23 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 			end
 		end
 
-		self.SlowThinkTime = CurTime()
+		selfTbl.SlowThinkTime = CurTime()
 	end
 
 	--do collisions
-	if self.HitBoxMins ~= nil and self.HitBoxMaxs ~= nil then
-		local smallest = math.min(math.abs(self.HitBoxMins.x), math.abs(self.HitBoxMins.y), math.abs(self.HitBoxMaxs.x), math.abs(self.HitBoxMaxs.y))
-		if IsValid(self.Base) and IsValid(self.ForwardEnt) then
+	if selfTbl.HitBoxMins ~= nil and selfTbl.HitBoxMaxs ~= nil then
+		local smallest = math.min(math.abs(selfTbl.HitBoxMins.x), math.abs(selfTbl.HitBoxMins.y), math.abs(selfTbl.HitBoxMaxs.x), math.abs(selfTbl.HitBoxMaxs.y))
+		if IsValid(selfTbl.Base) and IsValid(selfTbl.ForwardEnt) then
 			local collisionstrace = util.TraceHull({
-				start = self.ForwardEnt:GetPos(),
-				endpos = self.ForwardEnt:GetPos() + (self.Base:GetPhysicsObject():GetVelocity() * 0.2),
-				mins = Vector(-smallest, -smallest, self.HitBoxMins.z),
-				maxs = Vector(smallest, smallest, self.HitBoxMaxs.z),
+				start = selfTbl.ForwardEnt:GetPos(),
+				endpos = selfTbl.ForwardEnt:GetPos() + (selfTbl.Base:GetPhysicsObject():GetVelocity() * 0.2),
+				mins = Vector(-smallest, -smallest, selfTbl.HitBoxMins.z),
+				maxs = Vector(smallest, smallest, selfTbl.HitBoxMaxs.z),
 				mask = MASK_SOLID,
-				filter = self.Contraption
+				filter = selfTbl.Contraption
 			})
 
-			DakTankCollisions(collisionstrace.Entity, self.Base, collisionstrace.HitPos)
+			DakTankCollisions(collisionstrace.Entity, selfTbl.Base, collisionstrace.HitPos)
 		end
 	end
 

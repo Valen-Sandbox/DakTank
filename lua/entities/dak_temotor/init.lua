@@ -26,15 +26,19 @@ end
 
 function ENT:Think()
 	DTTE.CheckSpherical(self)
-	if CurTime() >= self.SparkTime + 0.33 then
+	local self = self
+	local selfTbl = self:GetTable()
+
+
+	if CurTime() >= selfTbl.SparkTime + 0.33 then
 		local scale
-		if self.DakHealth <= (self.DakMaxHealth * 0.80) and self.DakHealth > (self.DakMaxHealth * 0.60) then
+		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 			scale = 1
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.60) and self.DakHealth > (self.DakMaxHealth * 0.40) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
 			scale = 2
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.40) and self.DakHealth > (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
 			scale = 3
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
 			scale = 4
 		end
 
@@ -48,89 +52,89 @@ function ENT:Think()
 			util.Effect("daktedamage", effectdata)
 		end
 
-		self.SparkTime = CurTime()
+		selfTbl.SparkTime = CurTime()
 	end
 
-	if self.DakName == "Micro Engine" then
-		self.DakMaxHealth = 5
-		self.DakArmor = 5
-		self.DakMass = 80
-		self.DakSpeed = 0.4444
-		self.DakModel = "models/daktanks/engine1.mdl"
-		self.DakFuelReq = 24
-		self.DakHP = 40
-	elseif self.DakName == "Small Engine" then
-		self.DakMaxHealth = 20
-		self.DakArmor = 20
-		self.DakMass = 265
-		self.DakSpeed = 1.3888
-		self.DakModel = "models/daktanks/engine2.mdl"
-		self.DakFuelReq = 75
-		self.DakHP = 125
-	elseif self.DakName == "Standard Engine" then
-		self.DakMaxHealth = 45
-		self.DakArmor = 45
-		self.DakMass = 625
-		self.DakSpeed = 3.3333
-		self.DakModel = "models/daktanks/engine3.mdl"
-		self.DakFuelReq = 180
-		self.DakHP = 300
-	elseif self.DakName == "Large Engine" then
-		self.DakMaxHealth = 90
-		self.DakArmor = 90
-		self.DakMass = 1225
-		self.DakSpeed = 6.6666
-		self.DakModel = "models/daktanks/engine4.mdl"
-		self.DakFuelReq = 360
-		self.DakHP = 600
-	elseif self.DakName == "Huge Engine" then
-		self.DakMaxHealth = 150
-		self.DakArmor = 150
-		self.DakMass = 2120
-		self.DakSpeed = 11.1111
-		self.DakModel = "models/daktanks/engine5.mdl"
-		self.DakFuelReq = 600
-		self.DakHP = 1000
-	elseif self.DakName == "Ultra Engine" then
-		self.DakMaxHealth = 360
-		self.DakArmor = 360
-		self.DakMass = 5020
-		self.DakSpeed = 26.6666
-		self.DakModel = "models/daktanks/engine6.mdl"
-		self.DakFuelReq = 1440
-		self.DakHP = 2400
+	if selfTbl.DakName == "Micro Engine" then
+		selfTbl.DakMaxHealth = 5
+		selfTbl.DakArmor = 5
+		selfTbl.DakMass = 80
+		selfTbl.DakSpeed = 0.4444
+		selfTbl.DakModel = "models/daktanks/engine1.mdl"
+		selfTbl.DakFuelReq = 24
+		selfTbl.DakHP = 40
+	elseif selfTbl.DakName == "Small Engine" then
+		selfTbl.DakMaxHealth = 20
+		selfTbl.DakArmor = 20
+		selfTbl.DakMass = 265
+		selfTbl.DakSpeed = 1.3888
+		selfTbl.DakModel = "models/daktanks/engine2.mdl"
+		selfTbl.DakFuelReq = 75
+		selfTbl.DakHP = 125
+	elseif selfTbl.DakName == "Standard Engine" then
+		selfTbl.DakMaxHealth = 45
+		selfTbl.DakArmor = 45
+		selfTbl.DakMass = 625
+		selfTbl.DakSpeed = 3.3333
+		selfTbl.DakModel = "models/daktanks/engine3.mdl"
+		selfTbl.DakFuelReq = 180
+		selfTbl.DakHP = 300
+	elseif selfTbl.DakName == "Large Engine" then
+		selfTbl.DakMaxHealth = 90
+		selfTbl.DakArmor = 90
+		selfTbl.DakMass = 1225
+		selfTbl.DakSpeed = 6.6666
+		selfTbl.DakModel = "models/daktanks/engine4.mdl"
+		selfTbl.DakFuelReq = 360
+		selfTbl.DakHP = 600
+	elseif selfTbl.DakName == "Huge Engine" then
+		selfTbl.DakMaxHealth = 150
+		selfTbl.DakArmor = 150
+		selfTbl.DakMass = 2120
+		selfTbl.DakSpeed = 11.1111
+		selfTbl.DakModel = "models/daktanks/engine5.mdl"
+		selfTbl.DakFuelReq = 600
+		selfTbl.DakHP = 1000
+	elseif selfTbl.DakName == "Ultra Engine" then
+		selfTbl.DakMaxHealth = 360
+		selfTbl.DakArmor = 360
+		selfTbl.DakMass = 5020
+		selfTbl.DakSpeed = 26.6666
+		selfTbl.DakModel = "models/daktanks/engine6.mdl"
+		selfTbl.DakFuelReq = 1440
+		selfTbl.DakHP = 2400
 	end
 
-	if not self.FirstCheck and not (self.DakMaxHealth == 25) then
-		self.FirstCheck = true
-		self.DakHealth = self.DakMaxHealth
+	if not selfTbl.FirstCheck and not (selfTbl.DakMaxHealth == 25) then
+		selfTbl.FirstCheck = true
+		selfTbl.DakHealth = selfTbl.DakMaxHealth
 	end
 
-	if self.DakHealth > self.DakMaxHealth then self.DakHealth = self.DakMaxHealth end
-	self.DakSpeed = self.DakSpeed * (self.DakHealth / self.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(), 0, 1) --Would be better to do this in ontake damage, but these values are reset every think.
-	self.DakHP = self.DakHP * (self.DakHealth / self.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(), 0, 1)
-	if self.initsound ~= self.DakSound then
-		self.initsound = self.DakSound
-		self.Sound:Stop()
-		self.Sound = CreateSound(self, self.DakSound, CReliableBroadcastRecipientFilter)
-		self.Sound:PlayEx(1, 100)
-		self.Sound:ChangePitch(0, 0)
-		self.Sound:ChangeVolume(0, 0)
+	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
+	selfTbl.DakSpeed = selfTbl.DakSpeed * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(), 0, 1) --Would be better to do this in ontake damage, but these values are reset every think.
+	selfTbl.DakHP = selfTbl.DakHP * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * math.Clamp(self:GetHorsePowerMultiplier(), 0, 1)
+	if selfTbl.initsound ~= selfTbl.DakSound then
+		selfTbl.initsound = selfTbl.DakSound
+		selfTbl.Sound:Stop()
+		selfTbl.Sound = CreateSound(self, selfTbl.DakSound, CReliableBroadcastRecipientFilter)
+		selfTbl.Sound:PlayEx(1, 100)
+		selfTbl.Sound:ChangePitch(0, 0)
+		selfTbl.Sound:ChangeVolume(0, 0)
 	end
 
-	if self.DakModel and not (self:GetModel() == self.DakModel) then
-		self:SetModel(self.DakModel)
+	if selfTbl.DakModel and not (self:GetModel() == selfTbl.DakModel) then
+		self:SetModel(selfTbl.DakModel)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetSolid(SOLID_VPHYSICS)
 	end
 
-	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	if self.DakDead then
-		self.DakHP = 0
-		self.DakHealth = 0
+	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+	if selfTbl.DakDead then
+		selfTbl.DakHP = 0
+		selfTbl.DakHealth = 0
 	elseif self:IsOnFire() then
-		local Dmg = self.DakMaxHealth * 0.025 * 0.25
-		self.DakHealth = self.DakHealth - Dmg
+		local Dmg = selfTbl.DakMaxHealth * 0.025 * 0.25
+		selfTbl.DakHealth = selfTbl.DakHealth - Dmg
 		self:DTOnTakeDamage(Dmg)
 	end
 

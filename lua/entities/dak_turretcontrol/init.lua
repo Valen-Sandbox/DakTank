@@ -140,8 +140,10 @@ function ENT:Think()
 				end
 
 				if selfTbl.DakParented ~= 1 then
-					if IsValid(GunEnt:GetParent()) then
-						if IsValid(GunEnt:GetParent():GetParent()) then DakGun = GunEnt:GetParent():GetParent() end
+					local gunParent = GunEnt:GetParent()
+					if IsValid(gunParent) then
+						gunParent = gunParent:GetParent()
+						if IsValid(gunParent) then DakGun = gunParent end
 						selfTbl.Turret = {}
 						if IsValid(DakTurret) then
 							table.Add(selfTbl.Turret, GetTurretParents(GunEnt))
@@ -223,11 +225,9 @@ function ENT:Think()
 							selfTbl.SentError = 1
 							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
 							selfTbl.ErrorTime = CurTime()
-						else
-							if CurTime() >= selfTbl.ErrorTime + 10 then
-								selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
-								selfTbl.ErrorTime = CurTime()
-							end
+						elseif CurTime() >= selfTbl.ErrorTime + 10 then
+							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: Gun must be parented to an aimer prop.")
+							selfTbl.ErrorTime = CurTime()
 						end
 					end
 
@@ -237,11 +237,9 @@ function ENT:Think()
 							selfTbl.SentError2 = 1
 							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
 							selfTbl.ErrorTime2 = CurTime()
-						else
-							if CurTime() >= selfTbl.ErrorTime2 + 10 then
-								selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
-								selfTbl.ErrorTime2 = CurTime()
-							end
+						elseif CurTime() >= selfTbl.ErrorTime2 + 10 then
+							selfTbl.DakOwner:PrintMessage(HUD_PRINTTALK, "Turret Controller Error: You must wire the gun input to the gun entity, not an aimer prop.")
+							selfTbl.ErrorTime2 = CurTime()
 						end
 					end
 

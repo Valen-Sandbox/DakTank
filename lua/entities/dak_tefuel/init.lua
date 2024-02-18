@@ -42,17 +42,20 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
+	local self = self
+	local selfTbl = self:GetTable()
+
 	DTTE.CheckSpherical(self)
-	if self.DakDead ~= true then
-		if CurTime() >= self.SparkTime + 0.33 then
+	if selfTbl.DakDead ~= true then
+		if CurTime() >= selfTbl.SparkTime + 0.33 then
 			local scale
-			if self.DakHealth <= (self.DakMaxHealth * 0.80) and self.DakHealth > (self.DakMaxHealth * 0.60) then
+			if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 				scale = 1
-			elseif self.DakHealth <= (self.DakMaxHealth * 0.60) and self.DakHealth > (self.DakMaxHealth * 0.40) then
+			elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
 				scale = 2
-			elseif self.DakHealth <= (self.DakMaxHealth * 0.40) and self.DakHealth > (self.DakMaxHealth * 0.20) then
+			elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
 				scale = 3
-			elseif self.DakHealth <= (self.DakMaxHealth * 0.20) then
+			elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
 				scale = 4
 			end
 
@@ -66,11 +69,11 @@ function ENT:Think()
 				util.Effect("daktedamage", effectdata)
 			end
 
-			self.SparkTime = CurTime()
+			selfTbl.SparkTime = CurTime()
 		end
 	else
-		self.DakHealth = 0
-		self.DakFuel = 0
+		selfTbl.DakHealth = 0
+		selfTbl.DakFuel = 0
 	end
 
 	local fuelTankStats = {
@@ -83,16 +86,16 @@ function ENT:Think()
 		["Ultra Fuel Tank"] = {1900, 1440, 60}
 	}
 
-	if fuelTankStats[self.DakName] then
-		self.DakMass = fuelTankStats[self.DakName][1]
-		self.DakFuel = fuelTankStats[self.DakName][2]
-		self.DakMaxHealth = fuelTankStats[self.DakName][3]
+	if fuelTankStats[selfTbl.DakName] then
+		selfTbl.DakMass = fuelTankStats[selfTbl.DakName][1]
+		selfTbl.DakFuel = fuelTankStats[selfTbl.DakName][2]
+		selfTbl.DakMaxHealth = fuelTankStats[selfTbl.DakName][3]
 	end
 
-	if self.DakHealth > self.DakMaxHealth then self.DakHealth = self.DakMaxHealth end
-	self.DakFuel = self.DakFuel * (self.DakHealth / self.DakMaxHealth)
-	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	if self.DakDead ~= true and self:IsOnFire() then
+	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
+	selfTbl.DakFuel = selfTbl.DakFuel * (selfTbl.DakHealth / selfTbl.DakMaxHealth)
+	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+	if selfTbl.DakDead ~= true and self:IsOnFire() then
 		for i = 1, 10 do
 			local Direction = VectorRand()
 			local trace = {}
@@ -110,7 +113,7 @@ function ENT:Think()
 			end
 		end
 
-		self.DakHealth = self.DakHealth - 1
+		selfTbl.DakHealth = selfTbl.DakHealth - 1
 		self:DTOnTakeDamage(1)
 	end
 

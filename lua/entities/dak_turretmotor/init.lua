@@ -18,16 +18,19 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
+	local self = self
+	local selfTbl = self:GetTable()
+
 	DTTE.CheckSpherical(self)
-	if CurTime() >= self.SparkTime + 0.33 then
+	if CurTime() >= selfTbl.SparkTime + 0.33 then
 		local scale
-		if self.DakHealth <= (self.DakMaxHealth * 0.80) and self.DakHealth > (self.DakMaxHealth * 0.60) then
+		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 			scale = 1
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.60) and self.DakHealth > (self.DakMaxHealth * 0.40) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
 			scale = 2
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.40) and self.DakHealth > (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
 			scale = 3
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
 			scale = 4
 		end
 
@@ -41,41 +44,41 @@ function ENT:Think()
 			util.Effect("daktedamage", effectdata)
 		end
 
-		self.SparkTime = CurTime()
+		selfTbl.SparkTime = CurTime()
 	end
 
-	if self.DakName == "Turret Motor" or self.DakName == "TMotor" then self.DakName = "Small Turret Motor" end
-	if self.DakName == "Small Turret Motor" then
-		self.DakMaxHealth = 10
-		self.DakMass = 250
-		self.DakModel = "models/xqm/hydcontrolbox.mdl"
-		self.DakRotMult = 0.1
-	elseif self.DakName == "Medium Turret Motor" then
-		self.DakMaxHealth = 20
-		self.DakMass = 500
-		self.DakModel = "models/props_c17/utilityconducter001.mdl"
-		self.DakRotMult = 0.25
-	elseif self.DakName == "Large Turret Motor" then
-		self.DakMaxHealth = 50
-		self.DakMass = 1000
-		self.DakModel = "models/props_c17/substation_transformer01d.mdl"
-		self.DakRotMult = 0.6
+	if selfTbl.DakName == "Turret Motor" or selfTbl.DakName == "TMotor" then selfTbl.DakName = "Small Turret Motor" end
+	if selfTbl.DakName == "Small Turret Motor" then
+		selfTbl.DakMaxHealth = 10
+		selfTbl.DakMass = 250
+		selfTbl.DakModel = "models/xqm/hydcontrolbox.mdl"
+		selfTbl.DakRotMult = 0.1
+	elseif selfTbl.DakName == "Medium Turret Motor" then
+		selfTbl.DakMaxHealth = 20
+		selfTbl.DakMass = 500
+		selfTbl.DakModel = "models/props_c17/utilityconducter001.mdl"
+		selfTbl.DakRotMult = 0.25
+	elseif selfTbl.DakName == "Large Turret Motor" then
+		selfTbl.DakMaxHealth = 50
+		selfTbl.DakMass = 1000
+		selfTbl.DakModel = "models/props_c17/substation_transformer01d.mdl"
+		selfTbl.DakRotMult = 0.6
 	end
 
-	if self.DakModel and self:GetModel() ~= self.DakModel then
-		self:SetModel(self.DakModel)
+	if selfTbl.DakModel and self:GetModel() ~= selfTbl.DakModel then
+		self:SetModel(selfTbl.DakModel)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetSolid(SOLID_VPHYSICS)
 	end
 
-	if self.DakHealth > self.DakMaxHealth then self.DakHealth = self.DakMaxHealth end
-	if self.DakRotMult then self.DakRotMult = self.DakRotMult * self.DakHealth / self.DakMaxHealth end
-	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	if self.DakDead then
-		self.DakRotMult = 0
-		self.DakHealth = 0
+	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
+	if selfTbl.DakRotMult then selfTbl.DakRotMult = selfTbl.DakRotMult * selfTbl.DakHealth / selfTbl.DakMaxHealth end
+	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+	if selfTbl.DakDead then
+		selfTbl.DakRotMult = 0
+		selfTbl.DakHealth = 0
 	elseif self:IsOnFire() then
-		self.DakHealth = self.DakHealth - 0.33
+		selfTbl.DakHealth = selfTbl.DakHealth - 0.33
 		self:DTOnTakeDamage(0.33)
 	end
 

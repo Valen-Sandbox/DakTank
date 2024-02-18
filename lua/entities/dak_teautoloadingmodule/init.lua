@@ -22,16 +22,19 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
+	local self = self
+	local selfTbl = self:GetTable()
+
 	DTTE.CheckSpherical(self)
-	if CurTime() >= self.SparkTime + 0.33 then
+	if CurTime() >= selfTbl.SparkTime + 0.33 then
 		local scale
-		if self.DakHealth <= (self.DakMaxHealth * 0.80) and self.DakHealth > (self.DakMaxHealth * 0.60) then
+		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 			scale = 1
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.60) and self.DakHealth > (self.DakMaxHealth * 0.40) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
 			scale = 2
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.40) and self.DakHealth > (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
 			scale = 3
-		elseif self.DakHealth <= (self.DakMaxHealth * 0.20) then
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
 			scale = 4
 		end
 
@@ -45,7 +48,7 @@ function ENT:Think()
 			util.Effect("daktedamage", effectdata)
 		end
 
-		self.SparkTime = CurTime()
+		selfTbl.SparkTime = CurTime()
 	end
 
 	local magNames = {
@@ -54,54 +57,54 @@ function ENT:Think()
 		["Large Autoloader Clip"] = "Large Autoloader Magazine"
 	}
 
-	self.DakName = magNames[self.DakName] or self.DakName
+	selfTbl.DakName = magNames[selfTbl.DakName] or selfTbl.DakName
 	local magStats = {
 		["Small Autoloader Magazine"] = 1000,
 		["Medium Autoloader Magazine"] = 2000,
 		["Large Autoloader Magazine"] = 3000
 	}
 
-	if magStats[self.DakName] then self.DakMass = magStats[self.DakName] end
-	if IsValid(self.DakGun) and self.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
-		if self.DakGun.TurretController and IsValid(self:GetParent()) then
-			if self:GetParent():GetParent() == self.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == self.DakGun:GetParent():GetParent() or (self.DakGun.TurretController:GetYawMin() <= 45 and self.DakGun.TurretController:GetYawMax() <= 45) then
-				self.DakGun.DakMagazine = math.floor(0.27 * self:GetPhysicsObject():GetVolume() / (((self.DakGun.DakCaliber * 0.0393701) ^ 2) * (self.DakGun.DakCaliber * 0.0393701 * 13 * self.DakGun.ShellLengthMult)))
-				if self.DakGun.DakMagazine > 0 then
-					self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
-					self.DakGun.HasMag = 1
-					self.DakGun.Loaded = 1
+	if magStats[selfTbl.DakName] then selfTbl.DakMass = magStats[selfTbl.DakName] end
+	if IsValid(selfTbl.DakGun) and selfTbl.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
+		if selfTbl.DakGun.TurretController and IsValid(self:GetParent()) then
+			if self:GetParent():GetParent() == selfTbl.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == selfTbl.DakGun:GetParent():GetParent() or (selfTbl.DakGun.TurretController:GetYawMin() <= 45 and selfTbl.DakGun.TurretController:GetYawMax() <= 45) then
+				selfTbl.DakGun.DakMagazine = math.floor(0.27 * self:GetPhysicsObject():GetVolume() / (((selfTbl.DakGun.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakGun.DakCaliber * 0.0393701 * 13 * selfTbl.DakGun.ShellLengthMult)))
+				if selfTbl.DakGun.DakMagazine > 0 then
+					selfTbl.DakGun.DakReloadTime = selfTbl.DakGun.DakCooldown * selfTbl.DakGun.DakMagazine
+					selfTbl.DakGun.HasMag = 1
+					selfTbl.DakGun.Loaded = 1
 				else
-					self.DakGun.HasMag = 0
-					self.DakGun.Loaded = 0
+					selfTbl.DakGun.HasMag = 0
+					selfTbl.DakGun.Loaded = 0
 				end
 			else
-				self.DakGun.HasMag = 0
-				self.DakGun.Loaded = 0
+				selfTbl.DakGun.HasMag = 0
+				selfTbl.DakGun.Loaded = 0
 			end
 		else
-			self.DakGun.DakMagazine = math.floor(0.27 * self:GetPhysicsObject():GetVolume() / (((self.DakGun.DakCaliber * 0.0393701) ^ 2) * (self.DakGun.DakCaliber * 0.0393701 * 13 * self.DakGun.ShellLengthMult)))
-			self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
-			if self.DakGun.DakMagazine > 0 then
-				self.DakGun.DakReloadTime = self.DakGun.DakCooldown * self.DakGun.DakMagazine
-				self.DakGun.HasMag = 1
-				self.DakGun.Loaded = 1
+			selfTbl.DakGun.DakMagazine = math.floor(0.27 * self:GetPhysicsObject():GetVolume() / (((selfTbl.DakGun.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakGun.DakCaliber * 0.0393701 * 13 * selfTbl.DakGun.ShellLengthMult)))
+			selfTbl.DakGun.DakReloadTime = selfTbl.DakGun.DakCooldown * selfTbl.DakGun.DakMagazine
+			if selfTbl.DakGun.DakMagazine > 0 then
+				selfTbl.DakGun.DakReloadTime = selfTbl.DakGun.DakCooldown * selfTbl.DakGun.DakMagazine
+				selfTbl.DakGun.HasMag = 1
+				selfTbl.DakGun.Loaded = 1
 			else
-				self.DakGun.HasMag = 0
-				self.DakGun.Loaded = 0
+				selfTbl.DakGun.HasMag = 0
+				selfTbl.DakGun.Loaded = 0
 			end
 		end
 	end
 
-	if self.DakHealth > self.DakMaxHealth then self.DakHealth = self.DakMaxHealth end
-	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	if self.DakDead ~= true then
+	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
+	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+	if selfTbl.DakDead ~= true then
 		if self:IsOnFire() then
-			self.DakHealth = self.DakHealth - 5
+			selfTbl.DakHealth = selfTbl.DakHealth - 5
 			self:DTOnTakeDamage(5)
 		end
 	else
-		if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
-		self.DakHealth = 0
+		if IsValid(selfTbl.DakGun) then selfTbl.DakGun.Loaded = 0 end
+		selfTbl.DakHealth = 0
 	end
 
 	self:NextThink(CurTime() + 1)
