@@ -182,11 +182,12 @@ local function AngPID(goal, height, lastheight, lastintegral, selfTbl)
 end
 
 function ENT:Think()
-	DTTE.CheckSpherical(self)
+	--checkspherical was here but has been moved to slowthink
 	local self = self
 	local selfTbl = self:GetTable()
 
-	selfTbl.RealInt = CurTime() - selfTbl.LastThink
+	local curTime = CurTime()
+	selfTbl.RealInt = curTime - selfTbl.LastThink
 	selfTbl.TimeMult = selfTbl.RealInt / (1 / 66)
 
 	local TimeMult = selfTbl.TimeMult
@@ -196,7 +197,7 @@ function ENT:Think()
 		return
 	end
 
-	selfTbl.SideDist = self:GetWheelOffsetY()
+	selfTbl.SideDist = self:GetWheelOffsetY() --TODO: Only set these values when editable values are updated
 	selfTbl.TrackLength = self:GetWheelBase()
 	selfTbl.WheelsPerSide = Clamp(self:GetWheelsPerSide(), 2, 20)
 	selfTbl.RideHeight = self:GetWheelOffsetZ()
@@ -209,8 +210,9 @@ function ENT:Think()
 	selfTbl.WheelHeight = self:GetRoadWDiameter()
 	selfTbl.FrontWheelHeight = self:GetDriveWDiameter()
 	selfTbl.RearWheelHeight = self:GetIdlerWDiameter()
-	if CurTime() >= selfTbl.SlowThinkTime + 1 then
-		selfTbl.SlowThinkTime = CurTime()
+
+	if curTime >= selfTbl.SlowThinkTime + 1 then
+		selfTbl.SlowThinkTime = curTime
 		if selfTbl.DakName == "Micro Frontal Mount Gearbox" then
 			selfTbl.DakMaxHealth = 7.5
 			selfTbl.DakArmor = 7.5
@@ -296,9 +298,11 @@ function ENT:Think()
 			selfTbl.Torque = 1
 			selfTbl.MaxHP = 4800
 		end
+
+		DTTE.CheckSpherical(self)
 	end
 
-	if CurTime() >= selfTbl.SparkTime + 0.33 then
+	if curTime >= selfTbl.SparkTime + 0.33 then
 		local scale
 		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 			scale = 1
@@ -320,7 +324,7 @@ function ENT:Think()
 			util.Effect("daktedamage", effectdata)
 		end
 
-		selfTbl.SparkTime = CurTime()
+		selfTbl.SparkTime = curTime
 	end
 
 	if not selfTbl.FirstCheck and selfTbl.DakMaxHealth ~= 25 then
@@ -599,7 +603,7 @@ function ENT:Think()
 						if selfTbl.lastshift == nil then selfTbl.lastshift = 0 end
 						if selfTbl.LastGear == nil then selfTbl.LastGear = 1 end
 						if selfTbl.Gear > selfTbl.LastGear then
-							if selfTbl.lastshift + 2.5 < CurTime() then
+							if selfTbl.lastshift + 2.5 < curTime then
 								if #DakTankCore.Motors > 0 then
 									for i = 1, #DakTankCore.Motors do
 										if IsValid(DakTankCore.Motors[i]) then
@@ -610,7 +614,7 @@ function ENT:Think()
 									end
 								end
 
-								selfTbl.lastshift = CurTime()
+								selfTbl.lastshift = curTime
 							end
 						end
 
@@ -636,9 +640,9 @@ function ENT:Think()
 								else
 									if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
 									if selfTbl.LastMoving == 1 then
-										if selfTbl.lastdump + 2.5 < CurTime() then
+										if selfTbl.lastdump + 2.5 < curTime then
 											if selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
-												selfTbl.lastdump = CurTime()
+												selfTbl.lastdump = curTime
 											end
 										end
 									end
@@ -661,9 +665,9 @@ function ENT:Think()
 						else
 							if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
 							if selfTbl.LastMoving == 1 then
-								if selfTbl.lastdump + 2.5 < CurTime() then
+								if selfTbl.lastdump + 2.5 < curTime then
 									if selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
-										selfTbl.lastdump = CurTime()
+										selfTbl.lastdump = curTime
 									end
 								end
 							end
@@ -769,27 +773,33 @@ function ENT:Think()
 								end
 							end
 						else
-							if selfTbl.MoveReverse > 0 then
+							local fuelMult = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1)
+							local massMult = (selfTbl.PhysicalMass / 3000) * 0.5
+							if selfTbl.MoveReverse > 0 then --This needs a refactor, almost everything inside these if statements is redundant.
 								if selfTbl.MoveLeft > 0 and selfTbl.MoveRight == 0 then
-									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
-									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
+									local HPVal = selfTbl.HPperTon^1.5 / 5
+									selfTbl.LeftForce = fuelMult * massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal ) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
+									selfTbl.RightForce = fuelMult * -massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal ) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
 									--RIGHT FORWARD
 									--LEFT BACKWARD
 								elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
-									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
-									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
+									local HPVal = selfTbl.HPperTon^1.5 / 5
+									selfTbl.LeftForce = fuelMult * -massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
+									selfTbl.RightForce = fuelMult * massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									--RIGHT BACKWARD
 									--LEFT FORWARD
 								end
 							else
 								if selfTbl.MoveLeft > 0 and selfTbl.MoveRight == 0 then
-									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
-									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
+									local HPVal = selfTbl.HPperTon^1.5 / 5
+									selfTbl.LeftForce = fuelMult * -massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
+									selfTbl.RightForce = fuelMult * massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveLeft, 1)
 									--RIGHT BACKWARD
 									--LEFT FORWARD
 								elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
-									selfTbl.LeftForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * (selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
-									selfTbl.RightForce = Clamp(selfTbl.DakFuel / selfTbl.DakFuelReq, 0, 1) * -(selfTbl.PhysicalMass / 3000) * 0.5 * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * selfTbl.HPperTon) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
+									local HPVal = selfTbl.HPperTon^1.5 / 5
+									selfTbl.LeftForce = fuelMult * massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
+									selfTbl.RightForce = fuelMult * -massMult * selfTbl.Turn * 10 * Clamp((0.015 * (1 / selfTbl.GearRatio) * HPVal) / (abs(selfTbl.LastYaw - selfTbl.base:GetAngles().yaw) / TimeMult) * 1.75, 0, 10 * abs(selfTbl.turnperc)) * 450 * (selfTbl.DakHealth / selfTbl.DakMaxHealth) * min(selfTbl.MoveRight, 1)
 									--RIGHT FORWARD
 									--LEFT BACKWARD
 								end
@@ -868,21 +878,17 @@ function ENT:Think()
 			local CurTraceHitPos
 			local hydrabias = Clamp(selfTbl.Inputs.SuspensionBias.Value, -1, 1)
 			if selfTbl.lasthydrabias == nil then selfTbl.lasthydrabias = hydrabias end
-			if selfTbl.Inputs.NoBiasSpeedLimit.Value == 0 then
-				hydrabias = Clamp(hydrabias, selfTbl.lasthydrabias - (0.25 / RideHeight), selfTbl.lasthydrabias + (0.25 / RideHeight))
-			else
-				hydrabias = Clamp(hydrabias, selfTbl.lasthydrabias - (5 / RideHeight), selfTbl.lasthydrabias + (5 / RideHeight))
-			end
+
+			local biasMult = (selfTbl.Inputs.NoBiasSpeedLimit.Value == 0 and 0.25) or 5
+			hydrabias = Clamp(hydrabias, selfTbl.lasthydrabias - (biasMult / RideHeight), selfTbl.lasthydrabias + (biasMult / RideHeight))
 
 			self:SetNWFloat("Hydra", hydrabias)
 			selfTbl.lasthydrabias = hydrabias
 			local hydrabiasside = Clamp(selfTbl.Inputs.SuspensionBiasSide.Value, -1, 1)
 			if selfTbl.lasthydrabiasside == nil then selfTbl.lasthydrabiasside = hydrabiasside end
-			if selfTbl.Inputs.NoSideBiasSpeedLimit.Value == 0 then
-				hydrabiasside = Clamp(hydrabiasside, selfTbl.lasthydrabiasside - (0.25 / RideHeight), selfTbl.lasthydrabiasside + (0.25 / RideHeight))
-			else
-				hydrabiasside = Clamp(hydrabiasside, selfTbl.lasthydrabiasside - (5 / RideHeight), selfTbl.lasthydrabiasside + (5 / RideHeight))
-			end
+
+			local sideBiasMult = (selfTbl.Inputs.NoSideBiasSpeedLimit.Value == 0 and 0.25) or 5
+			hydrabiasside = Clamp(hydrabiasside, selfTbl.lasthydrabiasside - (sideBiasMult / RideHeight), selfTbl.lasthydrabiasside + (sideBiasMult / RideHeight))
 
 			self:SetNWFloat("HydraSide", hydrabiasside)
 			selfTbl.lasthydrabiasside = hydrabiasside
@@ -916,16 +922,17 @@ function ENT:Think()
 
 			local basesize = {selfTbl.base:OBBMaxs().x, selfTbl.base:OBBMaxs().y, selfTbl.base:OBBMaxs().z}
 			sort(basesize, function(a, b) return a > b end)
+			local fwEntYaw = ForwardEnt:GetAngles().yaw
 			local fronttrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, ForwardEnt:GetAngles().yaw, 0):Forward() * (TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, ForwardEnt:GetAngles().yaw, 0):Forward() * (TrackLength * 0.5),
+				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
+				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
 				mask = MASK_SOLID_BRUSHONLY
 			}
 
 			local FrontTrace = traceline(fronttrace)
 			local backtrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, ForwardEnt:GetAngles().yaw, 0):Forward() * -(TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, ForwardEnt:GetAngles().yaw, 0):Forward() * -(TrackLength * 0.5),
+				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
+				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
 				mask = MASK_SOLID_BRUSHONLY
 			}
 
@@ -941,11 +948,8 @@ function ENT:Think()
 				TerrainBraking = (1 - TerrainMultiplier) * 0.125
 			else
 				if selfTbl.Brakes <= 0 then
-					if selfTbl.MoveReverse <= 0 then
-						selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * -forward * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng)))
-					else
-						selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * forward * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng)))
-					end
+					local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+					selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng)))
 				end
 			end
 
@@ -1212,8 +1216,8 @@ function ENT:Think()
 		selfTbl.LastYaw = self:GetParent():GetParent():GetAngles().yaw
 	end
 
-	selfTbl.LastThink = CurTime()
-	self:NextThink(CurTime())
+	selfTbl.LastThink = curTime
+	self:NextThink(curTime)
 	return true
 end
 
@@ -1253,11 +1257,6 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 		self.DakHealth = self.DakMaxHealth
 		self.DakOwner = Player
 		if Ent.EntityMods.DakTek.DakColor then self:SetColor(Ent.EntityMods.DakTek.DakColor) end
-		--self:PhysicsDestroy()
-		--self:SetModel(self.DakModel)
-		--self:PhysicsInit(SOLID_VPHYSICS)
-		--self:SetMoveType(MOVETYPE_VPHYSICS)
-		--self:SetSolid(SOLID_VPHYSICS)
 		self:Activate()
 		Ent.EntityMods.DakTek = nil
 	end

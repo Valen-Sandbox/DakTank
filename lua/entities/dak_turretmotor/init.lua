@@ -125,11 +125,6 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 			self:SetColor(Ent.EntityMods.DakTek.DakColor)
 		end
 
-		--self:PhysicsDestroy()
-		--self:SetModel(self.DakModel)
-		--self:PhysicsInit(SOLID_VPHYSICS)
-		--self:SetMoveType(MOVETYPE_VPHYSICS)
-		--self:SetSolid(SOLID_VPHYSICS)
 		self:Activate()
 		Ent.EntityMods.DakTek = nil
 	end
