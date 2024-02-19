@@ -1502,51 +1502,54 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							selfTbl.Contraption = {selfTbl.Base}
 							local turrets = {}
 							for k, v in pairs(selfTbl.Base:GetChildren()) do
-								selfTbl.Contraption[#selfTbl.Contraption + 1] = v
+								table.insert(selfTbl.Contraption, v)
 								for k2, v2 in pairs(v:GetChildren()) do
-									selfTbl.Contraption[#selfTbl.Contraption + 1] = v2
-									if v2:GetClass() == "dak_turretcontrol" then turrets[#turrets + 1] = v2 end
+									table.insert(selfTbl.Contraption, v2)
+									if v2:GetClass() == "dak_turretcontrol" then table.insert(turrets, v2) end
 								end
 							end
 
+							--This is done like 3 times. It should be a local function. I can't be bothered to fix that right now though.
 							local turrets2 = {}
-							for i = 1, #turrets do
+							for i, turret in ipairs(turrets) do 
 								local TurEnts = {}
-								if turrets[i].WiredTurret ~= NULL then
-									self.Contraption[#self.Contraption + 1] = turrets[i].WiredTurret
-									TurEnts[#TurEnts + 1] = turrets[i].WiredTurret
-									for k, v in pairs(turrets[i].WiredTurret:GetChildren()) do
-										self.Contraption[#self.Contraption + 1] = v
-										TurEnts[#TurEnts + 1] = v
+								if turret.WiredTurret ~= NULL then
+									table.insert(selfTbl.Contraption, turret.WiredTurret)
+									table.insert(TurEnts, turret.WiredTurret)
+									for k, v in pairs(turret.WiredTurret:GetChildren()) do
+										table.insert(selfTbl.Contraption, v)
+										table.insert(TurEnts, v)
 										for k2, v2 in pairs(v:GetChildren()) do
-											self.Contraption[#self.Contraption + 1] = v2
-											TurEnts[#TurEnts + 1] = v2
-											if v2:GetClass() == "dak_turretcontrol" then turrets2[#turrets2 + 1] = v2 end
+											table.insert(selfTbl.Contraption, v2)
+											table.insert(TurEnts, v2)
+											if v2:GetClass() == "dak_turretcontrol" then table.insert(turrets2, v2) end
 										end
 									end
 								end
 
-								if turrets[i].WiredGun ~= NULL then
-									if turrets[i].WiredGun:GetClass() == "dak_tegun" or turrets[i].WiredGun:GetClass() == "dak_teautogun" or turrets[i].WiredGun:GetClass() == "dak_temachinegun" then
-										if IsValid(turrets[i].WiredGun) and IsValid(turrets[i].WiredGun:GetParent()) and IsValid(turrets[i].WiredGun:GetParent():GetParent()) then
-											self.Contraption[#self.Contraption + 1] = turrets[i].WiredGun:GetParent():GetParent()
-											TurEnts[#TurEnts + 1] = turrets[i].WiredGun:GetParent():GetParent()
-											for k, v in pairs(turrets[i].WiredGun:GetParent():GetParent():GetChildren()) do
-												self.Contraption[#self.Contraption + 1] = v
-												TurEnts[#TurEnts + 1] = v
+								if turret.WiredGun ~= NULL then
+									if turret.WiredGun:GetClass() == "dak_tegun" or turret.WiredGun:GetClass() == "dak_teautogun" or turret.WiredGun:GetClass() == "dak_temachinegun" then
+										if IsValid(turret.WiredGun) and IsValid(turret.WiredGun:GetParent()) and IsValid(turret.WiredGun:GetParent():GetParent()) then
+											local gunParent = turret.WiredGun:GetParent():GetParent()
+											table.insert(selfTbl.Contraption, gunParent)
+											table.insert(TurEnts, gunParent)
+
+											for k, v in pairs(gunParent:GetChildren()) do
+												table.insert(selfTbl.Contraption, v)
+												table.insert(TurEnts, v)
 												for k2, v2 in pairs(v:GetChildren()) do
-													self.Contraption[#self.Contraption + 1] = v2
-													TurEnts[#TurEnts + 1] = v2
-													if v2:GetClass() == "dak_turretcontrol" then turrets2[#turrets2 + 1] = v2 end
+													table.insert(selfTbl.Contraption, v2)
+													table.insert(TurEnts, v2)
+													if v2:GetClass() == "dak_turretcontrol" then table.insert(turrets2, v2)  end
 												end
 											end
 										end
 									else
-										self.DakOwner:ChatPrint(turrets[i].DakName .. " #" .. turrets[i]:EntIndex() .. " must have gun wired to a daktank gun.")
+										selfTbl.DakOwner:ChatPrint(turret.DakName .. " #" .. turret:EntIndex() .. " must have gun wired to a daktank gun.")
 									end
 								end
 
-								turrets[i].Extra = TurEnts
+								turret.Extra = TurEnts
 							end
 
 							local turrets3 = {}
@@ -1622,13 +1625,13 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								turrets3[i].Extra = TurEnts
 							end
 
-							table.Add(self.Contraption, GetPhysCons(self.Base))
-							if table.Count(GetPhysCons(self.Base)) > 0 then
-								for k, v in pairs(GetPhysCons(self.Base)) do
+							table.Add(selfTbl.Contraption, GetPhysCons(selfTbl.Base))
+							if table.Count(GetPhysCons(selfTbl.Base)) > 0 then
+								for k, v in pairs(GetPhysCons(selfTbl.Base)) do
 									for k2, v2 in pairs(v:GetChildren()) do
-										self.Contraption[#self.Contraption + 1] = v2
+										selfTbl.Contraption[#selfTbl.Contraption + 1] = v2
 										for k3, v3 in pairs(v2:GetChildren()) do
-											self.Contraption[#self.Contraption + 1] = v3
+											selfTbl.Contraption[#selfTbl.Contraption + 1] = v3
 										end
 									end
 								end
@@ -1637,37 +1640,37 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							--PrintTable(self.Contraption)
 							local hash = {}
 							local res = {}
-							for _, v in ipairs(self.Contraption) do
+							for _, v in ipairs(selfTbl.Contraption) do
 								if not hash[v] then
 									res[#res + 1] = v
 									hash[v] = true
 								end
 							end
 
-							self.Contraption = {}
-							self.Ammoboxes = {}
-							self.TurretControls = {}
-							self.Guns = {}
-							self.Crew = {}
-							self.Motors = {}
-							self.Fuel = {}
-							self.Tread = {}
-							self.ERA = {}
-							self.DETAIL = {}
-							self.Seats = {}
-							self.Components = {}
-							self.GunCount = 0
-							self.MachineGunCount = 0
-							self.RHAWeight = 0
-							self.CHAWeight = 0
-							self.HHAWeight = 0
-							self.NERAWeight = 0
-							self.StillbrewWeight = 0
-							self.TextoliteWeight = 0
-							self.ConcreteWeight = 0
-							self.ERAWeight = 0
+							selfTbl.Contraption = {}
+							selfTbl.Ammoboxes = {}
+							selfTbl.TurretControls = {}
+							selfTbl.Guns = {}
+							selfTbl.Crew = {}
+							selfTbl.Motors = {}
+							selfTbl.Fuel = {}
+							selfTbl.Tread = {}
+							selfTbl.ERA = {}
+							selfTbl.DETAIL = {}
+							selfTbl.Seats = {}
+							selfTbl.Components = {}
+							selfTbl.GunCount = 0
+							selfTbl.MachineGunCount = 0
+							selfTbl.RHAWeight = 0
+							selfTbl.CHAWeight = 0
+							selfTbl.HHAWeight = 0
+							selfTbl.NERAWeight = 0
+							selfTbl.StillbrewWeight = 0
+							selfTbl.TextoliteWeight = 0
+							selfTbl.ConcreteWeight = 0
+							selfTbl.ERAWeight = 0
 							local CurrentRes
-							self.Clips = {}
+							selfTbl.Clips = {}
 							for i = 1, #res do
 								CurrentRes = res[i]
 								if CurrentRes:IsValid() and CurrentRes:IsSolid() then
@@ -1679,32 +1682,26 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 
 									if CurrentRes:GetClass() == "prop_physics" and CurrentRes:GetPhysicsObject():GetMass() <= 1 and CurrentRes.EntityMods and CurrentRes.EntityMods.CompositeType == nil then
 										if table.Count(CurrentRes:GetChildren()) == 0 and CurrentRes:GetParent():IsValid() then
-											self.DETAIL[#self.DETAIL + 1] = CurrentRes
+											table.insert(selfTbl.DETAIL, CurrentRes)
 										else
-											self.Contraption[#self.Contraption + 1] = CurrentRes
+											table.insert(selfTbl.Contraption, CurrentRes)
 										end
 									else
-										self.Contraption[#self.Contraption + 1] = CurrentRes
+										table.insert(selfTbl.Contraption, CurrentRes)
 									end
 
 									if CurrentRes:GetClass() == "dak_tegearbox" or CurrentRes:GetClass() == "dak_tegearboxnew" then
 										CurrentRes.DakTankCore = self
 										CurrentRes.Controller = self
-										self.Gearbox = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_tefuel" then
-										self.Fuel[#self.Fuel + 1] = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_temotor" then
-										self.Motors[#self.Motors + 1] = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_teammo" then
+										selfTbl.Gearbox = CurrentRes
+										table.insert(selfTbl.Components, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_tefuel" then
+										table.insert(selfTbl.Fuel, CurrentRes)
+										table.insert(selfTbl.Components, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_temotor" then
+										table.insert(selfTbl.Motors, CurrentRes)
+										table.insert(selfTbl.Components, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_teammo" then --THIS IS AN ISSUE FOR ANOTHER TIME
 										local boxname = string.Split(CurrentRes.DakAmmoType, "")
 										local name6 = boxname[#boxname - 9] .. boxname[#boxname - 8] .. boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
 										local name4 = boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
@@ -1719,83 +1716,40 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											name = name2
 										end
 
-										if name == "APFSDS" then self.Modern = 1 end
-										if name == "HEATFS" or name == "ATGM" or name == "HESH" or name == "APDS" then self.ColdWar = 1 end
-										self.Ammoboxes[#self.Ammoboxes + 1] = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_tegun" then
+										if name == "APFSDS" then selfTbl.Modern = 1 end
+										if name == "HEATFS" or name == "ATGM" or name == "HESH" or name == "APDS" then selfTbl.ColdWar = 1 end
+										table.insert(selfTbl.Ammoboxes, CurrentRes)
+										table.insert(selfTbl.Components, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_tegun" then
 										CurrentRes.DakTankCore = self
 										CurrentRes.Controller = self
-										self.GunCount = self.GunCount + 1
-										self.Guns[#self.Guns + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_teautogun" then
+										selfTbl.GunCount = selfTbl.GunCount + 1
+										table.insert(selfTbl.Guns, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_teautogun" then
 										CurrentRes.DakTankCore = self
 										CurrentRes.Controller = self
-										self.GunCount = self.GunCount + 1
-										self.Guns[#self.Guns + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_temachinegun" then
+										selfTbl.GunCount = selfTbl.GunCount + 1
+										table.insert(selfTbl.Guns, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_temachinegun" then
 										CurrentRes.DakTankCore = self
 										CurrentRes.Controller = self
-										self.MachineGunCount = self.MachineGunCount + 1
-										self.Guns[#self.Guns + 1] = CurrentRes
-									end
-
-									if CurrentRes:GetClass() == "dak_turretcontrol" then
-										self.TurretControls[#self.TurretControls + 1] = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
+										selfTbl.MachineGunCount = selfTbl.MachineGunCount + 1
+										table.insert(selfTbl.Guns, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_turretcontrol" then
+										table.insert(selfTbl.TurretControls, CurrentRes)
+										table.insert(selfTbl.Components, CurrentRes)
 										CurrentRes.DakContraption = res
 										CurrentRes.DakCore = self
 										CurrentRes.Controller = self
-									end
-
-									if CurrentRes:GetClass() == "prop_vehicle_prisoner_pod" then self.Seats[#self.Seats + 1] = CurrentRes end
-									if CurrentRes:GetClass() == "dak_crew" then
-										self.Crew[#self.Crew + 1] = CurrentRes
-										self.Components[#self.Components + 1] = CurrentRes
+									elseif CurrentRes:GetClass() == "prop_vehicle_prisoner_pod" then
+										table.insert(selfTbl.Seats, CurrentRes)
+									elseif CurrentRes:GetClass() == "dak_crew" then
+										table.insert(selfTbl.Crew, CurrentRes)
+										table.insert(selfTbl.Components, CurrentRes)
 										CurrentRes.Controller = self
-									end
-
-									if CurrentRes:GetClass() == "prop_physics" then
+									elseif CurrentRes:GetClass() == "prop_physics" then
 										CurrentRes.Controller = self
-										--print("here")
-										--hugely cursed physical parent stuff
-										--[[
-										if CurrentRes~=self.Base and CurrentRes.DakMovement ~= true and IsValid(CurrentRes:GetParent()) then
-											if IsValid(CurrentRes:GetParent():GetParent()) and CurrentRes:GetParent():GetParent()==self.Base then
-												print(CurrentRes:GetMoveType())
-												print(CurrentRes:GetCollisionGroup())
-												CurrentRes:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-												--CurrentRes:RemoveEFlags(EFL_NO_GAME_PHYSICS_SIMULATION) --
-												--CurrentRes:RemoveSolidFlags(FSOLID_NOT_SOLID) --
-												CurrentRes:SetCollisionGroup(COLLISION_GROUP_WORLD)
-												CurrentRes:GetPhysicsObject():EnableMotion(false)
-												--CurrentRes:PhysicsInitShadow( true, true )
-												CurrentRes:SetSolid( MOVETYPE_VPHYSICS )
-												CurrentRes:SetMoveType( MOVETYPE_VPHYSICS )
-												--CurrentRes:GetPhysicsObject():RecheckCollisionFilter()
-												CurrentRes.Controller = self
-												CurrentRes.BaseLocalOffset = self.Base:WorldToLocal(CurrentRes:GetPos())
-												CurrentRes.DakUpdatePhys = true
-												--CurrentRes:GetPhysicsObject():ClearGameFlag(FVPHYSICS_CONSTRAINT_STATIC) --
-												--CurrentRes:GetPhysicsObject():AddGameFlag(FVPHYSICS_PLAYER_HELD) --
-												CurrentRes:AddEFlags(EFL_SERVER_ONLY)
-												CurrentRes.SolidMod = false
-												CurrentRes:SetCustomCollisionCheck( true )
-											end
-										end
-										if CurrentRes==self.Base then
-											CurrentRes:SetCollisionGroup(COLLISION_GROUP_WORLD)
-											CurrentRes:GetPhysicsObject():RecheckCollisionFilter()
-											CurrentRes:SetCustomCollisionCheck( true )
-										end
-										]]
-										--
+										
 										--clip conversion
 										if CurrentRes.ClipData and #CurrentRes.ClipData > 0 then
 											if CurrentRes.ClipData[1].physics ~= true then
@@ -1803,14 +1757,15 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 												local curEnt = CurrentRes
 												DTTE.ArmorSanityCheck(CurrentRes)
 												local CurArmor = CurrentRes.DakArmor
-												for j = 1, #CurrentRes.ClipData do
-													local num = #self.Clips + 1
-													self.Clips[num] = {}
-													self.Clips[num].ent = CurrentRes
-													self.Clips[num].armor = CurArmor
-													self.Clips[num].n = CurrentRes.ClipData[j].n
-													self.Clips[num].d = CurrentRes.ClipData[j].d
-													self.Clips[num].inside = CurrentRes.ClipData[j].inside
+												for j, data in ipairs(CurrentRes.ClipData) do
+													local tbl = {
+														ent = CurrentRes,
+														armor = CurArmor,
+														n = data.n,
+														d = data.d,
+														inside = data.inside
+													}
+													table.insert(selfTbl.Clips, tbl)
 												end
 
 												ProperClipping.RemoveClips(CurrentRes)
@@ -1825,43 +1780,37 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 												CurrentRes.EntityMods.CompKEMult = 9.2
 												CurrentRes.EntityMods.CompCEMult = 18.4
 												CurrentRes.EntityMods.DakName = "NERA"
-												self.Modern = 1
-											else
-												if CurrentRes.EntityMods.CompositeType == nil then
-													CurrentRes.EntityMods.CompositeType = "NERA"
-													CurrentRes.EntityMods.CompKEMult = 9.2
-													CurrentRes.EntityMods.CompCEMult = 18.4
-													CurrentRes.EntityMods.DakName = "NERA"
-													self.Modern = 1
-												end
+												selfTbl.Modern = 1
+											elseif CurrentRes.EntityMods.CompositeType == nil then
+												CurrentRes.EntityMods.CompositeType = "NERA"
+												CurrentRes.EntityMods.CompKEMult = 9.2
+												CurrentRes.EntityMods.CompCEMult = 18.4
+												CurrentRes.EntityMods.DakName = "NERA"
+												selfTbl.Modern = 1
 											end
 										end
 
-										if CurrentRes.EntityMods == nil then
-										else
+										if CurrentRes.EntityMods then
 											if CurrentRes.EntityMods.CompositeType == nil and CurrentRes.IsComposite == nil then
+												local mass = CurrentRes:GetPhysicsObject():GetMass()
 												if CurrentRes.EntityMods.ArmorType == nil then
-													self.RHAWeight = self.RHAWeight + CurrentRes:GetPhysicsObject():GetMass()
+													selfTbl.RHAWeight = selfTbl.RHAWeight + mass
 												else
 													if CurrentRes.EntityMods.ArmorType == "RHA" then
 														CurrentRes.EntityMods.Density = 7.8125
 														CurrentRes.EntityMods.ArmorMult = 1
 														CurrentRes.EntityMods.Ductility = 1
-														self.RHAWeight = self.RHAWeight + CurrentRes:GetPhysicsObject():GetMass()
-													end
-
-													if CurrentRes.EntityMods.ArmorType == "CHA" then
+														selfTbl.RHAWeight = selfTbl.RHAWeight + mass
+													elseif CurrentRes.EntityMods.ArmorType == "CHA" then
 														CurrentRes.EntityMods.Density = 7.8125
 														CurrentRes.EntityMods.ArmorMult = 1
 														CurrentRes.EntityMods.Ductility = 1.5
-														self.CHAWeight = self.CHAWeight + CurrentRes:GetPhysicsObject():GetMass()
-													end
-
-													if CurrentRes.EntityMods.ArmorType == "HHA" then
+														selfTbl.CHAWeight = selfTbl.CHAWeight + mass
+													elseif CurrentRes.EntityMods.ArmorType == "HHA" then
 														CurrentRes.EntityMods.Density = 7.8125
 														CurrentRes.EntityMods.ArmorMult = 1
 														CurrentRes.EntityMods.Ductility = 1.5
-														self.HHAWeight = self.HHAWeight + CurrentRes:GetPhysicsObject():GetMass()
+														selfTbl.HHAWeight = selfTbl.HHAWeight + mass
 													end
 												end
 											else
@@ -1871,32 +1820,24 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 													CurrentRes:GetPhysicsObject():SetMass(math.Round(CurrentRes:GetPhysicsObject():GetVolume() / 61023.7 * Density))
 													CurrentRes.DakLegitMass = CurrentRes:GetPhysicsObject():GetMass()
 													self.NERAWeight = self.NERAWeight + CurrentRes:GetPhysicsObject():GetMass()
-												end
-
-												if CurrentRes.EntityMods.CompositeType == "Stillbrew" then
+												elseif CurrentRes.EntityMods.CompositeType == "Stillbrew" then
 													self.Modern = 1
 													local Density = 5750
 													CurrentRes:GetPhysicsObject():SetMass(math.Round(CurrentRes:GetPhysicsObject():GetVolume() / 61023.7 * Density))
 													CurrentRes.DakLegitMass = CurrentRes:GetPhysicsObject():GetMass()
 													self.StillbrewWeight = self.StillbrewWeight + CurrentRes:GetPhysicsObject():GetMass()
-												end
-
-												if CurrentRes.EntityMods.CompositeType == "Textolite" then
+												elseif CurrentRes.EntityMods.CompositeType == "Textolite" then
 													self.ColdWar = 1
 													local Density = 1850
 													CurrentRes:GetPhysicsObject():SetMass(math.Round(CurrentRes:GetPhysicsObject():GetVolume() / 61023.7 * Density))
 													CurrentRes.DakLegitMass = CurrentRes:GetPhysicsObject():GetMass()
 													self.TextoliteWeight = self.TextoliteWeight + CurrentRes:GetPhysicsObject():GetMass()
-												end
-
-												if CurrentRes.EntityMods.CompositeType == "Concrete" then
+												elseif CurrentRes.EntityMods.CompositeType == "Concrete" then
 													local Density = 2400
 													CurrentRes:GetPhysicsObject():SetMass(math.Round(CurrentRes:GetPhysicsObject():GetVolume() / 61023.7 * Density))
 													CurrentRes.DakLegitMass = CurrentRes:GetPhysicsObject():GetMass()
 													self.ConcreteWeight = self.ConcreteWeight + CurrentRes:GetPhysicsObject():GetMass()
-												end
-
-												if CurrentRes.EntityMods.CompositeType == "ERA" then
+												elseif CurrentRes.EntityMods.CompositeType == "ERA" then
 													self.ColdWar = 1
 													local Density = 1732
 													CurrentRes:GetPhysicsObject():SetMass(math.Round(CurrentRes:GetPhysicsObject():GetVolume() / 61023.7 * Density))
