@@ -31,7 +31,8 @@ function ENT:Think()
 	local self = self
 	local selfTbl = self:GetTable()
 
-	DTTE.CheckSpherical(self)
+	--Checkspherical moved to slowthink
+
 	if CurTime() >= selfTbl.SparkTime + 0.33 then --This can be improved further but I can't be bothered right now. Ideally this should be inherited from a baseclass anyway.
 		local scale
 		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
@@ -58,6 +59,7 @@ function ENT:Think()
 	end
 
 	if CurTime() >= selfTbl.SlowThinkTime + 1 then
+		DTTE.CheckSpherical(self)
 		if not (selfTbl.DakName == "Base Ammo") then
 			selfTbl.DakCaliber = tonumber(string.Split(selfTbl.DakName, "m")[1])
 			if selfTbl.DakAmmoType == "Flamethrower Fuel" then
@@ -70,38 +72,43 @@ function ENT:Think()
 				selfTbl.ShellMass = selfTbl.ShellVolume * 0.044
 				selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 13)
 				selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
+
+				--This part is pretty awful. Ammo type, calibre, and gun type shouldn't be stored together in one string.
+				--I've Made it so that it at least isn't doing the work of splitting the string repeatedly, but ideally all of this code should just be indexing a table like twice
+
+				local splitString = string.Split(selfTbl.DakName, "m")
 				--short cannon and hmg
-				if (string.Split(selfTbl.DakName, "m")[3][1] == "S" and string.Split(selfTbl.DakName, "m")[3][2] == "C") or (string.Split(selfTbl.DakName, "m")[3][1] == "H" and string.Split(selfTbl.DakName, "m")[3][2] == "M" and string.Split(selfTbl.DakName, "m")[3][3] == "G") then
+				if (splitString[3][1] == "S" and splitString[3][2] == "C") or (splitString[3][1] == "H" and splitString[3][2] == "M" and splitString[3][3] == "G") then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 10)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 10)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--long cannon
-				elseif string.Split(selfTbl.DakName, "m")[3][1] == "L" and string.Split(selfTbl.DakName, "m")[3][2] == "C" then
+				elseif splitString[3][1] == "L" and splitString[3][2] == "C" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 18)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 18)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--Howitzer
-				elseif string.Split(selfTbl.DakName, "m")[3][1] == "H" and string.Split(selfTbl.DakName, "m")[3][2] ~= "M" then
+				elseif splitString[3][1] == "H" and splitString[3][2] ~= "M" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 8)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 8)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--Mortar
-				elseif string.Split(selfTbl.DakName, "m")[3][1] == "M" and string.Split(selfTbl.DakName, "m")[3][2] ~= "G" then
+				elseif splitString[3][1] == "M" and splitString[3][2] ~= "G" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 5.5)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 5.5)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--Grenade Launcher
-				elseif string.Split(selfTbl.DakName, "m")[3][1] == "G" and string.Split(selfTbl.DakName, "m")[3][2] == "L" then
+				elseif splitString[3][1] == "G" and splitString[3][2] == "L" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 7)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 7)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--Smoke Launcher
-				elseif string.Split(selfTbl.DakName, "m")[3][1] == "S" and string.Split(selfTbl.DakName, "m")[3][2] == "L" then
+				elseif splitString[3][1] == "S" and splitString[3][2] == "L" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 2.75)
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 2.75)
 					selfTbl.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume)
 				--ATGM
-				elseif (string.Split(selfTbl.DakName, "m")[3][2] .. string.Split(selfTbl.DakName, "m")[3][3] .. string.Split(selfTbl.DakName, "m")[3][4] .. string.Split(selfTbl.DakName, "m")[3][5]) == "ATGM" then
+				elseif (splitString[3][2] .. splitString[3][3] .. splitString[3][4] .. splitString[3][5]) == "ATGM" then
 					selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 13)
 					selfTbl.ShellMass = selfTbl.ShellVolume * 0.044
 					selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * 13)
@@ -116,19 +123,31 @@ function ENT:Think()
 			end
 		end
 
+		local physObj = self:GetPhysicsObject()
+		local mass = physObj:GetMass()
 		if selfTbl.DakAmmoType == "Flamethrower Fuel" then
 			selfTbl.DakArmor = 12.5
 			selfTbl.DakMaxHealth = 30
-			if selfTbl.DakHealth >= selfTbl.DakMaxHealth then selfTbl.DakHealth = 30 end
-			if self:GetPhysicsObject():GetMass() ~= 500 then self:GetPhysicsObject():SetMass(500) end
+			if selfTbl.DakHealth >= selfTbl.DakMaxHealth then
+				selfTbl.DakHealth = 30
+			end
+			if mass ~= 500 then
+				physObj:SetMass(500) 
+			end
 		else
 			selfTbl.DakArmor = 5
 			selfTbl.DakMaxHealth = 10
-			if selfTbl.DakHealth >= selfTbl.DakMaxHealth then selfTbl.DakHealth = 10 end
+			if selfTbl.DakHealth >= selfTbl.DakMaxHealth then
+				selfTbl.DakHealth = 10
+			end
 			if selfTbl.ShellMass == nil then
-				if self:GetPhysicsObject():GetMass() ~= 10 then self:GetPhysicsObject():SetMass(10) end
+				if mass ~= 10 then
+					physObj:SetMass(10)
+				end
 			else
-				if self:GetPhysicsObject():GetMass() ~= math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10) then self:GetPhysicsObject():SetMass(math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10)) end
+				if mass ~= math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10) then
+					physObj:SetMass(math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10))
+				end
 			end
 		end
 
