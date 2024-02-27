@@ -197,19 +197,19 @@ function ENT:Think()
 		return
 	end
 
-	selfTbl.SideDist = self:GetWheelOffsetY() --TODO: Only set these values when editable values are updated
-	selfTbl.TrackLength = self:GetWheelBase()
-	selfTbl.WheelsPerSide = Clamp(self:GetWheelsPerSide(), 2, 20)
-	selfTbl.RideHeight = self:GetWheelOffsetZ()
-	selfTbl.RideLimit = Clamp(self:GetRideLimit(), 50, 200)
-	selfTbl.SuspensionBias = Clamp(self:GetSuspensionBias(), -0.99, 0.99)
-	selfTbl.FrontWheelRaise = self:GetDriveWOffsetZ()
-	selfTbl.RearWheelRaise = self:GetIdlerWOffsetZ()
-	selfTbl.ForwardOffset = self:GetWheelOffsetX()
-	selfTbl.GearRatio = Clamp(self:GetGearRatio(), 50, 100) * 0.01
-	selfTbl.WheelHeight = self:GetRoadWDiameter()
-	selfTbl.FrontWheelHeight = self:GetDriveWDiameter()
-	selfTbl.RearWheelHeight = self:GetIdlerWDiameter()
+	selfTbl.SideDist = selfTbl:GetWheelOffsetY() --TODO: Only set these values when editable values are updated
+	selfTbl.TrackLength = selfTbl:GetWheelBase()
+	selfTbl.WheelsPerSide = Clamp(selfTbl:GetWheelsPerSide(), 2, 20)
+	selfTbl.RideHeight = selfTbl:GetWheelOffsetZ()
+	selfTbl.RideLimit = Clamp(selfTbl:GetRideLimit(), 50, 200)
+	selfTbl.SuspensionBias = Clamp(selfTbl:GetSuspensionBias(), -0.99, 0.99)
+	selfTbl.FrontWheelRaise = selfTbl:GetDriveWOffsetZ()
+	selfTbl.RearWheelRaise = selfTbl:GetIdlerWOffsetZ()
+	selfTbl.ForwardOffset = selfTbl:GetWheelOffsetX()
+	selfTbl.GearRatio = Clamp(selfTbl:GetGearRatio(), 50, 100) * 0.01
+	selfTbl.WheelHeight = selfTbl:GetRoadWDiameter()
+	selfTbl.FrontWheelHeight = selfTbl:GetDriveWDiameter()
+	selfTbl.RearWheelHeight = selfTbl:GetIdlerWDiameter()
 
 	if curTime >= selfTbl.SlowThinkTime + 1 then
 		selfTbl.SlowThinkTime = curTime
@@ -630,21 +630,16 @@ function ENT:Think()
 								end
 							else
 								if selfTbl.CarTurning == 0 then
-									if selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 then
-										if #DakTankCore.Motors > 0 then
-											for i = 1, #DakTankCore.Motors do
-												if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(max(min(max(selfTbl.MoveRight, selfTbl.MoveLeft) / 1 * 100, 100), 50), 0.5) end
-											end
+									if selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 and #DakTankCore.Motors > 0 then
+										for i = 1, #DakTankCore.Motors do
+											if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(max(min(max(selfTbl.MoveRight, selfTbl.MoveLeft) / 1 * 100, 100), 50), 0.5) end
 										end
 									end
 								else
-									if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
-									if selfTbl.LastMoving == 1 then
-										if selfTbl.lastdump + 2.5 < curTime then
-											if selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
-												selfTbl.lastdump = curTime
-											end
-										end
+									--if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
+									selfTbl.lastdump = selfTbl.lastdump or 0
+									if selfTbl.LastMoving == 1 and selfTbl.lastdump + 2.5 < curTime and selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
+										selfTbl.lastdump = curTime
 									end
 
 									if #DakTankCore.Motors > 0 then
@@ -663,13 +658,10 @@ function ENT:Think()
 								end
 							end
 						else
-							if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
-							if selfTbl.LastMoving == 1 then
-								if selfTbl.lastdump + 2.5 < curTime then
-									if selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
-										selfTbl.lastdump = curTime
-									end
-								end
+							--if selfTbl.lastdump == nil then selfTbl.lastdump = 0 end
+							selfTbl.lastdump = selfTbl.lastdump or 0 --TODO: This value should probably be defined in init. I'm not sure where it's used yet so I can't be sure there isn't some part relying on it starting as nil somewhere.
+							if selfTbl.LastMoving == 1 and selfTbl.lastdump + 2.5 < curTime and selfTbl.Gear > 2 and Clamp((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif, 0, 1) > 0.5 then
+								selfTbl.lastdump = curTime
 							end
 
 							if #DakTankCore.Motors > 0 then
@@ -984,7 +976,7 @@ function ENT:Think()
 				RideHeight = RideHeight + hydrabiasside * RideHeight
 				ForcePos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) + (right * basesize[2] * 0.95)
 				Pos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) + (right * selfTbl.SideDist)
-				if self:GetVehicleMode() == "wheeled" then
+				if selfTbl:GetVehicleMode() == "wheeled" then
 					CurRideHeight = RideHeight
 				else
 					if i == WheelsPerSide then
@@ -1030,7 +1022,7 @@ function ENT:Think()
 				RightPosChanges[i] = CurTraceHitPos
 				RidePos = Clamp(CurTraceDist - 100, -10, 10)
 				if RidePos < -0.1 then
-					AbsorbForce = self:GetSuspensionDamping() * (5 / WheelsPerSide)
+					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
 					if abs(hydrabias) > 0 then AbsorbForce = 1 end
 					FrictionForce = basefriction
 				else
@@ -1039,7 +1031,7 @@ function ENT:Think()
 				end
 
 				multval = 1
-				if i <= halfwheels then 
+				if i <= halfwheels then
 					multval = multval + SuspensionBias
 				elseif i > halfwheels then
 					multval = multval - SuspensionBias
@@ -1056,7 +1048,7 @@ function ENT:Think()
 				end
 
 				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(self:GetSuspensionForceMult(), 0, 2) / TimeMult
+				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
 				lastvelnorm = lastvel:GetNormalized()
 				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
 				selfTbl.RightRidePosChanges[i] = RidePos
@@ -1080,7 +1072,7 @@ function ENT:Think()
 				RideHeight = RideHeight - hydrabiasside * RideHeight
 				ForcePos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) - (right * basesize[2] * 0.95)
 				Pos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) - (right * selfTbl.SideDist)
-				if self:GetVehicleMode() == "wheeled" then
+				if selfTbl:GetVehicleMode() == "wheeled" then
 					CurRideHeight = RideHeight
 				else
 					if i == WheelsPerSide then
@@ -1126,7 +1118,7 @@ function ENT:Think()
 				LeftPosChanges[i] = CurTraceHitPos
 				RidePos = Clamp(CurTraceDist - 100, -10, 10)
 				if RidePos < -0.1 then
-					AbsorbForce = self:GetSuspensionDamping() * (5 / WheelsPerSide)
+					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
 					if abs(hydrabias) > 0 then AbsorbForce = 1 end
 					FrictionForce = basefriction
 				else
@@ -1152,7 +1144,7 @@ function ENT:Think()
 				end
 
 				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(self:GetSuspensionForceMult(), 0, 2) / TimeMult
+				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
 				lastvelnorm = lastvel:GetNormalized()
 				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
 				selfTbl.LeftRidePosChanges[i] = RidePos
@@ -1188,13 +1180,14 @@ function ENT:Think()
 			selfTbl.LastSpeed = selfTbl.Speed
 		end
 
+		local isOnFire = self:IsOnFire()
 		if selfTbl.DakBurnStacks > 40 then
 			selfTbl.DakBurnStacks = 40
-		elseif selfTbl.DakBurnStacks > 0 and not self:IsOnFire() then
+		elseif selfTbl.DakBurnStacks > 0 and not isOnFire then
 			selfTbl.DakBurnStacks = selfTbl.DakBurnStacks - 0.1
 		end
 
-		if self:IsOnFire() and selfTbl.DakDead ~= true then
+		if isOnFire and selfTbl.DakDead ~= true then
 			local Dmg = selfTbl.DakMaxHealth * 0.025 * engine.TickInterval()
 			selfTbl.DakHealth = selfTbl.DakHealth - Dmg
 			self:DTOnTakeDamage(Dmg)

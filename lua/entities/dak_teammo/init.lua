@@ -132,7 +132,7 @@ function ENT:Think()
 				selfTbl.DakHealth = 30
 			end
 			if mass ~= 500 then
-				physObj:SetMass(500) 
+				physObj:SetMass(500)
 			end
 		else
 			selfTbl.DakArmor = 5
