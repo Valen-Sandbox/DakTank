@@ -334,17 +334,18 @@ function ENT:Think()
 
 	local DakTankCore = selfTbl.DakTankCore
 	if IsValid(DakTankCore) and IsValid(DakTankCore.Motors[1]) and DakTankCore.Off ~= true then
+		local motors = DakTankCore.Motors
 		selfTbl.DakSpeed = 0
 		selfTbl.DakFuel = 0
 		selfTbl.DakFuelReq = 0
 		selfTbl.DakHP = 0
 
-		if #DakTankCore.Motors > 0 then
-			for i = 1, #DakTankCore.Motors do
-				if IsValid(DakTankCore.Motors[i]) then
-					selfTbl.DakSpeed = selfTbl.DakSpeed + DakTankCore.Motors[i].DakSpeed
-					selfTbl.DakFuelReq = selfTbl.DakFuelReq + DakTankCore.Motors[i].DakFuelReq
-					selfTbl.DakHP = selfTbl.DakHP + DakTankCore.Motors[i].DakHP
+		if #motors > 0 then
+			for i, v in ipairs(motors) do
+				if IsValid(v) then
+					selfTbl.DakSpeed = selfTbl.DakSpeed + v.DakSpeed
+					selfTbl.DakFuelReq = selfTbl.DakFuelReq + v.DakFuelReq
+					selfTbl.DakHP = selfTbl.DakHP + v.DakHP
 				end
 			end
 		else
@@ -399,19 +400,20 @@ function ENT:Think()
 
 		local selfParent = self:GetParent()
 		if IsValid(selfParent) and IsValid(selfParent:GetParent()) then
-			selfParent = selfParent:GetParent()
+			local selfParent2 = selfParent:GetParent()
 			if (not selfTbl.setup) then
-				selfTbl.YawAng = Angle(0, selfParent:GetAngles().yaw, 0)
-				selfTbl.LastYaw = selfParent:GetAngles().yaw
+				selfTbl.YawAng = Angle(0, selfParent2:GetAngles().yaw, 0)
+				selfTbl.LastYaw = selfParent2:GetAngles().yaw
 				selfTbl.setup = 1
 			end
 
-			if selfTbl.InertiaSet == nil and selfParent:GetPhysicsObject():IsMotionEnabled() == true then
-				local oldinertia = selfParent:GetPhysicsObject():GetInertia()
+			phys = selfParent2:GetPhysicsObject()
+			if selfTbl.InertiaSet == nil and phys:IsMotionEnabled() == true then
+				local oldinertia = phys:GetInertia()
 				local multiplier = 2 
-				selfParent:GetPhysicsObject():SetInertia(Vector(oldinertia.x * multiplier, oldinertia.y * multiplier, oldinertia.z * multiplier))
-				selfParent:GetPhysicsObject():SetMass(selfParent:GetPhysicsObject():GetMass())
-				selfParent:GetPhysicsObject():EnableGravity(false)
+				phys:SetInertia(Vector(oldinertia.x * multiplier, oldinertia.y * multiplier, oldinertia.z * multiplier))
+				phys:SetMass(phys:GetMass())
+				phys:EnableGravity(false)
 				selfTbl.InertiaSet = 1
 			end
 		end
@@ -420,13 +422,13 @@ function ENT:Think()
 			if selfTbl.AddonMass == nil then selfTbl.AddonMass = math.Round(selfTbl.TotalMass * 0.1) end
 			selfTbl.DakSpeed = selfTbl.DakSpeed * (10000 / selfTbl.TotalMass)
 			selfTbl.TopSpeed = (29.851 * selfTbl.DakSpeed) * selfTbl.GearRatio
-			selfParent = self:GetParent()
+			--selfParent = self:GetParent()
 			if IsValid(selfParent) and IsValid(selfParent:GetParent()) then
-				selfParent = selfParent:GetParent()
-				selfTbl.phy = selfParent:GetPhysicsObject()
-				selfTbl.base = selfParent
+				local selfParent2 = selfParent:GetParent()
+				selfTbl.phy = selfParent2:GetPhysicsObject()
+				selfTbl.base = selfParent2
 				selfTbl.base:GetPhysicsObject():SetDamping(0, 0)
-			elseif not selfParent then
+			elseif not selfParent2 then
 				selfTbl.phy = self:GetPhysicsObject()
 				selfTbl.base = self
 			end
@@ -459,9 +461,11 @@ function ENT:Think()
 					end
 				end
 
-				if #DakTankCore.Motors > 0 then
-					for i = 1, #DakTankCore.Motors do
-						if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangeVolume(0.25, 1) end
+				if #motors > 0 then
+					for i, v in ipairs(motors) do
+						if IsValid(v) then
+							v.Sound:ChangeVolume(0.25, 1) 
+						end
 					end
 				end
 
@@ -472,9 +476,11 @@ function ENT:Think()
 					selfTbl.LeftBrake = 1
 					selfTbl.LeftForce = 0
 					selfTbl.RightForce = 0
-					if #DakTankCore.Motors > 0 then
-						for i = 1, #DakTankCore.Motors do
-							if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(Clamp(255 * selfTbl.RPM / 2500, 0, 255), 0.5) end
+					if #motors > 0 then
+						for i, v in ipairs(motors) do
+							if IsValid(v) then
+								v.Sound:ChangePitch(Clamp(255 * selfTbl.RPM / 2500, 0, 255), 0.5)
+							end
 						end
 					end
 				else
@@ -604,12 +610,12 @@ function ENT:Think()
 						if selfTbl.LastGear == nil then selfTbl.LastGear = 1 end
 						if selfTbl.Gear > selfTbl.LastGear then
 							if selfTbl.lastshift + 2.5 < curTime then
-								if #DakTankCore.Motors > 0 then
-									for i = 1, #DakTankCore.Motors do
-										if IsValid(DakTankCore.Motors[i]) then
-											DakTankCore.Motors[i].Sound:ChangeVolume(0.125, 0)
-											DakTankCore.Motors[i].Sound:ChangeVolume(0.25, 0.15)
-											DakTankCore.Motors[i].Sound:ChangePitch(50, 0.1)
+								if #motors > 0 then
+									for i = 1, #motors do
+										if IsValid(motors[i]) then
+											motors[i].Sound:ChangeVolume(0.125, 0)
+											motors[i].Sound:ChangeVolume(0.25, 0.15)
+											motors[i].Sound:ChangePitch(50, 0.1)
 										end
 									end
 								end
@@ -623,16 +629,16 @@ function ENT:Think()
 						if selfTbl.MoveForward > 0 or selfTbl.MoveReverse > 0 or selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 then
 							selfTbl.LastMoving = 1
 							if (selfTbl.MoveForward > 0 or selfTbl.MoveReverse > 0) and not (selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0) then
-								if #DakTankCore.Motors > 0 then
-									for i = 1, #DakTankCore.Motors do
-										if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1) end
+								if #motors > 0 then
+									for i = 1, #motors do
+										if IsValid(motors[i]) then motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1) end
 									end
 								end
 							else
 								if selfTbl.CarTurning == 0 then
-									if selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 and #DakTankCore.Motors > 0 then
-										for i = 1, #DakTankCore.Motors do
-											if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(max(min(max(selfTbl.MoveRight, selfTbl.MoveLeft) / 1 * 100, 100), 50), 0.5) end
+									if selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 and #motors > 0 then
+										for i = 1, #motors do
+											if IsValid(motors[i]) then motors[i].Sound:ChangePitch(max(min(max(selfTbl.MoveRight, selfTbl.MoveLeft) / 1 * 100, 100), 50), 0.5) end
 										end
 									end
 								else
@@ -642,13 +648,13 @@ function ENT:Think()
 										selfTbl.lastdump = curTime
 									end
 
-									if #DakTankCore.Motors > 0 then
-										for i = 1, #DakTankCore.Motors do
-											if IsValid(DakTankCore.Motors[i]) then
+									if #motors > 0 then
+										for i = 1, #motors do
+											if IsValid(motors[i]) then
 												if selfTbl.CarTurning == 0 then
-													DakTankCore.Motors[i].Sound:ChangePitch(50, 0.1)
+													motors[i].Sound:ChangePitch(50, 0.1)
 												else
-													DakTankCore.Motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1)
+													motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1)
 												end
 											end
 										end
@@ -664,9 +670,9 @@ function ENT:Think()
 								selfTbl.lastdump = curTime
 							end
 
-							if #DakTankCore.Motors > 0 then
-								for i = 1, #DakTankCore.Motors do
-									if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(50, 0.1) end
+							if #motors > 0 then
+								for i = 1, #motors do
+									if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.1) end
 								end
 							end
 
@@ -799,9 +805,9 @@ function ENT:Think()
 						end
 					else
 						if selfTbl.MoveLeft > 0 and selfTbl.MoveRight == 0 then
-							if selfTbl.WheelYaw > -Clamp(self:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult end
+							if selfTbl.WheelYaw > -Clamp(selfTbl:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult end
 						elseif selfTbl.MoveRight > 0 and selfTbl.MoveLeft == 0 then
-							if selfTbl.WheelYaw < Clamp(self:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw + 1 * TimeMult end
+							if selfTbl.WheelYaw < Clamp(selfTbl:GetRoadWTurnAngle(), 0, 45) then selfTbl.WheelYaw = selfTbl.WheelYaw + 1 * TimeMult end
 						elseif selfTbl.MoveRight == 0 and selfTbl.MoveLeft == 0 then
 							if selfTbl.WheelYaw > 0 then
 								selfTbl.WheelYaw = selfTbl.WheelYaw - 1 * TimeMult
@@ -816,9 +822,9 @@ function ENT:Think()
 					if selfTbl.MoveForward <= 0 and selfTbl.MoveReverse <= 0 and selfTbl.MoveLeft <= 0 and selfTbl.MoveRight <= 0 then
 						selfTbl.RightBrake = 0
 						selfTbl.LeftBrake = 0
-						if #DakTankCore.Motors > 0 then
-							for i = 1, #DakTankCore.Motors do
-								if IsValid(DakTankCore.Motors[i]) then DakTankCore.Motors[i].Sound:ChangePitch(50, 0.5) end
+						if #motors > 0 then
+							for i = 1, #motors do
+								if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.5) end
 							end
 						end
 					end
@@ -830,11 +836,11 @@ function ENT:Think()
 				selfTbl.LeftBrake = 1
 				if selfTbl.RPM > 0 then selfTbl.RPM = selfTbl.RPM - 10 end
 				--STANDARD BRAKING, NO FORCE APPLIED
-				if #DakTankCore.Motors > 0 then
-					for i = 1, #DakTankCore.Motors do
-						if IsValid(DakTankCore.Motors[i]) then
-							DakTankCore.Motors[i].Sound:ChangeVolume(0, 2)
-							DakTankCore.Motors[i].Sound:ChangePitch(0, 2)
+				if #motors > 0 then
+					for i = 1, #motors do
+						if IsValid(motors[i]) then
+							motors[i].Sound:ChangeVolume(0, 2)
+							motors[i].Sound:ChangePitch(0, 2)
 						end
 					end
 				end
@@ -904,8 +910,8 @@ function ENT:Think()
 			if selfTbl.RightGroundedLast == nil then selfTbl.RightGroundedLast = WheelsPerSide end
 			if selfTbl.LeftGroundedLast == nil then selfTbl.LeftGroundedLast = WheelsPerSide end
 			local CurRideHeight = 0
-			local RearTurners = self:GetRearTurningWheels()
-			local FrontTurners = self:GetForwardTurningWheels()
+			local RearTurners = selfTbl:GetRearTurningWheels()
+			local FrontTurners = selfTbl:GetForwardTurningWheels()
 			if selfTbl.DakDead or selfTbl.CrewAlive == 0 then
 				selfTbl.RightForce = 0
 				selfTbl.LeftForce = 0
@@ -945,11 +951,11 @@ function ENT:Think()
 				end
 			end
 
-			local brakestiffness = self:GetBrakeStiffness()
+			local brakestiffness = selfTbl:GetBrakeStiffness()
 			if selfTbl.Brakes > 0 then brakestiffness = 1 end
 			local halfwheels = WheelsPerSide * 0.5
-			local basefriction = self:GetDakFriction() * (selfTbl.PhysicalMass * -GravxTicks).z * 0.9 / (WheelsPerSide * 2)
-			if selfTbl.CarTurning == 1 then basefriction = self:GetDakFriction() * (selfTbl.PhysicalMass * -GravxTicks).z * 0.9 / (WheelsPerSide * 2) end
+			local basefriction = selfTbl:GetDakFriction() * (selfTbl.PhysicalMass * -GravxTicks).z * 0.9 / (WheelsPerSide * 2)
+			if selfTbl.CarTurning == 1 then basefriction = selfTbl:GetDakFriction() * (selfTbl.PhysicalMass * -GravxTicks).z * 0.9 / (WheelsPerSide * 2) end
 			local multval = 1
 			local localfriction
 			local worldfriction
@@ -1176,7 +1182,7 @@ function ENT:Think()
 			if selfTbl.LastSpeed == nil then selfTbl.LastSpeed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254) end
 			selfTbl.Speed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254)
 			local accel = selfTbl.Speed - selfTbl.LastSpeed
-			selfTbl.phy:ApplyImpulseOffsetFTorqueOnly(selfTbl.phy:GetMass() * selfTbl.phy:GetVelocity():GetNormalized() * -accel * Clamp(self:GetDakInertia(), 0, 10), selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetUp() * 100)
+			selfTbl.phy:ApplyImpulseOffsetFTorqueOnly(selfTbl.phy:GetMass() * selfTbl.phy:GetVelocity():GetNormalized() * -accel * Clamp(selfTbl:GetDakInertia(), 0, 10), selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetUp() * 100)
 			selfTbl.LastSpeed = selfTbl.Speed
 		end
 
