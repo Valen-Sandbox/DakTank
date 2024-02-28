@@ -231,6 +231,8 @@ end
 local function DTDealDamage(Ent, Damage, Dealer, entbased)
 	if Ent:GetClass() == "daktank_cap" then return end
 	Ent.DakHealth = Ent.DakHealth - Damage
+	if isfunction(Ent.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end 
+
 	if entbased == true then
 		if Dealer.LastDamagedBy == nil or Dealer.LastDamagedBy == NULL then
 			Ent.LastDamagedBy = game.GetWorld()
@@ -641,7 +643,7 @@ local function DTShellContinue(Start, End, Shell, Normal, HitNonHitable)
 				Shell.Filter[#Shell.Filter + 1] = HitEnt
 				DTShellContinue(Start,End,Shell,Normal,true)
 			end
-			if (HitEnt:IsValid() and HitEnt:GetPhysicsObject():IsValid() and not(HitEnt:IsPlayer()) and not(HitEnt:IsNPC()) and not(HitEnt.Base == "base_nextbot") and (HitEnt.DakHealth ~= nil and HitEnt.DakHealth > 0)) or (HitEnt.DakName == "Damaged Component")  then
+			if (HitEnt:IsValid() and HitEnt:GetPhysicsObject():IsValid() and not(HitEnt:IsPlayer()) and not(HitEnt:IsNPC()) and not(HitEnt.Base == "base_nextbot") and HitEnt.DakHealth ~= nil ) or (HitEnt.DakName == "Damaged Component")  then --and HitEnt.DakHealth > 0
 				if (DTCheckClip(HitEnt,ContShellTrace.HitPos)) or (HitEnt:GetPhysicsObject():GetMass() <= 1 and not(HitEnt:IsVehicle()) and HitEnt.IsDakTekFutureTech ~= 1) or HitEnt.DakName == "Damaged Component" then
 				--if (HitEnt:GetPhysicsObject():GetMass() <= 1 and not(HitEnt:IsVehicle()) and not(HitEnt.IsDakTekFutureTech == 1)) or HitEnt.DakName == "Damaged Component" or HitEnt.DakDead == true then
 					if HitEnt.DakArmor == nil or HitEnt.DakBurnStacks == nil then
@@ -1130,9 +1132,8 @@ local function DTShellContinue(Start, End, Shell, Normal, HitNonHitable)
 						end
 					else
 						local Pain = DamageInfo()
-						--Pain:SetDamageForce( Shell.DakVelocity:GetNormalized() * Shell.DakDamage*Shell.DakMass * (Shell.DakVelocity:Distance( Vector(0,0,0) )) )
 						Pain:SetDamageForce( Shell.DakVelocity:GetNormalized() * (2500 * Shell.DakCaliber * (Shell.DakBaseVelocity / 29527.6)) )
-						Pain:SetDamage( Shell.DakDamage * 500 )
+						Pain:SetDamage( Shell.DakDamage * 250 )
 						if Shell.DakGun.DakOwner and Shell and Shell.DakGun then
 							Pain:SetAttacker( Shell.DakGun.DakOwner )
 							Pain:SetInflictor( Shell.DakGun )
@@ -2582,7 +2583,7 @@ local function ContSpall(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, 
 		else
 			local Pain = DamageInfo()
 			Pain:SetDamageForce( Direction * Damage * 5000 * Shell.DakMass )
-			Pain:SetDamage( Damage * 500 )
+			Pain:SetDamage( Damage * 250 )
 			if Owner:IsPlayer() and Shell and Shell.DakGun then
 				Pain:SetAttacker( Owner )
 				Pain:SetInflictor( Shell.DakGun )
@@ -4004,7 +4005,7 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 					local Pain = DamageInfo()
 					--Pain:SetDamageForce( Shell.DakVelocity:GetNormalized() * Shell.DakDamage*Shell.DakMass * (Shell.DakVelocity:Distance( Vector(0,0,0) )) )
 					Pain:SetDamageForce( Shell.DakVelocity:GetNormalized() * (2500 * Shell.DakCaliber * (Shell.DakBaseVelocity / 29527.6)) )
-					Pain:SetDamage( Shell.DakDamage * 500 )
+					Pain:SetDamage( Shell.DakDamage * 250 )
 					if Shell.DakGun.DakOwner and Shell and Shell.DakGun then
 						Pain:SetAttacker( Shell.DakGun.DakOwner )
 						Pain:SetInflictor( Shell.DakGun )
@@ -4395,13 +4396,11 @@ function entity:DTExplosion(Pos,Damage,Radius,Caliber,Pen,Owner)
 					if ExpTrace.Entity:GetClass() == "dak_bot" then
 						ExpTrace.Entity:SetHealth(ExpTrace.Entity:Health() - (Damage / traces) * 500)
 						if ExpTrace.Entity:Health() <= 0 and ExpTrace.Entity.revenge == 0 then
-							--local body = ents.Create( "prop_ragdoll" )
 							body:SetPos( ExpTrace.Entity:GetPos() )
 							body:SetModel( ExpTrace.Entity:GetModel() )
 							body:Spawn()
 							body.DakHealth = 1000000
 							body.DakMaxHealth = 1000000
-							--ExpTrace.Entity:Remove()
 							local SoundList = {"npc/metropolice/die1.wav","npc/metropolice/die2.wav","npc/metropolice/die3.wav","npc/metropolice/die4.wav","npc/metropolice/pain4.wav"}
 							body:EmitSound( SoundList[math.random(5)], 100, 100, 1, 2 )
 							timer.Simple( 5, function()
