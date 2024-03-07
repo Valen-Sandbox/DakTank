@@ -1,31 +1,9 @@
 include("shared.lua")
 
-function ENT:Draw()
-	self:DrawModel()
-end
---[[
-net.Receive( "daktankcoreera", function()
-	local core = net.ReadEntity()
-	if core~=nil then
-		local ERAInfoTable = util.JSONToTable(net.ReadString())
-		if core.ERA == nil then core.ERA = {} end
-		for i=1, #ERAInfoTable do
-			local cur = ERAInfoTable[i]
-			local eraplate = ents.CreateClientProp( cur.Model )
-			local parentent = ents.GetByIndex( cur.Parent )
-			if parentent:IsValid() then
-				eraplate:SetPos(parentent:LocalToWorld(cur.LocalPos))
-				eraplate:SetAngles(parentent:LocalToWorldAngles(cur.LocalAng))
-				eraplate:SetMaterial(cur.Mat)
-				eraplate:SetColor(cur.Col)
-				eraplate:SetParent(parentent)
-				eraplate:SetMoveType(MOVETYPE_NONE)
-				core.ERA[#core.ERA+1] = eraplate
-			end
-		end
-	end
-end )
-]]
+--function ENT:Draw()
+--	self:DrawModel()
+--end
+
 net.Receive( "daktankcoredetail", function()
 	local core = net.ReadFloat()
 	if core == nil then return end

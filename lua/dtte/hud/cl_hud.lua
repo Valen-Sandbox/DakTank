@@ -9,6 +9,7 @@ local Tally      = 0
 local CanDraw    = CreateClientConVar("EnableDakTankInfoScanner", "1", true, true)
 local DisplayMode   = CreateClientConVar("DakTankInfoScannerMode", "4", true, true)
 local DelayTime   = CreateClientConVar("DakTankInfoScannerCycleTime", "3", true, true)
+local trackDetail = CreateClientConVar("DakTankTrackDetail", "1")
 local Color1 = Color(0, 255, 0, 255)
 local Color2 = Color(255, 0, 0, 255)
 local LastChange = 0
@@ -64,6 +65,10 @@ hook.Add("PopulateToolMenu", "DakTankInfoScannerPopulateToolMenu", function()
 		combobox:AddChoice( "Component Highlight", 3 )
 		combobox:AddChoice( "Cycles", 4 )
 		panel:NumSlider("Cycle Delay", "DakTankInfoScannerCycleTime", 0, 10, 2)
+	end)
+	spawnmenu.AddToolMenuOption("Utilities", "DakTank", "DakTankPerformanceMenu", "#Performance", "", "", function(panel)
+		panel:ClearControls()
+		panel:NumSlider("Track Detail", "DakTankTrackDetail", 1, 7, 0)
 	end)
 end)
 

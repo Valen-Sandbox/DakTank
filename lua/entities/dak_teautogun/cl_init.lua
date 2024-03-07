@@ -1,8 +1,8 @@
 include("shared.lua")
 
-function ENT:Draw()
-	self:DrawModel()
-end
+--function ENT:Draw()
+--	self:DrawModel()
+--end
 
 function ENT:Think()
 	if self.Scaled == nil then self.Scaled = 0 end
