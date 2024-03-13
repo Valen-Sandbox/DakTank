@@ -92,14 +92,15 @@ function ENT:Think()
 end
 
 function ENT:Draw()
+	local selfTbl = self:GetTable()
 	self:DrawModel()
-	if FrameTime() == 0 or gui.IsConsoleVisible() then -- or EyePos():DistToSqr(self:GetPos()) > 25000000 then
-		self.dak_isVisible = nil
+	if FrameTime() == 0 or gui.IsConsoleVisible() then
+		selfTbl.dak_isVisible = nil
 		return
 	end
 
-	self:render_gearbox(self.dak_vehicleMode)
-	self.dak_isVisible = true
+	self:render_gearbox(selfTbl.dak_vehicleMode)
+	selfTbl.dak_isVisible = true
 end
 
 function ENT:OnRemove()
@@ -735,15 +736,17 @@ function ENT:update_wheels(vehicleMode)
 end
 
 function ENT:render_wheels(vehicleMode)
-	local dak_csents_wheel = self.dak_csents.wheel
+	local selfTbl = self:GetTable()
+
+	local dak_csents_wheel = selfTbl.dak_csents.wheel
 	if not dak_csents_wheel or not dak_csents_wheel:IsValid() then return end
-	local dak_wheels_ri = self.dak_wheels_ri
-	local dak_wheels_le = self.dak_wheels_le
+	local dak_wheels_ri = selfTbl.dak_wheels_ri
+	local dak_wheels_le = selfTbl.dak_wheels_le
 	local prevtype, prevmodel, prevbody, prevalt
 	local pos, ang = self:parentMatrix_Decomp()
-	local color = self.dak_wheels_color
+	local color = selfTbl.dak_wheels_color
 	render_SetColorModulation(color.x, color.y, color.z)
-	for i = vehicleMode == "halftracked" and 0 or 1, self.dak_wheels_count_ri do
+	for i = vehicleMode == "halftracked" and 0 or 1, selfTbl.dak_wheels_count_ri do
 		local wheel_ri = rawget(dak_wheels_ri, i)
 		local wheel_le = rawget(dak_wheels_le, i)
 		local wheel_info = wheel_ri.info

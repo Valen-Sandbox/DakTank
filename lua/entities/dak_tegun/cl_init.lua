@@ -9,9 +9,9 @@ local recoilModels = {
 	["models/daktanks/hmg100mm2.mdl"] = true
 }
 
---function ENT:Draw()
---	self:DrawModel()
---end
+function ENT:Draw()
+	self:DrawModel()
+end
 
 function ENT:Think()
 	if self.Scaled == nil then

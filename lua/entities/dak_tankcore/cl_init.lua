@@ -1,8 +1,10 @@
 include("shared.lua")
 
---function ENT:Draw()
---	self:DrawModel()
---end
+function ENT:Draw()
+	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) < 1600000 then
+		self:DrawModel()
+	end
+end
 
 net.Receive( "daktankcoredetail", function()
 	local core = net.ReadFloat()
@@ -43,22 +45,6 @@ net.Receive( "daktankcoredetail", function()
 	end
 end )
 
---Core is null on client that is not in the view portal it was created in and so will not work properly, try getting it by index instead since readentity isn't working
---[[
-net.Receive( "daktankcoreeraremove", function()
-	local core = net.ReadEntity()
-	if core~=nil then
-		if core.ERA ~= nil then
-			if #core.ERA > 0 then
-				for i=1, #core.ERA do
-					if core.ERA[i]:IsValid() then core.ERA[i]:Remove() end
-				end
-			end
-		end
-	end
-end)
-]]
-
 net.Receive( "daktankcoredetailremove", function()
 	local core = net.ReadFloat()
 	if core == nil then return end
@@ -91,31 +77,10 @@ net.Receive( "daktankcoredie", function()
 			end
 		end
 	end
-	--[[
-	if core.ERA ~= nil then
-		if #core.ERA > 0 then
-			for i=1, #core.ERA do
-				if core.ERA[i]:IsValid() then
-					core.ERA[i]:SetMaterial("models/props_buildings/plasterwall021a")
-					core.ERA[i]:SetColor(Color(100,100,100,255))
-				end
-			end
-		end
-	end
-	]]
 end )
 
 function ENT:OnRemove()
 	if self == nil then return end
-	--[[
-	if self.ERA ~= nil then
-		if #self.ERA > 0 then
-			for i=1, #self.ERA do
-				if self.ERA[i]:IsValid() then self.ERA[i]:Remove() end
-			end
-		end
-	end
-	]]
 	local locPly = LocalPlayer()
 
 	if locPly[tostring( self:EntIndex() )] ~= nil and locPly[tostring( self:EntIndex() )].Detail ~= nil then

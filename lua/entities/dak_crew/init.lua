@@ -96,7 +96,7 @@ function ENT:Think()
 
 		if self.RequestedReplacement == nil then self.RequestedReplacement = false end
 		if self.RequestedReplacement == false then
-			timer.Simple(5, function()
+			timer.Simple(10, function()
 				if self:IsValid() and self.Job ~= nil then
 					local ReplacementFound = false
 					local CrewNum = 1
