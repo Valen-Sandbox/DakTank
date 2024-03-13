@@ -3,6 +3,10 @@ include("shared.lua")
 local cv_part = CreateClientConVar("daktank_autotread_enable_particles", "1", true, false)
 local cv_dt = CreateClientConVar("daktank_autotread_max_detail", "8", true, false, "maximum track render quality", 4, 16)
 local cv_ad = CreateClientConVar("daktank_autotread_adaptive_detail", "1", true, false, "enhance track render quality as speed increases")
+
+local drawTracks = GetConVar("DakTankEnableTracks")
+local trackDetail = GetConVar( "DakTankTrackDetail" )
+
 local debugmode = false
 ----------------------------------------------------------------
 local gui, cam, util, math, mesh, table, string, render = gui, cam, util, math, mesh, table, string, render
@@ -185,7 +189,7 @@ end
 function ENT:render_gearbox(vehicleMode)
 	if not vehicleMode then return end
 	self:render_wheels(vehicleMode)
-	if enableTracks[vehicleMode] then self:render_tracks(vehicleMode) end
+	if enableTracks[vehicleMode] and drawTracks:GetBool() then self:render_tracks(vehicleMode) end
 end
 
 function ENT:update_gearbox(vehicleMode, selfTbl)
@@ -193,7 +197,7 @@ function ENT:update_gearbox(vehicleMode, selfTbl)
 	selfTbl.dak_isVisible = nil
 	self:parentMatrix_Set()
 	self:update_wheels(vehicleMode)
-	if enableTracks[vehicleMode] then self:update_tracks(vehicleMode) end
+	if enableTracks[vehicleMode] and drawTracks:GetBool() then self:update_tracks(vehicleMode) end
 end
 
 ----------------------------------------------------------------
@@ -1049,7 +1053,6 @@ end
 local matfallback = Material("editor/wireframe")
 local flip1 = Vector(-1, -1, 1)
 local flip2 = Vector(1, -1, 1)
-local trackDetail = GetConVar( "DakTankTrackDetail" )
 function ENT:render_tracks(vehicleMode)
 	local selfTbl = self:GetTable()
 	if not selfTbl.dak_tracks_ready then return end
