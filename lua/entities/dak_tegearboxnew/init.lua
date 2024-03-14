@@ -920,36 +920,6 @@ function ENT:Think()
 
 			local basesize = {selfTbl.base:OBBMaxs().x, selfTbl.base:OBBMaxs().y, selfTbl.base:OBBMaxs().z}
 			sort(basesize, function(a, b) return a > b end)
-			local fwEntYaw = ForwardEnt:GetAngles().yaw
-			local fronttrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
-				mask = MASK_SOLID_BRUSHONLY
-			}
-
-			local FrontTrace = traceline(fronttrace)
-			local backtrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
-				mask = MASK_SOLID_BRUSHONLY
-			}
-
-			local BackTrace = traceline(backtrace)
-			local FrontHit = FrontTrace.HitPos
-			local BackHit = BackTrace.HitPos
-			local HeightDiff = FrontHit.z - BackHit.z
-			local ResistAng = math.atan(HeightDiff / TrackLength) * 57.2958
-			if selfTbl.MoveReverse > 0 then ResistAng = ResistAng * -1 end
-			local TerrainMultiplier = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
-			local TerrainBraking = 0
-			if TerrainMultiplier < 1 then
-				TerrainBraking = (1 - TerrainMultiplier) * 0.125
-			else
-				if selfTbl.Brakes <= 0 then
-					local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
-					selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng)))
-				end
-			end
 
 			local brakestiffness = selfTbl:GetBrakeStiffness()
 			if selfTbl.Brakes > 0 then brakestiffness = 1 end
@@ -962,8 +932,7 @@ function ENT:Think()
 			local rotatedforward
 			local ForwardEntPos = ForwardEnt:GetPos()
 			local ForwardEntAng = ForwardEnt:GetAngles()
-			local rightbraking = Vector(max(selfTbl.RightBrake * brakestiffness, TerrainBraking), 1, 0) * 2
-			local leftbraking = Vector(max(selfTbl.LeftBrake * brakestiffness, TerrainBraking), 1, 0) * 2
+			local wheelBraking = Vector(0,2,0) --Set inside wheel loops, recycled because creating vector objects is expensive (for some reason)
 			local WheelYaw = selfTbl.WheelYaw
 			local ShockForce = 10 * selfTbl.PhysicalMass
 			local InAir = true
@@ -971,7 +940,13 @@ function ENT:Think()
 			local RightChanges = selfTbl.RightChanges
 			local RightPosChanges = selfTbl.RightPosChanges
 
-			for i = 1, WheelsPerSide do --These two loops are a little over half of the average execution time. They're probably worth focusing on.
+			--There are often traces that don't hit anything, which interferes with how we deal with slopes.
+			--In these cases we set them to an average of resistanceAngles from last tick as an approximation.
+			local avgResistAng = selfTbl.lastResistAng
+			local resistCount = 0
+			local resistSum = 0
+
+			for i = 1, WheelsPerSide do
 				RideHeight = selfTbl.RideHeight
 				if i > halfwheels then
 					RideHeight = RideHeight - (hydrabias * (math.floor(halfwheels) - (WheelsPerSide - i)) / math.floor(halfwheels) * RideHeight)
@@ -1003,64 +978,85 @@ function ENT:Think()
 				}
 
 				CurTrace = tracehull(trace)
-				CurTraceHitPos = CurTrace.HitPos
-				CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
-				lastchange = (CurTraceDist - RightChanges[i]) / selfTbl.RealInt
-				RightChanges[i] = CurTraceDist
-				lastvel = (CurTraceHitPos - RightPosChanges[i]) / TimeMult
-				localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				localfriction = localfriction * rightbraking
-				worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				rotatedforward = ForwardEnt:GetForward()
-				if i <= RearTurners and i <= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					localfriction = localfriction * rightbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					localfriction = localfriction * rightbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				end
+				if not CurTrace.StartSolid then
+					local Ang = CurTrace.HitNormal:AngleEx(forward)
 
-				lastvel = worldfriction - ForwardEntPos
-				RightPosChanges[i] = CurTraceHitPos
-				RidePos = Clamp(CurTraceDist - 100, -10, 10)
-				if RidePos < -0.1 then
-					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
-					if abs(hydrabias) > 0 then AbsorbForce = 1 end
-					FrictionForce = basefriction
-				else
-					AbsorbForce = 0.0
-					FrictionForce = 0
-				end
+					local ResistAng = (Ang[1] + 90) * math.cos(math.rad(Ang[3]))
+					ResistAng = (selfTbl.MoveReverse > 0 and ResistAng * -1) or ResistAng
 
-				multval = 1
-				if i <= halfwheels then
-					multval = multval + SuspensionBias
-				elseif i > halfwheels then
-					multval = multval - SuspensionBias
-				end
+					ResistAng = (CurTrace.Hit and ResistAng) or avgResistAng or 0
+					resistCount = (CurTrace.Hit and resistCount + 1) or resistCount
+					resistSum = (CurTrace.Hit and resistSum + ResistAng) or resistSum
 
-				local CurHeight = RideHeight + CurTraceDist - 100
-				local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.RightLastHeights[i], selfTbl.RightInts[i], selfTbl)
-				selfTbl.RightLastHeights[i] = CurHeight
-				selfTbl.RightInts[i] = LastInt
-				if CurHeight >= RideHeight then
-					Force = 0
-				else
-					InAir = false
-				end
+					local wheelTerrainMult = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
 
-				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
-				lastvelnorm = lastvel:GetNormalized()
-				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
-				selfTbl.RightRidePosChanges[i] = RidePos
-				--print(FrictionForceFinal) ----------FIX ISSUE WHERE THIS SPERGS OUT AND GETS BIG FOR NO RAISIN
-				--print(SuspensionForce)
-				selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (TerrainMultiplier * selfTbl.RightForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					local wheelTerrainBraking = 0
+					if wheelTerrainMult < 1 then
+						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
+					elseif selfTbl.Brakes <= 0 then
+						local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+						selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2) )
+					end
+					wheelBraking[1] = max(selfTbl.RightBrake * brakestiffness, wheelTerrainBraking) * 2
+
+					CurTraceHitPos = CurTrace.HitPos
+					CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
+					lastchange = (CurTraceDist - RightChanges[i]) / selfTbl.RealInt
+					RightChanges[i] = CurTraceDist
+					lastvel = (CurTraceHitPos - RightPosChanges[i]) / TimeMult
+					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					localfriction = localfriction * wheelBraking --rightbraking
+					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					rotatedforward = ForwardEnt:GetForward()
+					if i <= RearTurners and i <= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						localfriction = localfriction * wheelBraking --rightbraking
+						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						localfriction = localfriction * wheelBraking --rightbraking
+						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+					end
+
+					lastvel = worldfriction - ForwardEntPos
+					RightPosChanges[i] = CurTraceHitPos
+					RidePos = Clamp(CurTraceDist - 100, -10, 10)
+					if RidePos < -0.1 then
+						AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
+						FrictionForce = basefriction
+					else
+						AbsorbForce = 0.0
+						FrictionForce = 0
+					end
+
+					multval = 1
+					if i <= halfwheels then
+						multval = multval + SuspensionBias
+					elseif i > halfwheels then
+						multval = multval - SuspensionBias
+					end
+
+					local CurHeight = RideHeight + CurTraceDist - 100
+					local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.RightLastHeights[i], selfTbl.RightInts[i], selfTbl)
+					selfTbl.RightLastHeights[i] = CurHeight
+					selfTbl.RightInts[i] = LastInt
+					if CurHeight >= RideHeight then
+						Force = 0
+					else
+						InAir = false
+					end
+
+					SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
+					lastvelnorm = lastvel:GetNormalized()
+					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+					selfTbl.RightRidePosChanges[i] = RidePos
+
+					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (wheelTerrainMult * selfTbl.RightForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+				end
 			end
 
 			--Left side
@@ -1099,64 +1095,87 @@ function ENT:Think()
 				}
 
 				CurTrace = tracehull(trace)
-				CurTraceHitPos = CurTrace.HitPos
-				CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
-				lastchange = (CurTraceDist - LeftChanges[i]) / selfTbl.RealInt
-				LeftChanges[i] = CurTraceDist
-				lastvel = (CurTraceHitPos - LeftPosChanges[i]) / TimeMult
-				localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				localfriction = localfriction * leftbraking
-				worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				rotatedforward = ForwardEnt:GetForward()
-				if i <= RearTurners and i <= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					localfriction = localfriction * leftbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					localfriction = localfriction * leftbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				end
+				if not CurTrace.StartSolid then
+					local Ang = CurTrace.HitNormal:AngleEx(forward)
 
-				lastvel = worldfriction - ForwardEntPos
-				LeftPosChanges[i] = CurTraceHitPos
-				RidePos = Clamp(CurTraceDist - 100, -10, 10)
-				if RidePos < -0.1 then
-					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
-					if abs(hydrabias) > 0 then AbsorbForce = 1 end
-					FrictionForce = basefriction
-				else
-					AbsorbForce = 0.0
-					FrictionForce = 0
-				end
+					local ResistAng = (Ang[1] + 90) * math.cos(math.rad(Ang[3]))
+					ResistAng = (selfTbl.MoveReverse > 0 and ResistAng * -1) or ResistAng
 
-				multval = 1
-				if i <= halfwheels then
-					multval = multval + SuspensionBias
-				elseif i > halfwheels then
-					multval = multval - SuspensionBias
-				end
+					ResistAng = (CurTrace.Hit and ResistAng) or avgResistAng or 0
+					resistCount = (CurTrace.Hit and resistCount + 1) or resistCount
+					resistSum = (CurTrace.Hit and resistSum + ResistAng) or resistSum
 
-				local CurHeight = RideHeight + CurTraceDist - 100
-				local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.LeftLastHeights[i], selfTbl.LeftInts[i], selfTbl)
-				selfTbl.LeftLastHeights[i] = CurHeight
-				selfTbl.LeftInts[i] = LastInt
-				if CurHeight >= RideHeight then
-					Force = 0
-				else
-					InAir = false
-				end
+					local wheelTerrainMult = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
 
-				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
-				lastvelnorm = lastvel:GetNormalized()
-				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
-				selfTbl.LeftRidePosChanges[i] = RidePos
-				selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (TerrainMultiplier * selfTbl.LeftForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					local wheelTerrainBraking = 0
+					if wheelTerrainMult < 1 then
+						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
+					elseif selfTbl.Brakes <= 0 then
+						local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+						selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2) )
+					end
+					wheelBraking[1] = max(selfTbl.LeftBrake * brakestiffness, wheelTerrainBraking) * 2
+
+					CurTraceHitPos = CurTrace.HitPos
+					CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
+					lastchange = (CurTraceDist - LeftChanges[i]) / selfTbl.RealInt
+					LeftChanges[i] = CurTraceDist
+					lastvel = (CurTraceHitPos - LeftPosChanges[i]) / TimeMult
+					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					localfriction = localfriction * wheelBraking
+					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					rotatedforward = ForwardEnt:GetForward()
+					if i <= RearTurners and i <= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						localfriction = localfriction * wheelBraking 
+						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						localfriction = localfriction * wheelBraking 
+						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+					end
+
+					lastvel = worldfriction - ForwardEntPos
+					LeftPosChanges[i] = CurTraceHitPos
+					RidePos = Clamp(CurTraceDist - 100, -10, 10)
+					if RidePos < -0.1 then
+						AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
+						FrictionForce = basefriction
+					else
+						AbsorbForce = 0.0
+						FrictionForce = 0
+					end
+
+					multval = 1
+					if i <= halfwheels then
+						multval = multval + SuspensionBias
+					elseif i > halfwheels then
+						multval = multval - SuspensionBias
+					end
+
+					local CurHeight = RideHeight + CurTraceDist - 100
+					local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.LeftLastHeights[i], selfTbl.LeftInts[i], selfTbl)
+					selfTbl.LeftLastHeights[i] = CurHeight
+					selfTbl.LeftInts[i] = LastInt
+					if CurHeight >= RideHeight then
+						Force = 0
+					else
+						InAir = false
+					end
+
+					SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
+					lastvelnorm = lastvel:GetNormalized()
+					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+					selfTbl.LeftRidePosChanges[i] = RidePos
+					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (wheelTerrainMult * selfTbl.LeftForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+				end
 			end
 
+			selfTbl.lastResistAng = resistSum / resistCount
 			selfTbl.LastWheelsPerSide = WheelsPerSide
 			--mid air stabilization to lower flip rates when going over stuff
 			if InAir then
