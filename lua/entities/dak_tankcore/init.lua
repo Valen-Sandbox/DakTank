@@ -194,8 +194,10 @@ function PhysObj:SetMass(Mass)
 	if IsValid(self:GetEntity().Controller) then self:GetEntity().Controller.MassUpdate = 1 end
 end
 
-local function SetMass(Player, Entity, Data)
+local function SetMass(_, Entity, Data)
 	if not SERVER then return end
+	if not Data then return end
+
 	if Data.Mass then
 		local physobj = Entity:GetPhysicsObject()
 		if physobj:IsValid() then physobj:SetMass(Data.Mass) end
