@@ -1212,53 +1212,36 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local zs = {}
 							local localbound
 							for i = 1, #self.FrontalPosTable do
-								--debugoverlay.Cross( self.RealBounds[i], 5, 25, Color( 0, 255, 0 ), true )
 								localbound = self.ForwardEnt:WorldToLocal(self.FrontalPosTable[i])
 								xs[#xs + 1] = localbound.x
 							end
 
 							for i = 1, #self.RearPosTable do
-								--debugoverlay.Cross( self.RealBounds[i], 5, 25, Color( 0, 255, 0 ), true )
 								localbound = self.ForwardEnt:WorldToLocal(self.RearPosTable[i])
 								xs[#xs + 1] = localbound.x
 							end
 
 							for i = 1, #self.SidePosTable do
-								--debugoverlay.Cross( self.RealBounds[i], 5, 25, Color( 0, 255, 0 ), true )
 								localbound = self.ForwardEnt:WorldToLocal(self.SidePosTable[i])
 								ys[#ys + 1] = localbound.y
 							end
 
 							for i = 1, #self.ZPosTable do
-								--debugoverlay.Cross( self.RealBounds[i], 5, 25, Color( 0, 255, 0 ), true )
 								localbound = self.ForwardEnt:WorldToLocal(self.ZPosTable[i])
 								zs[#zs + 1] = localbound.z
 							end
 
-							--[[
-							for i=1, #self.RealBounds do
-								--debugoverlay.Cross( self.RealBounds[i], 5, 25, Color( 0, 255, 0 ), true )
-								localbound = self.ForwardEnt:WorldToLocal(self.RealBounds[i])
-								xs[#xs+1] = localbound.x
-								ys[#ys+1] = localbound.y
-								zs[#zs+1] = localbound.z
-							end
-							]]
-							--
 							table.sort(xs)
 							table.sort(ys)
 							table.sort(zs)
 							self.RealMins = Vector(xs[1], ys[1], zs[1])
 							self.RealMaxs = Vector(xs[#xs], ys[#ys], zs[#zs])
-							--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), self.RealMins, self.RealMaxs, self.ForwardEnt:GetAngles(), 30, Color( 150, 150, 255, 100 ) )
+
 							local YHalfAve = AverageNoOutliers(ys)
 							local XAve = math.abs(xs[1] - xs[#xs])
 							local YAve = math.abs(YHalfAve * 2)
 							local ZAve = math.abs(zs[1] - zs[#zs])
-							--PrintTable(xs)
-							--PrintTable(ys)
-							--PrintTable(zs)
-							--print("Armor Box Size: "..tostring(self.RealMaxs-self.RealMins))
+
 							self.DakVolume = math.Round(XAve * YAve * ZAve * 0.005, 2) --0.03125 is just an arbitrary balance number, was 0.005 but new averaging system called for new number
 						end
 
@@ -1293,9 +1276,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local speedmult = 1
 							if IsValid(self.Gearbox) then
 								if self.Gearbox.DakHP ~= nil and self.Gearbox.MaxHP ~= nil and self.Gearbox.TotalMass ~= nil and self.Gearbox.HPperTon ~= nil then
-									--print(math.Max(0.01,-0.75+math.log( (armormult + 1)*2 , 2 ))
-									--print(armormult, math.Max(0.01,-0.75+math.log( (armormult + 1)*2 , 2 )))
-									--print(armormultfrontal, math.Max(0.01,-0.75+math.log( (armormultfrontal + 1)*2 , 2 )))
 									if self.Gearbox:GetClass() == "dak_tegearboxnew" then
 										local hp = math.Clamp(self.Gearbox.DakHP, 0, self.Gearbox.MaxHP)
 										local t = (self.Gearbox.TotalMass + self.Gearbox:GetPhysicsObject():GetMass()) / 1000
@@ -1319,12 +1299,12 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								else
 									self.DakOwner:ChatPrint("Please finish setting up the gearbox to get a correct cost for your tank.")
 								end
+
+								self.SpeedMult = math.Round(math.max(0.15, speedmult), 2)
 							else
-								speedmult = 0.125
+								self.SpeedMult = 0.1
 								self.DakOwner:ChatPrint("No gearbox detected, towed gun assumed.")
 							end
-
-							self.SpeedMult = math.Round(math.max(0.1, speedmult), 2)
 						end
 
 						--Delayed portion
@@ -1384,71 +1364,59 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 									end
 
 									self.MainTurret = self.TurretControls[1]
-									local GunPercentage
+
 									for i = 1, #self.TurretControls do
-										if IsValid(self.MainTurret) then
-											if self.TurretControls[i].GunMass ~= nil and self.MainTurret.GunMass ~= nil then
-												local WeaponMass = 0
-												local ATGMs = 0
-												local Total = 0
-												for j = 1, #self.Guns do
-													if self.Guns[j]:GetParent():GetParent() == self.TurretControls[i].DakGun then WeaponMass = WeaponMass + self.Guns[j].DakMass end
-													if self.Guns[j]:GetParent():GetParent() == self.TurretControls[i].DakGun then
-														if self.Guns[j].HasATGM == true then
-															ATGMs = ATGMs + 1 --ATGM CHECK
-														end
-
-														Total = Total + 1
+										if IsValid(self.MainTurret) and self.TurretControls[i].GunMass ~= nil and self.MainTurret.GunMass ~= nil then
+											local WeaponMass = 0
+											local ATGMs = 0
+											local Total = 0
+											for j = 1, #self.Guns do
+												if self.Guns[j]:GetParent():GetParent() == self.TurretControls[i].DakGun then WeaponMass = WeaponMass + self.Guns[j].DakMass end
+												if self.Guns[j]:GetParent():GetParent() == self.TurretControls[i].DakGun then
+													if self.Guns[j].HasATGM == true then
+														ATGMs = ATGMs + 1 --ATGM CHECK
 													end
-												end
 
-												local VehicleMaxs = self.RealMaxs
-												local VehicleMins = self.RealMins
-												local CrewMins = self.CrewMins
-												local CrewMaxs = self.CrewMaxs
-												local AimerMins, AimerMaxs = self.TurretControls[i].DakGun:GetModelBounds()
-												local GunMins, GunMaxs = self.TurretControls[i].Inputs.Gun.Value:GetModelBounds()
-												local AimerMaxs = self.ForwardEnt:WorldToLocal(self.TurretControls[i].DakGun:LocalToWorld(AimerMaxs))
-												local AimerMins = self.ForwardEnt:WorldToLocal(self.TurretControls[i].DakGun:LocalToWorld(AimerMins))
-												local GunMaxs = self.ForwardEnt:WorldToLocal(self.TurretControls[i].Inputs.Gun.Value:LocalToWorld(GunMaxs * self.TurretControls[i].Inputs.Gun.Value.DakCaliber / 100))
-												local GunMins = self.ForwardEnt:WorldToLocal(self.TurretControls[i].Inputs.Gun.Value:LocalToWorld(GunMins * self.TurretControls[i].Inputs.Gun.Value.DakCaliber / 100))
-												--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), AimerMins, AimerMaxs, self.ForwardEnt:GetAngles(), 30, Color( 150, 250, 150, 100 ) )
-												--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), GunMins, GunMaxs, self.ForwardEnt:GetAngles(), 30, Color( 150, 250, 150, 100 ) )
-												local InCrewBounds = InRange(math.Min(GunMins.z, GunMaxs.z), CrewMins.z, CrewMaxs.z)
-												local InVehicleBounds = InRange(GunMins.x, VehicleMins.x, VehicleMaxs.x) and InRange(GunMins.y, VehicleMins.y, VehicleMaxs.y) and InRange(GunMaxs.y, VehicleMins.y, VehicleMaxs.y) and InRange(math.Max(GunMins.z, GunMaxs.z), VehicleMins.z, VehicleMaxs.z)
-												local RotationSpeed = self.TurretControls[i].RotationSpeed
-												if InCrewBounds == false and InVehicleBounds == false then
-													self.TurretControls[i].RemoteWeapon = true
-													--RotationSpeed = self.TurretControls[i].RotationSpeed*math.Min((100/WeaponMass),1)
+													Total = Total + 1
 												end
-
-												if self.TurretControls[i].GunMass > self.MainTurret.GunMass then self.MainTurret = self.TurretControls[i] end
-												--local RotationSpeed = math.Round((self.TurretControls[i].RotationSpeed/(1/66.6)),2)
-												--print(RotationSpeed)
-												--print(WeaponMass)
-												local TurretCost = math.log(RotationSpeed * 100, 100) --(RotationSpeed/20)
-												if self.TurretControls[i].RemoteWeapon == true then
-													self.TurretControls[i].CoreRemoteMult = math.Min(100 / WeaponMass, 1)
-													TurretCost = TurretCost * 1.5 --(10*RotationSpeed/20) * 1.5
-												end
-
-												if self.TurretControls[i]:GetFCS() == true then
-													self.ColdWar = 1
-													TurretCost = TurretCost * 1.2
-												end
-
-												if self.TurretControls[i]:GetStabilizer() == true then
-													self.ColdWar = 1
-													TurretCost = TurretCost * 1.0
-												elseif self.TurretControls[i]:GetShortStopStabilizer() == true then
-													TurretCost = TurretCost * 0.8
-												else
-													TurretCost = TurretCost * 0.6
-												end
-
-												if self.TurretControls[i]:GetYawMin() + self.TurretControls[i]:GetYawMax() <= 90 then TurretCost = TurretCost * 0.5 end
-												GunHandlingMult = GunHandlingMult + math.max(TurretCost, 0.1) * (self.TurretControls[i].GunMass / TotalTurretMass)
 											end
+
+											local CrewMins = self.CrewMins
+											local CrewMaxs = self.CrewMaxs
+											local AimerMins, AimerMaxs = self.TurretControls[i].DakGun:GetModelBounds()
+											local GunMins, GunMaxs = self.TurretControls[i].Inputs.Gun.Value:GetModelBounds()
+											local AimerMaxs = self.ForwardEnt:WorldToLocal(self.TurretControls[i].DakGun:LocalToWorld(AimerMaxs))
+											local AimerMins = self.ForwardEnt:WorldToLocal(self.TurretControls[i].DakGun:LocalToWorld(AimerMins))
+											local GunMaxs = self.ForwardEnt:WorldToLocal(self.TurretControls[i].Inputs.Gun.Value:LocalToWorld(GunMaxs * self.TurretControls[i].Inputs.Gun.Value.DakCaliber / 100))
+											local GunMins = self.ForwardEnt:WorldToLocal(self.TurretControls[i].Inputs.Gun.Value:LocalToWorld(GunMins * self.TurretControls[i].Inputs.Gun.Value.DakCaliber / 100))
+											local InCrewBounds = InRange(math.Min(GunMins.z, GunMaxs.z), CrewMins.z, CrewMaxs.z)												local RotationSpeed = self.TurretControls[i].RotationSpeed
+											if not InCrewBounds then --and InVehicleBounds == false then
+												self.TurretControls[i].RemoteWeapon = true
+											end
+
+											if self.TurretControls[i].GunMass > self.MainTurret.GunMass then self.MainTurret = self.TurretControls[i] end
+											local TurretCost = math.log(RotationSpeed * 100, 100)
+											if self.TurretControls[i].RemoteWeapon == true then
+												self.TurretControls[i].CoreRemoteMult = math.Min(100 / WeaponMass, 1)
+												TurretCost = TurretCost * 1.5 
+											end
+
+											if self.TurretControls[i]:GetFCS() == true then
+												self.ColdWar = 1
+												TurretCost = TurretCost * 1.2
+											end
+
+											if self.TurretControls[i]:GetStabilizer() == true then
+												self.ColdWar = 1
+												TurretCost = TurretCost * 1.0
+											elseif self.TurretControls[i]:GetShortStopStabilizer() == true then
+												TurretCost = TurretCost * 0.8
+											else
+												TurretCost = TurretCost * 0.6
+											end
+
+											if self.TurretControls[i]:GetYawMin() + self.TurretControls[i]:GetYawMax() <= 90 then TurretCost = TurretCost * 0.5 end
+											GunHandlingMult = GunHandlingMult + math.max(TurretCost, 0.1) * (self.TurretControls[i].GunMass / TotalTurretMass)
 										end
 									end
 
@@ -1676,9 +1644,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								if CurrentRes:IsValid() and CurrentRes:IsSolid() then
 									CurrentRes.DakLegit = 1
 									if IsValid(CurrentRes:GetPhysicsObject()) then CurrentRes.DakLegitMass = CurrentRes:GetPhysicsObject():GetMass() end
-									if CurrentRes:GetParent():IsValid() then
-										--CurrentRes:SetMoveType(MOVETYPE_NONE)
-									end
 
 									if CurrentRes:GetClass() == "prop_physics" and CurrentRes:GetPhysicsObject():GetMass() <= 1 and CurrentRes.EntityMods and CurrentRes.EntityMods.CompositeType == nil then
 										if table.Count(CurrentRes:GetChildren()) == 0 and CurrentRes:GetParent():IsValid() then
@@ -1701,7 +1666,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 									elseif CurrentRes:GetClass() == "dak_temotor" then
 										table.insert(selfTbl.Motors, CurrentRes)
 										table.insert(selfTbl.Components, CurrentRes)
-									elseif CurrentRes:GetClass() == "dak_teammo" then --THIS IS AN ISSUE FOR ANOTHER TIME
+									elseif CurrentRes:GetClass() == "dak_teammo" then --THIS IS AN ISSUE FOR ANOTHER TIME -- I wonder what dakota meant here - j
 										local boxname = string.Split(CurrentRes.DakAmmoType, "")
 										local name6 = boxname[#boxname - 9] .. boxname[#boxname - 8] .. boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
 										local name4 = boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
@@ -1720,20 +1685,10 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										if name == "HEATFS" or name == "ATGM" or name == "HESH" or name == "APDS" then selfTbl.ColdWar = 1 end
 										table.insert(selfTbl.Ammoboxes, CurrentRes)
 										table.insert(selfTbl.Components, CurrentRes)
-									elseif CurrentRes:GetClass() == "dak_tegun" then
+									elseif CurrentRes:GetClass() == "dak_tegun" or CurrentRes:GetClass() == "dak_teautogun" or CurrentRes:GetClass() == "dak_temachinegun" then
 										CurrentRes.DakTankCore = self
 										CurrentRes.Controller = self
 										selfTbl.GunCount = selfTbl.GunCount + 1
-										table.insert(selfTbl.Guns, CurrentRes)
-									elseif CurrentRes:GetClass() == "dak_teautogun" then
-										CurrentRes.DakTankCore = self
-										CurrentRes.Controller = self
-										selfTbl.GunCount = selfTbl.GunCount + 1
-										table.insert(selfTbl.Guns, CurrentRes)
-									elseif CurrentRes:GetClass() == "dak_temachinegun" then
-										CurrentRes.DakTankCore = self
-										CurrentRes.Controller = self
-										selfTbl.MachineGunCount = selfTbl.MachineGunCount + 1
 										table.insert(selfTbl.Guns, CurrentRes)
 									elseif CurrentRes:GetClass() == "dak_turretcontrol" then
 										table.insert(selfTbl.TurretControls, CurrentRes)
@@ -1905,7 +1860,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							self.SizeMult = (SA / Mass) * 0.18
 						end
 
-						--local debugtime = SysTime()
 						if self.recheckmass == nil or (self.recheckmass >= 0 and self.MassUpdate == 1) then
 							--print("secondary run")
 							local CurrentRes
@@ -1937,7 +1891,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							self.MassUpdate = 0
 						end
 
-						--print("Total: "..(SysTime()-debugtime))
 						self.recheckmass = self.recheckmass + 1
 						if table.Count(self.HitBox) == 0 then
 							WireLib.TriggerOutput(self, "Health", self.DakHealth)
@@ -2009,7 +1962,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							self.DakActive = 0
 						end
 
-						--local debugtime = SysTime()
 						--####################OPTIMIZE ZONE START###################--
 						if self.DakActive == 1 and table.Count(self.HitBox) ~= 0 and self.CurrentHealth then
 							if table.Count(self.HitBox) > 0 then
