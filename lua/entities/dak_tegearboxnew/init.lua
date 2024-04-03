@@ -182,6 +182,9 @@ local function AngPID(goal, height, lastheight, lastintegral, selfTbl)
 end
 
 function ENT:Think()
+	local vector_origin = vector_origin
+	local vector_up = vector_up
+	local angle_zero = angle_zero
 	--checkspherical was here but has been moved to slowthink
 	local self = self
 	local selfTbl = self:GetTable()
@@ -410,7 +413,7 @@ function ENT:Think()
 			phys = selfParent2:GetPhysicsObject()
 			if selfTbl.InertiaSet == nil and phys:IsMotionEnabled() == true then
 				local oldinertia = phys:GetInertia()
-				local multiplier = 2 
+				local multiplier = 2
 				phys:SetInertia(Vector(oldinertia.x * multiplier, oldinertia.y * multiplier, oldinertia.z * multiplier))
 				phys:SetMass(phys:GetMass())
 				phys:EnableGravity(false)
@@ -519,8 +522,9 @@ function ENT:Think()
 
 						if selfTbl.Speed > 0 then
 							--TRACTION CONTROL
-							local _, temp = WorldToLocal(Vector(0, 0, 0), Angle(0, selfTbl.LastYaw, 0), Vector(0, 0, 0), Angle(0, selfTbl.base:GetAngles().yaw, 0))
+							local _, temp = WorldToLocal(vector_origin, Angle(0, selfTbl.LastYaw, 0), vector_origin, Angle(0, selfTbl.base:GetAngles().yaw, 0))
 							local TurnVal = temp.yaw / TimeMult
+
 							local ControlForce = min(max(4, abs(TurnVal * 5)), 10)
 							if selfTbl.Perc >= 0 then
 								if TurnVal > 0.05 and selfTbl.MoveRight == 0 then
@@ -852,6 +856,8 @@ function ENT:Think()
 			local ForcePos
 			local selfpos = selfTbl.base:GetPos()
 			local trace = {}
+			local traceMins = Vector(-10, -10, -0)
+			local traceMaxs = Vector(10, 10, 0)
 			local CurTrace
 			local RidePos
 			local SuspensionForce
@@ -891,7 +897,7 @@ function ENT:Think()
 			self:SetNWFloat("HydraSide", hydrabiasside)
 			selfTbl.lasthydrabiasside = hydrabiasside
 			local SuspensionBias = selfTbl.SuspensionBias
-			local wheelweightforce = Vector(0, 0, (selfTbl.AddonMass / (WheelsPerSide * 2)) * -9.8 * (selfTbl.RealInt / TimeMult)) * (selfTbl.PhysicalMass / selfTbl.TotalMass)
+			local wheelweightforce = vector_up * (selfTbl.AddonMass / (WheelsPerSide * 2)) * -9.8 * (selfTbl.RealInt / TimeMult) * (selfTbl.PhysicalMass / selfTbl.TotalMass)
 			if selfTbl.LastWheelsPerSide ~= WheelsPerSide then
 				for i = 1, WheelsPerSide do
 					selfTbl.RightChanges[i] = 0
@@ -933,7 +939,8 @@ function ENT:Think()
 			local ForwardEntPos = ForwardEnt:GetPos()
 			local ForwardEntAng = ForwardEnt:GetAngles()
 			local wheelBraking = Vector(0,2,0) --Set inside wheel loops, recycled because creating vector objects is expensive (for some reason)
-			local WheelYaw = selfTbl.WheelYaw
+			--local WheelYaw = selfTbl.WheelYaw
+			local wheelAngleYaw = Angle(0,selfTbl.WheelYaw,0)
 			local ShockForce = 10 * selfTbl.PhysicalMass
 			local InAir = true
 			--Right side
@@ -945,6 +952,8 @@ function ENT:Think()
 			local avgResistAng = selfTbl.lastResistAng
 			local resistCount = 0
 			local resistSum = 0
+
+			local vector110 = Vector(1,1,0) --Optimization
 
 			for i = 1, WheelsPerSide do
 				RideHeight = selfTbl.RideHeight
@@ -970,10 +979,10 @@ function ENT:Think()
 				end
 
 				trace = {
-					start = Pos + Vector(0, 0, 1) * (-CurRideHeight + 100),
-					endpos = Pos + Vector(0, 0, 1) * -CurRideHeight,
-					mins = Vector(-10, -10, -0),
-					maxs = Vector(10, 10, 0),
+					start = Pos + vector_up * (-CurRideHeight + 100),
+					endpos = Pos + vector_up * -CurRideHeight,
+					mins = traceMins,
+					maxs = traceMaxs,
 					mask = MASK_SOLID_BRUSHONLY
 				}
 
@@ -993,10 +1002,11 @@ function ENT:Think()
 					local wheelTerrainBraking = 0
 					if wheelTerrainMult < 1 then
 						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
-					elseif selfTbl.Brakes <= 0 then
-						local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
-						selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2) )
-					end
+						if selfTbl.Brakes <= 0 then
+							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
+						end
+					end --else
 					wheelBraking[1] = max(selfTbl.RightBrake * brakestiffness, wheelTerrainBraking) * 2
 
 					CurTraceHitPos = CurTrace.HitPos
@@ -1004,20 +1014,20 @@ function ENT:Think()
 					lastchange = (CurTraceDist - RightChanges[i]) / selfTbl.RealInt
 					RightChanges[i] = CurTraceDist
 					lastvel = (CurTraceHitPos - RightPosChanges[i]) / TimeMult
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng)
 					localfriction = localfriction * wheelBraking --rightbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng)
 					rotatedforward = ForwardEnt:GetForward()
 					if i <= RearTurners and i <= halfwheels then
-						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
 						localfriction = localfriction * wheelBraking --rightbraking
-						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
 					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
 						localfriction = localfriction * wheelBraking --rightbraking
-						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
 					end
 
 					lastvel = worldfriction - ForwardEntPos
@@ -1049,13 +1059,17 @@ function ENT:Think()
 						InAir = false
 					end
 
-					SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-					AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
+					SuspensionForce = wheelweightforce + vector_up * (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval   --Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					AbsorbForceFinal = -vector_up * (Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
 					lastvelnorm = lastvel:GetNormalized()
 					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+
+					--AbsorbForceFinal = vector_origin
+					--FrictionForceFinal = vector_origin --Debug
+
 					selfTbl.RightRidePosChanges[i] = RidePos
 
-					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (wheelTerrainMult * selfTbl.RightForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * vector110) * 4 * (wheelTerrainMult * selfTbl.RightForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
 				end
 			end
 
@@ -1087,10 +1101,10 @@ function ENT:Think()
 				end
 
 				trace = {
-					start = Pos + Vector(0, 0, 1) * (-CurRideHeight + 100),
-					endpos = Pos + Vector(0, 0, 1) * -CurRideHeight,
-					mins = Vector(-10, -10, -0),
-					maxs = Vector(10, 10, 0),
+					start = Pos + vector_up * (-CurRideHeight + 100),
+					endpos = Pos + vector_up * -CurRideHeight,
+					mins = traceMins,
+					maxs = traceMaxs,
 					mask = MASK_SOLID_BRUSHONLY
 				}
 
@@ -1110,10 +1124,11 @@ function ENT:Think()
 					local wheelTerrainBraking = 0
 					if wheelTerrainMult < 1 then
 						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
-					elseif selfTbl.Brakes <= 0 then
-						local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
-						selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2) )
-					end
+						if selfTbl.Brakes <= 0 then
+							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
+						end
+					end--else
 					wheelBraking[1] = max(selfTbl.LeftBrake * brakestiffness, wheelTerrainBraking) * 2
 
 					CurTraceHitPos = CurTrace.HitPos
@@ -1121,20 +1136,20 @@ function ENT:Think()
 					lastchange = (CurTraceDist - LeftChanges[i]) / selfTbl.RealInt
 					LeftChanges[i] = CurTraceDist
 					lastvel = (CurTraceHitPos - LeftPosChanges[i]) / TimeMult
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng)
 					localfriction = localfriction * wheelBraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
+					worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng)
 					rotatedforward = ForwardEnt:GetForward()
 					if i <= RearTurners and i <= halfwheels then
-						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
 						localfriction = localfriction * wheelBraking 
-						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
 					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
 						localfriction = localfriction * wheelBraking 
-						worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-						rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
 					end
 
 					lastvel = worldfriction - ForwardEntPos
@@ -1166,12 +1181,16 @@ function ENT:Think()
 						InAir = false
 					end
 
-					SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-					AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
+					SuspensionForce = wheelweightforce + vector_up * (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval --Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					AbsorbForceFinal = -vector_up * (Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
 					lastvelnorm = lastvel:GetNormalized()
 					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+
+					--AbsorbForceFinal = vector_origin
+					--FrictionForceFinal = vector_origin --Debug
+
 					selfTbl.LeftRidePosChanges[i] = RidePos
-					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (wheelTerrainMult * selfTbl.LeftForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * vector110) * 4 * (wheelTerrainMult * selfTbl.LeftForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
 				end
 			end
 
@@ -1198,8 +1217,8 @@ function ENT:Think()
 			end
 
 			selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * selfTbl.PhysicalMass * physenv.GetGravity())
-			if selfTbl.LastSpeed == nil then selfTbl.LastSpeed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254) end
-			selfTbl.Speed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254)
+			if selfTbl.LastSpeed == nil then selfTbl.LastSpeed = vector_origin:Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254) end
+			selfTbl.Speed = vector_origin:Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254)
 			local accel = selfTbl.Speed - selfTbl.LastSpeed
 			selfTbl.phy:ApplyImpulseOffsetFTorqueOnly(selfTbl.phy:GetMass() * selfTbl.phy:GetVelocity():GetNormalized() * -accel * Clamp(selfTbl:GetDakInertia(), 0, 10), selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetUp() * 100)
 			selfTbl.LastSpeed = selfTbl.Speed
