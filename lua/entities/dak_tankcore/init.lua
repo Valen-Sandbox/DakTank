@@ -423,6 +423,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 					if selfTbl.DakFinishedPasting == 1 and selfTbl.CanSpawn ~= true and (IsValid(selfTbl.Gearbox) or (selfTbl.TurretControls ~= nil and IsValid(selfTbl.TurretControls[1]))) then
 						selfTbl.CanSpawn = true
 						--First portion
+
 						do
 							--Get forced era setting
 							if self:GetForceColdWar() == true then selfTbl.ColdWar = 1 end
@@ -532,14 +533,14 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						--Check top and bottom bounds of vehicle for each crew position
 						selfTbl.RealBounds = {}
 						-- local ent, HitCrit, ThickestPos
-						for i, crew in ipairs(selfTbl.Crew) do 
+						for i, crew in ipairs(selfTbl.Crew) do
 							local mins = crew:OBBMins() * 0.9
 							local maxs = crew:OBBMaxs() * 0.9
 							local pos = crew:GetPos()
 							crew.Heightaimpoints = {pos, pos + Vector(mins.x, 0, 0), pos + Vector(maxs.x, 0, 0), pos + Vector(0, mins.y, 0), pos + Vector(0, maxs.y, 0), pos + Vector(mins.x * 0.5, 0, 0), pos + Vector(maxs.x * 0.5, 0, 0), pos + Vector(0, mins.y * 0.5, 0), pos + Vector(0, maxs.y * 0.5, 0),}
 						end
 
-						for i = 1, #selfTbl.Crew do 
+						for i = 1, #selfTbl.Crew do
 							for j = i, #selfTbl.Crew[i].Heightaimpoints do
 								local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2, selfTbl.Crew[i].Heightaimpoints[j] - up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
 								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
@@ -553,7 +554,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						end
 
 						--Setup crew armor checking positions
-						for i, crew in ipairs(selfTbl.Crew) do 
+						for i, crew in ipairs(selfTbl.Crew) do
 							local mins = crew:OBBMins() * 0.9
 							local maxs = crew:OBBMaxs() * 0.9
 							local pos = crew:GetPos()
@@ -817,10 +818,10 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							--Get crew bounds
 							local CrewMeshs = {}
 							for i = 1, #self.Crew do
-								for j = 1, #self.Crew[i]:GetPhysicsObject():GetMesh() do
-									for k, v in pairs(self.Crew[i]:GetPhysicsObject():GetMesh()[j]) do
+								local crewMesh = self.Crew[i]:GetPhysicsObject():GetMesh()
+								for j = 1, #crewMesh do
+									for k, v in pairs(crewMesh[j]) do
 										CrewMeshs[#CrewMeshs + 1] = self.Crew[i]:LocalToWorld(v)
-										--debugoverlay.Cross( self.Crew[i]:LocalToWorld(v), 10, 25, Color( 0, 0, 255 ), true )
 									end
 								end
 							end
@@ -839,43 +840,45 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							table.sort(crewzs)
 							self.CrewMins = self.ForwardEnt:WorldToLocal(Vector(crewxs[1], crewys[1], crewzs[1]))
 							self.CrewMaxs = self.ForwardEnt:WorldToLocal(Vector(crewxs[#crewxs], crewys[#crewys], crewzs[#crewzs]))
-							--debugoverlay.BoxAngles( self.ForwardEnt:GetPos(), self.CrewMins, self.CrewMaxs, self.ForwardEnt:GetAngles(), 30, Color( 255, 150, 150, 100 ) )
 						end
 
 						do
 							--Link guns to their appropriate ammo
-							for i = 1, #self.Guns do
-								self.Guns[i].AmmoBoxes = {}
-								for j = 1, #self.Ammoboxes do
-									if not (self.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel") then
-										if self.Guns[i].DakGunType == "Short Cannon" or self.Guns[i].DakGunType == "Short Autoloader" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "S" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Cannon" or self.Guns[i].DakGunType == "Autoloader" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Long Cannon" or self.Guns[i].DakGunType == "Long Autoloader" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "L" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Howitzer" or self.Guns[i].DakGunType == "Autoloading Howitzer" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "H" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] ~= "M" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Mortar" or self.Guns[i].DakGunType == "Autoloading Mortar" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "M" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] ~= "G" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Smoke Launcher" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "S" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "L" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Flamethrower" then
-											if self.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "MG" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "M" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "G" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Grenade Launcher" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "G" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "L" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "HMG" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "H" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "M" and string.Split(self.Ammoboxes[j].DakName, "m")[3][3] == "G" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Autocannon" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "A" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "Recoilless Rifle" or self.Guns[i].DakGunType == "Autoloading Recoilless Rifle" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "R" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] == "R" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
-										elseif self.Guns[i].DakGunType == "ATGM Launcher" or self.Guns[i].DakGunType == "Dual ATGM Launcher" or self.Guns[i].DakGunType == "Autoloading ATGM Launcher" or self.Guns[i].DakGunType == "Autoloading Dual ATGM Launcher" then
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "L" and string.Split(self.Ammoboxes[j].DakName, "m")[3][2] ~= "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
+							for i = 1, #selfTbl.Guns do
+								selfTbl.Guns[i].AmmoBoxes = {}
+								local ammoBoxes = selfTbl.Guns[i].AmmoBoxes
+								local gunType = selfTbl.Guns[i].DakGunType
+								for j = 1, #selfTbl.Ammoboxes do
+									if not (selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel") then
+										local splitString = string.Split(selfTbl.Ammoboxes[j].DakName, "m")[3]
+										if gunType == "Short Cannon" or gunType == "Short Autoloader" then
+											if splitString[1] == "S" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Cannon" or gunType == "Autoloader" then
+											if splitString[1] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Long Cannon" or gunType == "Long Autoloader" then
+											if splitString[1] == "L" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Howitzer" or gunType == "Autoloading Howitzer" then
+											if splitString[1] == "H" and splitString[2] ~= "M" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Mortar" or gunType == "Autoloading Mortar" then
+											if splitString[1] == "M" and splitString[2] ~= "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Smoke Launcher" then
+											if splitString[1] == "S" and splitString[2] == "L" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Flamethrower" then
+											if selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "MG" then
+											if splitString[1] == "M" and splitString[2] == "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Grenade Launcher" then
+											if splitString[1] == "G" and splitString[2] == "L" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "HMG" then
+											if splitString[1] == "H" and splitString[2] == "M" and splitString == "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Autocannon" then
+											if splitString[1] == "A" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "Recoilless Rifle" or gunType == "Autoloading Recoilless Rifle" then
+											if splitString[1] == "R" and splitString[2] == "R" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+										elseif gunType == "ATGM Launcher" or gunType == "Dual ATGM Launcher" or gunType == "Autoloading ATGM Launcher" or gunType == "Autoloading Dual ATGM Launcher" then
+											if splitString[1] == "L" and splitString[2] ~= "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										else
-											if string.Split(self.Ammoboxes[j].DakName, "m")[3][1] == "C" then self.Guns[i].AmmoBoxes[#self.Guns[i].AmmoBoxes + 1] = self.Ammoboxes[j] end
+											if splitString[1] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										end
 									end
 								end
@@ -885,10 +888,10 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						do
 							--Find max penetration
 							local MaxPen = 0
-							for i = 1, #self.Guns do
-								for j = 1, #self.Guns[i].AmmoBoxes do
-									if self.Guns[i].DakCaliber == self.Guns[i].AmmoBoxes[j].DakCaliber then
-										local boxname = string.Split(self.Guns[i].AmmoBoxes[j].DakAmmoType, "")
+							for i = 1, #selfTbl.Guns do
+								for j = 1, #selfTbl.Guns[i].AmmoBoxes do
+									if selfTbl.Guns[i].DakCaliber == selfTbl.Guns[i].AmmoBoxes[j].DakCaliber then
+										local boxname = string.Split(selfTbl.Guns[i].AmmoBoxes[j].DakAmmoType, "")
 										local name6 = boxname[#boxname - 9] .. boxname[#boxname - 8] .. boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
 										local name4 = boxname[#boxname - 7] .. boxname[#boxname - 6] .. boxname[#boxname - 5] .. boxname[#boxname - 4]
 										local name2 = boxname[#boxname - 5] .. boxname[#boxname - 4]
@@ -902,59 +905,59 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										end
 
 										if name == "APFSDS" then
-											if self.Guns[i].BaseDakShellPenetration * 7.8 * 0.5 > MaxPen then MaxPen = self.Guns[i].BaseDakShellPenetration * 7.8 * 0.5 end
+											if selfTbl.Guns[i].BaseDakShellPenetration * 7.8 * 0.5 > MaxPen then MaxPen = selfTbl.Guns[i].BaseDakShellPenetration * 7.8 * 0.5 end
 										elseif name == "APDS" then
-											if self.Guns[i].BaseDakShellPenetration * 1.67 > MaxPen then MaxPen = self.Guns[i].BaseDakShellPenetration * 1.67 end
+											if selfTbl.Guns[i].BaseDakShellPenetration * 1.67 > MaxPen then MaxPen = selfTbl.Guns[i].BaseDakShellPenetration * 1.67 end
 										elseif name == "HVAP" then
-											if self.Guns[i].BaseDakShellPenetration * 1.5 > MaxPen then MaxPen = self.Guns[i].BaseDakShellPenetration * 1.5 end
+											if selfTbl.Guns[i].BaseDakShellPenetration * 1.5 > MaxPen then MaxPen = selfTbl.Guns[i].BaseDakShellPenetration * 1.5 end
 										elseif name == "AP" then
-											if self.Guns[i].BaseDakShellPenetration > MaxPen then MaxPen = self.Guns[i].BaseDakShellPenetration end
+											if selfTbl.Guns[i].BaseDakShellPenetration > MaxPen then MaxPen = selfTbl.Guns[i].BaseDakShellPenetration end
 										elseif name == "APHE" then
-											if self.Guns[i].BaseDakShellPenetration * 0.825 > MaxPen then MaxPen = self.Guns[i].BaseDakShellPenetration * 0.825 end
+											if selfTbl.Guns[i].BaseDakShellPenetration * 0.825 > MaxPen then MaxPen = selfTbl.Guns[i].BaseDakShellPenetration * 0.825 end
 										elseif name == "ATGM" then
-											self.Guns[i].HasATGM = true
-											if self.Modern == 1 then
-												if self.Guns[i].DakMaxHealth * 6.40 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 6.40 end
+											selfTbl.Guns[i].HasATGM = true
+											if selfTbl.Modern == 1 then
+												if selfTbl.Guns[i].DakMaxHealth * 6.40 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 6.40 end
 											else
-												if self.Guns[i].DakMaxHealth * 6.40 * 0.45 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 6.40 * 0.45 end
+												if selfTbl.Guns[i].DakMaxHealth * 6.40 * 0.45 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 6.40 * 0.45 end
 											end
 										elseif name == "HEATFS" then
-											if self.Modern == 1 then
-												if self.Guns[i].DakMaxHealth * 5.4 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 5.4 end
+											if selfTbl.Modern == 1 then
+												if selfTbl.Guns[i].DakMaxHealth * 5.4 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 5.4 end
 											else
-												if self.Guns[i].DakMaxHealth * 5.40 * 0.658 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 5.40 * 0.658 end
+												if selfTbl.Guns[i].DakMaxHealth * 5.40 * 0.658 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 5.40 * 0.658 end
 											end
 										elseif name == "HEAT" then
-											if self.ColdWar == 1 or self.Modern == 1 then
-												if self.Guns[i].DakMaxHealth * 5.4 * 0.431 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 5.4 * 0.431 end
+											if selfTbl.ColdWar == 1 or selfTbl.Modern == 1 then
+												if selfTbl.Guns[i].DakMaxHealth * 5.4 * 0.431 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 5.4 * 0.431 end
 											else
-												if self.Guns[i].DakMaxHealth * 1.20 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 1.20 end
+												if selfTbl.Guns[i].DakMaxHealth * 1.20 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 1.20 end
 											end
 										elseif name == "HESH" then
-											if self.Guns[i].DakMaxHealth * 1.25 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 1.25 end
+											if selfTbl.Guns[i].DakMaxHealth * 1.25 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 1.25 end
 										elseif name == "HE" then
-											if self.Guns[i].DakBaseShellFragPen > MaxPen then MaxPen = self.Guns[i].DakBaseShellFragPen end
+											if selfTbl.Guns[i].DakBaseShellFragPen > MaxPen then MaxPen = selfTbl.Guns[i].DakBaseShellFragPen end
 										elseif name == "SM" then
-											if self.Guns[i].DakMaxHealth * 0.1 > MaxPen then MaxPen = self.Guns[i].DakMaxHealth * 0.1 end
+											if selfTbl.Guns[i].DakMaxHealth * 0.1 > MaxPen then MaxPen = selfTbl.Guns[i].DakMaxHealth * 0.1 end
 										end
 									end
 								end
 							end
 
-							self.MaxPen = MaxPen
+							selfTbl.MaxPen = MaxPen
 						end
 
 						do
 							--Scan for armor display
-							self.RawFrontalTable = {}
-							self.RawSideTable = {}
-							self.RawRearTable = {}
-							self.FrontalPosTable = {}
-							self.SidePosTable = {}
-							self.RearPosTable = {}
-							local basepos = self.Base:GetPos()
-							self.BoxVolume = self.BestLength * self.BestWidth * self.BestHeight
-							local biggestsize = math.max(math.min(self.BestLength, self.BestWidth) * 1.1, self.BestHeight * 0.5 * 1.1) * 2
+							selfTbl.RawFrontalTable = {}
+							selfTbl.RawSideTable = {}
+							selfTbl.RawRearTable = {}
+							selfTbl.FrontalPosTable = {}
+							selfTbl.SidePosTable = {}
+							selfTbl.RearPosTable = {}
+							local basepos = selfTbl.Base:GetPos()
+							selfTbl.BoxVolume = selfTbl.BestLength * selfTbl.BestWidth * selfTbl.BestHeight
+							local biggestsize = math.max(math.min(selfTbl.BestLength, selfTbl.BestWidth) * 1.1, selfTbl.BestHeight * 0.5 * 1.1) * 2
 							local pixels = 40
 							local splits = 40
 							local delay = pixels / splits
@@ -962,58 +965,57 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local curarmor = 0
 							local thickestpos
 							local ent
+							local aspectratio = selfTbl.BoxSize.y / selfTbl.BoxSize.z
+							selfTbl.frontarmortable = {}
+							local addpos
+							local distance = selfTbl.MaxSize * 2
+
 							local scanforward
 							local scanright
 							local scanup
-							local aspectratio = self.BoxSize.y / self.BoxSize.z
-							self.frontarmortable = {}
-							local DebugTime = SysTime()
-							local aspectratio = self.BoxSize.y / self.BoxSize.z
-							local minmax = self.HitBoxMins + self.HitBoxMaxs
-							local addpos
-							local distance = self.MaxSize * 2
-							--FRONT
-							for i = 1, pixels do
-								--timer.Simple(engine.TickInterval()*delay*i,function()
-								for j = 1, pixels do
-									--timer.Simple(engine.TickInterval()*(math.ceil(j/splits)-1),function()
-									if IsValid(self) then
-										if IsValid(self.Gearbox) then
-											scanforward = self.Gearbox.ForwardEnt:GetForward()
-											scanright = self.Gearbox.ForwardEnt:GetRight()
-											scanup = self.Gearbox.ForwardEnt:GetUp()
-										elseif IsValid(self.MainTurret) then
-											scanforward = self.MainTurret:GetForward()
-											scanright = self.MainTurret:GetRight()
-											scanup = self.MainTurret:GetUp()
-										end
+							if IsValid(selfTbl.Gearbox) then
+								scanforward = selfTbl.Gearbox.ForwardEnt:GetForward()
+								scanright = selfTbl.Gearbox.ForwardEnt:GetRight()
+								scanup = selfTbl.Gearbox.ForwardEnt:GetUp()
+							elseif IsValid(selfTbl.MainTurret) then
+								scanforward = selfTbl.MainTurret:GetForward()
+								scanright = selfTbl.MainTurret:GetRight()
+								scanup = selfTbl.MainTurret:GetUp()
+							end
 
-										if self.BoxSize.y > self.BoxSize.z then
-											aspectratio = self.BoxSize.y / self.BoxSize.z
-											local xstart = -scanright * self.HitBoxMaxs.y * 1.1 -- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 -- + scanup*(self.ForwardEnt:WorldToLocal(basepos)).z
-											local xcur = (j / pixels * 1.1) * -scanright * -self.BoxSize.y
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+							local allPlayers = player.GetAll()
+
+
+							if IsValid(self) then
+
+								--FRONT
+								for i = 1, pixels do
+									for j = 1, pixels do
+										if selfTbl.BoxSize.y > selfTbl.BoxSize.z then
+											aspectratio = selfTbl.BoxSize.y / selfTbl.BoxSize.z
+											local xstart = -scanright * selfTbl.HitBoxMaxs.y * 1.1
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1
+											local xcur = (j / pixels * 1.1) * -scanright * -selfTbl.BoxSize.y
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart + ystart * aspectratio
 											addpos = xcur + ycur * aspectratio
 										else
-											aspectratio = self.BoxSize.z / self.BoxSize.y
-											local xstart = -scanright * self.HitBoxMaxs.y * 1.1 -- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 -- + scanup*(self.ForwardEnt:WorldToLocal(basepos)).z
-											local xcur = (j / pixels * 1.1) * -scanright * -self.BoxSize.y
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+											aspectratio = selfTbl.BoxSize.z / selfTbl.BoxSize.y
+											local xstart = -scanright * selfTbl.HitBoxMaxs.y * 1.1
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1
+											local xcur = (j / pixels * 1.1) * -scanright * -selfTbl.BoxSize.y
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart * aspectratio + ystart
 											addpos = xcur * aspectratio + ycur
 										end
 
-										-- SpallLiner = 0
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, player.GetAll(), self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, player.GetAll(), self)
+										local ForwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
+										local BackwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos + scanforward * distance or BackwardHit == startpos + addpos - scanforward * distance then depth = 0 end
 										local TraceStart = ForwardHit
 										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
-										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, true, false)
+										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, true, false)
 										local addval = 0
 										if IsValid(ent) then
 											local entclass = ent:GetClass()
@@ -1022,72 +1024,54 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											if entclass == "dak_tefuel" then addval = 90000 end
 										end
 
-										if self.frontarmortable ~= nil then
+										if selfTbl.frontarmortable ~= nil then
 											if curarmor ~= nil then
-												self.frontarmortable[#self.frontarmortable + 1] = math.Round(curarmor) + addval
+												selfTbl.frontarmortable[#selfTbl.frontarmortable + 1] = math.Round(curarmor) + addval
 												if curarmor ~= 0 and depth ~= 0 then
-													self.RawFrontalTable[#self.RawFrontalTable + 1] = math.Round(curarmor)
-													self.FrontalPosTable[#self.FrontalPosTable + 1] = thickestpos
+													selfTbl.RawFrontalTable[#selfTbl.RawFrontalTable + 1] = math.Round(curarmor)
+													selfTbl.FrontalPosTable[#selfTbl.FrontalPosTable + 1] = thickestpos
 												end
 											else
-												self.frontarmortable[#self.frontarmortable + 1] = 0
+												selfTbl.frontarmortable[#selfTbl.frontarmortable + 1] = 0
 											end
 										end
 									end
-									--end)
 								end
-								--end)
-							end
 
-							--print(SysTime()-DebugTime)
-							timer.Simple(1, function()
-								--timer.Simple(engine.TickInterval()*delay*pixels+1,function()
-								if self.frontarmortable ~= nil then self.frontarmortable[#self.frontarmortable + 1] = self.FrontalArmor end
-							end)
+								timer.Simple(1, function()
+									if selfTbl.frontarmortable ~= nil then selfTbl.frontarmortable[#selfTbl.frontarmortable + 1] = selfTbl.FrontalArmor end
+								end)
 
-							--SIDE
-							self.sidearmortable = {}
-							for i = 1, pixels do
-								--timer.Simple(engine.TickInterval()*delay*i,function()
-								for j = 1, pixels do
-									--timer.Simple(engine.TickInterval()*(math.ceil(j/splits)-1),function()
-									if IsValid(self) then
-										if IsValid(self.Gearbox) then
-											scanforward = self.Gearbox.ForwardEnt:GetForward()
-											scanright = self.Gearbox.ForwardEnt:GetRight()
-											scanup = self.Gearbox.ForwardEnt:GetUp()
-										elseif IsValid(self.MainTurret) then
-											scanforward = self.MainTurret:GetForward()
-											scanright = self.MainTurret:GetRight()
-											scanup = self.MainTurret:GetUp()
-										end
-
-										if self.BoxSize.x > self.BoxSize.z then
-											aspectratio = self.BoxSize.x / self.BoxSize.z
-											local xstart = scanforward * self.HitBoxMaxs.x * 1.1 - scanforward * self.ForwardEnt:WorldToLocal(basepos).x
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 + scanup * self.ForwardEnt:WorldToLocal(basepos).z
-											local xcur = (j / pixels * 1.1) * scanforward * -self.BoxSize.x
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+								--SIDE
+								selfTbl.sidearmortable = {}
+								for i = 1, pixels do
+									for j = 1, pixels do
+										if selfTbl.BoxSize.x > selfTbl.BoxSize.z then
+											aspectratio = selfTbl.BoxSize.x / selfTbl.BoxSize.z
+											local xstart = scanforward * selfTbl.HitBoxMaxs.x * 1.1 - scanforward * selfTbl.ForwardEnt:WorldToLocal(basepos).x
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1 + scanup * selfTbl.ForwardEnt:WorldToLocal(basepos).z
+											local xcur = (j / pixels * 1.1) * scanforward * -selfTbl.BoxSize.x
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart + ystart * aspectratio
 											addpos = xcur + ycur * aspectratio
 										else
-											aspectratio = self.BoxSize.z / self.BoxSize.x
-											local xstart = scanforward * self.HitBoxMaxs.x * 1.1 - scanforward * self.ForwardEnt:WorldToLocal(basepos).x
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 + scanup * self.ForwardEnt:WorldToLocal(basepos).z
-											local xcur = (j / pixels * 1.1) * scanforward * -self.BoxSize.x
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+											aspectratio = selfTbl.BoxSize.z / selfTbl.BoxSize.x
+											local xstart = scanforward * selfTbl.HitBoxMaxs.x * 1.1 - scanforward * selfTbl.ForwardEnt:WorldToLocal(basepos).x
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1 + scanup * selfTbl.ForwardEnt:WorldToLocal(basepos).z
+											local xcur = (j / pixels * 1.1) * scanforward * -selfTbl.BoxSize.x
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart * aspectratio + ystart
 											addpos = xcur * aspectratio + ycur
 										end
 
 										-- SpallLiner = 0
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanright * distance, startpos + addpos + scanright * distance, player.GetAll(), self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanright * distance, startpos + addpos - scanright * distance, player.GetAll(), self)
+										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanright * distance, startpos + addpos + scanright * distance, allPlayers, self)
+										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanright * distance, startpos + addpos - scanright * distance, allPlayers, self)
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanright * distance or BackwardHit == startpos + addpos + scanright * distance then depth = 0 end
 										local TraceStart = ForwardHit
 										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
-										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, false)
+										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, false, false)
 										local addval = 0
 										if IsValid(ent) then
 											local entclass = ent:GetClass()
@@ -1096,72 +1080,54 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											if entclass == "dak_tefuel" then addval = 90000 end
 										end
 
-										if self.sidearmortable ~= nil then
+										if selfTbl.sidearmortable ~= nil then
 											if curarmor ~= nil then
-												self.sidearmortable[#self.sidearmortable + 1] = math.Round(curarmor) + addval
+												selfTbl.sidearmortable[#selfTbl.sidearmortable + 1] = math.Round(curarmor) + addval
 												if curarmor ~= 0 and depth ~= 0 then
-													self.RawSideTable[#self.RawSideTable + 1] = math.Round(curarmor)
-													self.SidePosTable[#self.SidePosTable + 1] = thickestpos
+													selfTbl.RawSideTable[#selfTbl.RawSideTable + 1] = math.Round(curarmor)
+													selfTbl.SidePosTable[#selfTbl.SidePosTable + 1] = thickestpos
 												end
 											else
-												self.sidearmortable[#self.sidearmortable + 1] = 0
+												selfTbl.sidearmortable[#selfTbl.sidearmortable + 1] = 0
 											end
 										end
 									end
-									--end)
 								end
-								--end)
-							end
 
-							timer.Simple(1, function()
-								--timer.Simple(engine.TickInterval()*delay*pixels+1,function()
-								if self.sidearmortable ~= nil then self.sidearmortable[#self.sidearmortable + 1] = self.SideArmor end
-							end)
+								timer.Simple(1, function()
+									if selfTbl.sidearmortable ~= nil then selfTbl.sidearmortable[#selfTbl.sidearmortable + 1] = selfTbl.SideArmor end
+								end)
 
-							--print(SysTime()-DebugTime)
-							--Rear
-							self.reararmortable = {}
-							for i = 1, pixels do
-								--timer.Simple(engine.TickInterval()*delay*i,function()
-								for j = 1, pixels do
-									--timer.Simple(engine.TickInterval()*(math.ceil(j/splits)-1),function()
-									if IsValid(self) then
-										if IsValid(self.Gearbox) then
-											scanforward = self.Gearbox.ForwardEnt:GetForward()
-											scanright = self.Gearbox.ForwardEnt:GetRight()
-											scanup = self.Gearbox.ForwardEnt:GetUp()
-										elseif IsValid(self.MainTurret) then
-											scanforward = self.MainTurret:GetForward()
-											scanright = self.MainTurret:GetRight()
-											scanup = self.MainTurret:GetUp()
-										end
-
-										if self.BoxSize.y > self.BoxSize.z then
-											aspectratio = self.BoxSize.y / self.BoxSize.z
-											local xstart = -scanright * self.HitBoxMaxs.y * 1.1 -- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 -- + scanup*(self.ForwardEnt:WorldToLocal(basepos)).z
-											local xcur = (j / pixels * 1.1) * -scanright * -self.BoxSize.y
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+								--Rear
+								selfTbl.reararmortable = {}
+								for i = 1, pixels do
+									for j = 1, pixels do
+										if selfTbl.BoxSize.y > selfTbl.BoxSize.z then
+											aspectratio = selfTbl.BoxSize.y / selfTbl.BoxSize.z
+											local xstart = -scanright * selfTbl.HitBoxMaxs.y * 1.1
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1
+											local xcur = (j / pixels * 1.1) * -scanright * -selfTbl.BoxSize.y
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart + ystart * aspectratio
 											addpos = xcur + ycur * aspectratio
 										else
-											aspectratio = self.BoxSize.z / self.BoxSize.y
-											local xstart = -scanright * self.HitBoxMaxs.y * 1.1 -- - scanright*(self.ForwardEnt:WorldToLocal(basepos)).y
-											local ystart = scanup * self.HitBoxMaxs.z * 1.1 -- + scanup*(self.ForwardEnt:WorldToLocal(basepos)).z
-											local xcur = (j / pixels * 1.1) * -scanright * -self.BoxSize.y
-											local ycur = (i / pixels * 1.1) * scanup * -self.BoxSize.z
+											aspectratio = selfTbl.BoxSize.z / selfTbl.BoxSize.y
+											local xstart = -scanright * selfTbl.HitBoxMaxs.y * 1.1
+											local ystart = scanup * selfTbl.HitBoxMaxs.z * 1.1
+											local xcur = (j / pixels * 1.1) * -scanright * -selfTbl.BoxSize.y
+											local ycur = (i / pixels * 1.1) * scanup * -selfTbl.BoxSize.z
 											startpos = basepos + xstart * aspectratio + ystart
 											addpos = xcur * aspectratio + ycur
 										end
 
 										-- SpallLiner = 0
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, player.GetAll(), self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, player.GetAll(), self)
+										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
+										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanforward * distance or BackwardHit == startpos + addpos + scanforward * distance then depth = 0 end
 										local TraceStart = ForwardHit
 										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
-										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, player.GetAll(), self, false, true)
+										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, false, true)
 										local addval = 0
 										if IsValid(ent) then
 											local entclass = ent:GetClass()
@@ -1170,40 +1136,36 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											if entclass == "dak_tefuel" then addval = 90000 end
 										end
 
-										if self.reararmortable ~= nil then
+										if selfTbl.reararmortable ~= nil then
 											if curarmor ~= nil then
-												self.reararmortable[#self.reararmortable + 1] = math.Round(curarmor) + addval
+												selfTbl.reararmortable[#selfTbl.reararmortable + 1] = math.Round(curarmor) + addval
 												if curarmor ~= 0 and depth ~= 0 then
-													self.RawRearTable[#self.RawRearTable + 1] = math.Round(curarmor)
-													self.RearPosTable[#self.RearPosTable + 1] = thickestpos
+													selfTbl.RawRearTable[#selfTbl.RawRearTable + 1] = math.Round(curarmor)
+													selfTbl.RearPosTable[#selfTbl.RearPosTable + 1] = thickestpos
 												end
 											else
-												self.reararmortable[#self.reararmortable + 1] = 0
+												selfTbl.reararmortable[#selfTbl.reararmortable + 1] = 0
 											end
 										end
 									end
-									--end)
 								end
-								--end)
-							end
 
-							--print(SysTime()-DebugTime)
-							timer.Simple(1, function()
-								--timer.Simple(engine.TickInterval()*delay*pixels+1,function()
-								if self.reararmortable ~= nil then self.reararmortable[#self.reararmortable + 1] = self.RearArmor end
-							end)
+								timer.Simple(1, function()
+									if selfTbl.reararmortable ~= nil then selfTbl.reararmortable[#selfTbl.reararmortable + 1] = selfTbl.RearArmor end
+								end)
+							end
 						end
 
 						do
 							--Get main armor bounds of vehicle
-							self.ZPosTable = {}
-							for i = 1, #self.Crew do
-								for j = 1, #self.Crew[i].TopBounds do
-									self.ZPosTable[#self.ZPosTable + 1] = self.Crew[i].TopBounds[j]
+							selfTbl.ZPosTable = {}
+							for i = 1, #selfTbl.Crew do
+								for j = 1, #selfTbl.Crew[i].TopBounds do
+									selfTbl.ZPosTable[#selfTbl.ZPosTable + 1] = selfTbl.Crew[i].TopBounds[j]
 								end
 
-								for j = 1, #self.Crew[i].BottomBounds do
-									self.ZPosTable[#self.ZPosTable + 1] = self.Crew[i].BottomBounds[j]
+								for j = 1, #selfTbl.Crew[i].BottomBounds do
+									selfTbl.ZPosTable[#selfTbl.ZPosTable + 1] = selfTbl.Crew[i].BottomBounds[j]
 								end
 							end
 
@@ -1211,99 +1173,97 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local ys = {}
 							local zs = {}
 							local localbound
-							for i = 1, #self.FrontalPosTable do
-								localbound = self.ForwardEnt:WorldToLocal(self.FrontalPosTable[i])
+							for i = 1, #selfTbl.FrontalPosTable do
+								localbound = selfTbl.ForwardEnt:WorldToLocal(selfTbl.FrontalPosTable[i])
 								xs[#xs + 1] = localbound.x
 							end
 
-							for i = 1, #self.RearPosTable do
-								localbound = self.ForwardEnt:WorldToLocal(self.RearPosTable[i])
+							for i = 1, #selfTbl.RearPosTable do
+								localbound = selfTbl.ForwardEnt:WorldToLocal(selfTbl.RearPosTable[i])
 								xs[#xs + 1] = localbound.x
 							end
 
-							for i = 1, #self.SidePosTable do
-								localbound = self.ForwardEnt:WorldToLocal(self.SidePosTable[i])
+							for i = 1, #selfTbl.SidePosTable do
+								localbound = selfTbl.ForwardEnt:WorldToLocal(selfTbl.SidePosTable[i])
 								ys[#ys + 1] = localbound.y
 							end
 
-							for i = 1, #self.ZPosTable do
-								localbound = self.ForwardEnt:WorldToLocal(self.ZPosTable[i])
+							for i = 1, #selfTbl.ZPosTable do
+								localbound = selfTbl.ForwardEnt:WorldToLocal(selfTbl.ZPosTable[i])
 								zs[#zs + 1] = localbound.z
 							end
 
 							table.sort(xs)
 							table.sort(ys)
 							table.sort(zs)
-							self.RealMins = Vector(xs[1], ys[1], zs[1])
-							self.RealMaxs = Vector(xs[#xs], ys[#ys], zs[#zs])
+							selfTbl.RealMins = Vector(xs[1], ys[1], zs[1])
+							selfTbl.RealMaxs = Vector(xs[#xs], ys[#ys], zs[#zs])
 
 							local YHalfAve = AverageNoOutliers(ys)
 							local XAve = math.abs(xs[1] - xs[#xs])
 							local YAve = math.abs(YHalfAve * 2)
 							local ZAve = math.abs(zs[1] - zs[#zs])
 
-							self.DakVolume = math.Round(XAve * YAve * ZAve * 0.005, 2) --0.03125 is just an arbitrary balance number, was 0.005 but new averaging system called for new number
+							selfTbl.DakVolume = math.Round(XAve * YAve * ZAve * 0.005, 2) --0.03125 is just an arbitrary balance number, was 0.005 but new averaging system called for new number
 						end
 
 						local armormult
 						local armormultfrontal
 						do
 							--Calculate armor multipliers
-							table.sort(self.RawFrontalTable)
-							table.sort(self.RawSideTable)
-							table.sort(self.RawRearTable)
-							--print(AverageNoOutliers(self.RawFrontalTable),self.FrontalArmor)
-							--print(AverageNoOutliers(self.RawSideTable),self.SideArmor)
-							--print(AverageNoOutliers(self.RawRearTable),self.RearArmor)
-							--PrintTable(self.RawRearTable)
-							self.FrontalArmor = math.max(AverageNoOutliers(self.RawFrontalTable), self.FrontalArmor)
-							self.SideArmor = math.max(AverageNoOutliers(self.RawSideTable), self.SideArmor)
-							self.RearArmor = math.max(AverageNoOutliers(self.RawRearTable), self.RearArmor)
-							self.ArmorSideMult = math.max(self.SideArmor / 250, 0.1)
-							self.ArmorRearMult = math.max(self.RearArmor / 250, 0.1)
-							local Total = math.max(self.FrontalArmor, self.SideArmor, self.RearArmor)
-							self.BestAveArmor = Total
-							armormult = ((Total / 420) * (1 + (0.25 * self.FrontalSpallLinerCoverage))) * (((self.ArmorSideMult + self.ArmorSideMult + self.ArmorRearMult) / 3) * (1 + (0.25 * ((self.SideSpallLinerCoverage + self.SideSpallLinerCoverage + self.RearSpallLinerCoverage) / 3))))
+							table.sort(selfTbl.RawFrontalTable)
+							table.sort(selfTbl.RawSideTable)
+							table.sort(selfTbl.RawRearTable)
+
+							selfTbl.FrontalArmor = math.max(AverageNoOutliers(selfTbl.RawFrontalTable), selfTbl.FrontalArmor)
+							selfTbl.SideArmor = math.max(AverageNoOutliers(selfTbl.RawSideTable), selfTbl.SideArmor)
+							selfTbl.RearArmor = math.max(AverageNoOutliers(selfTbl.RawRearTable), selfTbl.RearArmor)
+							selfTbl.ArmorSideMult = math.max(selfTbl.SideArmor / 250, 0.1)
+							selfTbl.ArmorRearMult = math.max(selfTbl.RearArmor / 250, 0.1)
+							local Total = math.max(selfTbl.FrontalArmor, selfTbl.SideArmor, selfTbl.RearArmor)
+							selfTbl.BestAveArmor = Total
+							armormult = ((Total / 420) * (1 + (0.25 * selfTbl.FrontalSpallLinerCoverage))) * (((selfTbl.ArmorSideMult + selfTbl.ArmorSideMult + selfTbl.ArmorRearMult) / 3) * (1 + (0.25 * ((selfTbl.SideSpallLinerCoverage + selfTbl.SideSpallLinerCoverage + selfTbl.RearSpallLinerCoverage) / 3))))
 							armormultfrontal = Total / 420
-							self.ArmorMult = math.Round(math.max(0.01, armormult), 3)
-							self.TotalArmorWeight = self.RHAWeight + self.CHAWeight + self.HHAWeight + self.NERAWeight + self.StillbrewWeight + self.TextoliteWeight + self.ConcreteWeight + self.ERAWeight
-							local ArmorTypeMult = (1 * (self.RHAWeight / self.TotalArmorWeight)) + (0.75 * (self.CHAWeight / self.TotalArmorWeight)) + (1.25 * (self.HHAWeight / self.TotalArmorWeight)) + (1.0 * (self.NERAWeight / self.TotalArmorWeight)) + (1.1 * (self.StillbrewWeight / self.TotalArmorWeight)) + (0.9 * (self.TextoliteWeight / self.TotalArmorWeight)) + (0.5 * (self.ConcreteWeight / self.TotalArmorWeight)) + (1.25 * (self.ERAWeight / self.TotalArmorWeight))
-							self.ArmorMult = self.ArmorMult * math.max(ArmorTypeMult, 0.5)
+							selfTbl.ArmorMult = math.Round(math.max(0.01, armormult), 3)
+							selfTbl.TotalArmorWeight = selfTbl.RHAWeight + selfTbl.CHAWeight + selfTbl.HHAWeight + selfTbl.NERAWeight + selfTbl.StillbrewWeight + selfTbl.TextoliteWeight + selfTbl.ConcreteWeight + selfTbl.ERAWeight
+							local ArmorTypeMult = ( (1 * selfTbl.RHAWeight) + (0.75 * selfTbl.CHAWeight) + (1.25 * selfTbl.HHAWeight) + (1 * selfTbl.NERAWeight) + (1.1 * selfTbl.StillbrewWeight) + (0.9 * selfTbl.TextoliteWeight) + (0.5 * selfTbl.ConcreteWeight) + (1.25 * selfTbl.ERAWeight) ) / selfTbl.TotalArmorWeight
+
+							selfTbl.ArmorMult = selfTbl.ArmorMult * math.max(ArmorTypeMult, 0.5)
 						end
 
 						do
 							--Calculate flanking multiplier
 							local speedmult = 1
-							if IsValid(self.Gearbox) then
-								if self.Gearbox.DakHP ~= nil and self.Gearbox.MaxHP ~= nil and self.Gearbox.TotalMass ~= nil and self.Gearbox.HPperTon ~= nil then
-									if self.Gearbox:GetClass() == "dak_tegearboxnew" then
-										local hp = math.Clamp(self.Gearbox.DakHP, 0, self.Gearbox.MaxHP)
-										local t = (self.Gearbox.TotalMass + self.Gearbox:GetPhysicsObject():GetMass()) / 1000
+							if IsValid(selfTbl.Gearbox) then
+								if selfTbl.Gearbox.DakHP ~= nil and selfTbl.Gearbox.MaxHP ~= nil and selfTbl.Gearbox.TotalMass ~= nil and selfTbl.Gearbox.HPperTon ~= nil then
+									if selfTbl.Gearbox:GetClass() == "dak_tegearboxnew" then
+										local hp = math.Clamp(selfTbl.Gearbox.DakHP, 0, selfTbl.Gearbox.MaxHP)
+										local t = (selfTbl.Gearbox.TotalMass + selfTbl.Gearbox:GetPhysicsObject():GetMass()) / 1000
 										local hpt = hp / t
 										speedmult = math.Max(math.Round(hpt / 30, 2), 0.125) * math.Max(0.01, -0.75 + math.log((armormultfrontal + 1) * 2, 2))
 									else
-										local hp = math.Clamp(self.Gearbox.DakHP, 0, self.Gearbox.MaxHP)
-										local t = self.Gearbox.TotalMass / 1000
+										local hp = math.Clamp(selfTbl.Gearbox.DakHP, 0, selfTbl.Gearbox.MaxHP)
+										local t = selfTbl.Gearbox.TotalMass / 1000
 										local hpt = hp / t
 										speedmult = math.Max(math.Round(hpt / 30, 2), 0.125) * math.Max(0.01, -0.75 + math.log((armormultfrontal + 1) * 2, 2))
 									end
 
-									for i = 1, #self.Crew do
-										if self.Crew[i].Job == 2 then
-											if self.Crew[i]:GetParent() ~= self:GetParent() then
+									for i = 1, #selfTbl.Crew do
+										if selfTbl.Crew[i].Job == 2 then
+											if selfTbl.Crew[i]:GetParent() ~= self:GetParent() then
 												speedmult = speedmult * 1.25
-												self.DakOwner:ChatPrint("Turret mounted driver detected, 25% cost increase added to flanking multiplier.")
+												selfTbl.DakOwner:ChatPrint("Turret mounted driver detected, 25% cost increase added to flanking multiplier.")
 											end
 										end
 									end
 								else
-									self.DakOwner:ChatPrint("Please finish setting up the gearbox to get a correct cost for your tank.")
+									selfTbl.DakOwner:ChatPrint("Please finish setting up the gearbox to get a correct cost for your tank.")
 								end
 
-								self.SpeedMult = math.Round(math.max(0.15, speedmult), 2)
+								selfTbl.SpeedMult = math.Round(math.max(0.15, speedmult), 2)
 							else
-								self.SpeedMult = 0.1
-								self.DakOwner:ChatPrint("No gearbox detected, towed gun assumed.")
+								selfTbl.SpeedMult = 0.1
+								selfTbl.DakOwner:ChatPrint("No gearbox detected, towed gun assumed.")
 							end
 						end
 

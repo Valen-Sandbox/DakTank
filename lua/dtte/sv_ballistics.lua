@@ -349,7 +349,7 @@ function DTFilterRecurseTrace(Start, End, Filter, Core)
 	local Ent, Pos, Stop = DTFilterTrace(Start, End, Filter, Core)
 	-- local EntTable = {}
 	local Recurse = 1
-	local NewFilter = Filter
+	local NewFilter = table.Copy(Filter) --This used to just be = Filter, which doesn't create a new table object.
 	NewFilter[#NewFilter + 1] = Ent
 	-- local newEnt = Ent
 	local LastPos = Pos
