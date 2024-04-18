@@ -423,6 +423,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 					if selfTbl.DakFinishedPasting == 1 and selfTbl.CanSpawn ~= true and (IsValid(selfTbl.Gearbox) or (selfTbl.TurretControls ~= nil and IsValid(selfTbl.TurretControls[1]))) then
 						selfTbl.CanSpawn = true
 						--First portion
+						local startTime = SysTime()
 
 						do
 							--Get forced era setting
@@ -515,7 +516,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						end
 
 						--Setup crew armor and bounds tables
-						for i, crew in ipairs(selfTbl.Crew) do 
+						for i, crew in ipairs(selfTbl.Crew) do
 							crew.FrontArmorTable = {}
 							crew.RearArmorTable = {}
 							crew.SideArmorTable = {}
@@ -540,15 +541,16 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							crew.Heightaimpoints = {pos, pos + Vector(mins.x, 0, 0), pos + Vector(maxs.x, 0, 0), pos + Vector(0, mins.y, 0), pos + Vector(0, maxs.y, 0), pos + Vector(mins.x * 0.5, 0, 0), pos + Vector(maxs.x * 0.5, 0, 0), pos + Vector(0, mins.y * 0.5, 0), pos + Vector(0, maxs.y * 0.5, 0),}
 						end
 
-						for i = 1, #selfTbl.Crew do
-							for j = i, #selfTbl.Crew[i].Heightaimpoints do
-								local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2, selfTbl.Crew[i].Heightaimpoints[j] - up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
-								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
-									selfTbl.Crew[i].TopBounds[#selfTbl.Crew[i].TopBounds + 1] = ThickestPos 
+						for i, crew in ipairs(selfTbl.Crew) do
+							for j = i, #crew.Heightaimpoints do
+								local crewTbl = crew:GetTable()
+								local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(crewTbl.Heightaimpoints[j] + up * selfTbl.BestHeight * 2, crewTbl.Heightaimpoints[j] - up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
+								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= crewTbl.Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
+									crewTbl.TopBounds[#crewTbl.TopBounds + 1] = ThickestPos 
 								end
-								_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].Heightaimpoints[j] - up * selfTbl.BestHeight * 2, selfTbl.Crew[i].Heightaimpoints[j] + up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
-								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= selfTbl.Crew[i].Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
-									selfTbl.Crew[i].BottomBounds[#selfTbl.Crew[i].BottomBounds + 1] = ThickestPos
+								_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(crewTbl.Heightaimpoints[j] - up * selfTbl.BestHeight * 2, crewTbl.Heightaimpoints[j] + up * 25, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
+								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= crewTbl.Heightaimpoints[j] + up * selfTbl.BestHeight * 2) then
+									crewTbl.BottomBounds[#crewTbl.BottomBounds + 1] = ThickestPos
 								end
 							end
 						end
@@ -558,7 +560,56 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local mins = crew:OBBMins() * 0.9
 							local maxs = crew:OBBMaxs() * 0.9
 							local pos = crew:GetPos()
-							crew.aimpoints = {pos + Vector(0, 0, mins.z), pos + Vector(mins.x, 0, mins.z), pos + Vector(maxs.x, 0, mins.z), pos + Vector(0, mins.y, mins.z), pos + Vector(0, maxs.y, mins.z), pos + Vector(mins.x * 0.5, 0, mins.z), pos + Vector(maxs.x * 0.5, 0, mins.z), pos + Vector(0, mins.y * 0.5, mins.z), pos + Vector(0, maxs.y * 0.5, mins.z), pos + Vector(0, 0, mins.z * 0.5), pos + Vector(mins.x, 0, mins.z * 0.5), pos + Vector(maxs.x, 0, mins.z * 0.5), pos + Vector(0, mins.y, mins.z * 0.5), pos + Vector(0, maxs.y, mins.z * 0.5), pos + Vector(mins.x * 0.5, 0, mins.z * 0.5), pos + Vector(maxs.x * 0.5, 0, mins.z * 0.5), pos + Vector(0, mins.y * 0.5, mins.z * 0.5), pos + Vector(0, maxs.y * 0.5, mins.z * 0.5), pos, pos + Vector(mins.x, 0, 0), pos + Vector(maxs.x, 0, 0), pos + Vector(0, mins.y, 0), pos + Vector(0, maxs.y, 0), pos + Vector(mins.x * 0.5, 0, 0), pos + Vector(maxs.x * 0.5, 0, 0), pos + Vector(0, mins.y * 0.5, 0), pos + Vector(0, maxs.y * 0.5, 0), pos + Vector(0, 0, maxs.z * 0.5), pos + Vector(mins.x, 0, maxs.z * 0.5), pos + Vector(maxs.x, 0, maxs.z * 0.5), pos + Vector(0, mins.y, maxs.z * 0.5), pos + Vector(0, maxs.y, maxs.z * 0.5), pos + Vector(mins.x * 0.5, 0, maxs.z * 0.5), pos + Vector(maxs.x * 0.5, 0, maxs.z * 0.5), pos + Vector(0, mins.y * 0.5, maxs.z * 0.5), pos + Vector(0, maxs.y * 0.5, maxs.z * 0.5), pos + Vector(0, 0, maxs.z), pos + Vector(mins.x, 0, maxs.z), pos + Vector(maxs.x, 0, maxs.z), pos + Vector(0, mins.y, maxs.z), pos + Vector(0, maxs.y, maxs.z), pos + Vector(mins.x * 0.5, 0, maxs.z), pos + Vector(maxs.x * 0.5, 0, maxs.z), pos + Vector(0, mins.y * 0.5, maxs.z), pos + Vector(0, maxs.y * 0.5, maxs.z)}
+							crew.aimpoints = {
+								Vector(0, 0, mins.z),
+								Vector(mins.x, 0, mins.z),
+								Vector(maxs.x, 0, mins.z),
+								Vector(0, mins.y, mins.z),
+								Vector(0, maxs.y, mins.z),
+								Vector(mins.x * 0.5, 0, mins.z),
+								Vector(maxs.x * 0.5, 0, mins.z),
+								Vector(0, mins.y * 0.5, mins.z),
+								Vector(0, maxs.y * 0.5, mins.z),
+								Vector(0, 0, mins.z * 0.5),
+								Vector(mins.x, 0, mins.z * 0.5),
+								Vector(maxs.x, 0, mins.z * 0.5),
+								Vector(0, mins.y, mins.z * 0.5),
+								Vector(0, maxs.y, mins.z * 0.5),
+								Vector(mins.x * 0.5, 0, mins.z * 0.5),
+								Vector(maxs.x * 0.5, 0, mins.z * 0.5),
+								Vector(0, mins.y * 0.5, mins.z * 0.5),
+								Vector(0, maxs.y * 0.5, mins.z * 0.5),
+								Vector(0,0,0),
+								Vector(mins.x, 0, 0),
+								Vector(maxs.x, 0, 0),
+								Vector(0, mins.y, 0),
+								Vector(0, maxs.y, 0),
+								Vector(mins.x * 0.5, 0, 0),
+								Vector(maxs.x * 0.5, 0, 0),
+								Vector(0, mins.y * 0.5, 0),
+								Vector(0, maxs.y * 0.5, 0),
+								Vector(0, 0, maxs.z * 0.5),
+								Vector(mins.x, 0, maxs.z * 0.5),
+								Vector(maxs.x, 0, maxs.z * 0.5),
+								Vector(0, mins.y, maxs.z * 0.5),
+								Vector(0, maxs.y, maxs.z * 0.5),
+								Vector(mins.x * 0.5, 0, maxs.z * 0.5),
+								Vector(maxs.x * 0.5, 0, maxs.z * 0.5),
+								Vector(0, mins.y * 0.5, maxs.z * 0.5),
+								Vector(0, maxs.y * 0.5, maxs.z * 0.5),
+								Vector(0, 0, maxs.z),
+								Vector(mins.x, 0, maxs.z),
+								Vector(maxs.x, 0, maxs.z),
+								Vector(0, mins.y, maxs.z),
+								Vector(0, maxs.y, maxs.z),
+								Vector(mins.x * 0.5, 0, maxs.z),
+								Vector(maxs.x * 0.5, 0, maxs.z),
+								Vector(0, mins.y * 0.5, maxs.z),
+								Vector(0, maxs.y * 0.5, maxs.z)
+							}
+							for j, v in ipairs(crew.aimpoints) do
+								v:Add(pos)
+							end
 						end
 
 						do
@@ -947,6 +998,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							selfTbl.MaxPen = MaxPen
 						end
 
+
 						do
 							--Scan for armor display
 							selfTbl.RawFrontalTable = {}
@@ -1011,10 +1063,11 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 
 										local ForwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
 										local BackwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
+
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos + scanforward * distance or BackwardHit == startpos + addpos - scanforward * distance then depth = 0 end
 										local TraceStart = ForwardHit
-										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
+										local TraceEnd = (ForwardHit + BackwardHit) / 2
 										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, true, false)
 										local addval = 0
 										if IsValid(ent) then
@@ -1070,7 +1123,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanright * distance or BackwardHit == startpos + addpos + scanright * distance then depth = 0 end
 										local TraceStart = ForwardHit
-										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
+										local TraceEnd = (ForwardHit + BackwardHit) / 2
 										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, false, false)
 										local addval = 0
 										if IsValid(ent) then
@@ -1126,7 +1179,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanforward * distance or BackwardHit == startpos + addpos + scanforward * distance then depth = 0 end
 										local TraceStart = ForwardHit
-										local TraceEnd = ForwardHit + ((BackwardHit - ForwardHit) * 0.5)
+										local TraceEnd = (ForwardHit + BackwardHit) / 2
 										curarmor, ent, _, _, _, _, _, _, _, thickestpos = DTTE.GetArmorRecurseDisplay(TraceStart, TraceEnd, depth, "AP", 75, allPlayers, self, false, true)
 										local addval = 0
 										if IsValid(ent) then
@@ -1155,6 +1208,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								end)
 							end
 						end
+
 
 						do
 							--Get main armor bounds of vehicle
@@ -1266,6 +1320,8 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								selfTbl.DakOwner:ChatPrint("No gearbox detected, towed gun assumed.")
 							end
 						end
+
+						print(SysTime() - startTime)
 
 						--Delayed portion
 						timer.Simple(1, function()

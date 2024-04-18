@@ -276,7 +276,7 @@ local function DTSimpleTrace(Start, End, Caliber, Filter, Gun, ignoreworld)
 		trace.endpos = End
 		trace.filter = Filter
 		trace.mins = Vector(-Caliber * 0.02,-Caliber * 0.02,-Caliber * 0.02)
-		trace.maxs = Vector(Caliber * 0.02,Caliber * 0.02,Caliber * 0.02)
+		trace.maxs = Vector(Caliber * 0.02, Caliber * 0.02, Caliber * 0.02)
 		if ignoreworld == false then
 			trace.ignoreworld = false
 		else
@@ -287,7 +287,8 @@ local function DTSimpleTrace(Start, End, Caliber, Filter, Gun, ignoreworld)
 	local Ent = SimpleTrace.Entity
 	local Pos = SimpleTrace.HitPos
 	if Ent:IsValid() then
-		if not(Ent:IsWorld()) and (DTCheckClip(Ent,Pos) or (Ent:GetPhysicsObject():IsValid() and Ent:GetPhysicsObject():GetMass() <= 1) or Ent:IsVehicle() or Ent:GetClass() == "dak_crew" or Ent:GetClass() == "dak_teammo" or Ent.Controller ~= Gun.Controller) then
+		local physObj = Ent:GetPhysicsObject()
+		if DTCheckClip(Ent,Pos) or (physObj:IsValid() and physObj:GetMass() <= 1) or Ent:IsVehicle() or Ent:GetClass() == "dak_crew" or Ent:GetClass() == "dak_teammo" or Ent.Controller ~= Gun.Controller then
 			Stop = 0
 		end
 	end
@@ -321,20 +322,23 @@ function DTSimpleRecurseTrace(Start, End, Caliber, Filter, Gun, ignoreworld)
 	end
 end
 
+local filtTraceMins = Vector(-0.01,-0.01,-0.01)
+local filtTraceMaxs = -filtTraceMins
 local function DTFilterTrace(Start, End, Filter, Core)
 	local trace = {}
 		trace.start = Start
 		trace.endpos = End
 		trace.filter = Filter
-		trace.mins = Vector(-0.01,-0.01,-0.01)
-		trace.maxs = Vector(0.01,0.01,0.01)
+		trace.mins = filtTraceMins
+		trace.maxs = filtTraceMaxs
 		trace.ignoreworld = true
 	local SimpleTrace = util.TraceHull( trace )
 	local Stop = 0
 	local Ent = SimpleTrace.Entity
 	local Pos = SimpleTrace.HitPos
 	if Ent:IsValid() then
-		if Ent.Controller == Core.Controller and not(Ent:GetClass() == "dak_temachinegun" or Ent:GetClass() == "dak_teautogun" or Ent:GetClass() == "dak_tegun") then
+		local entClass = Ent:GetClass()
+		if Ent.Controller == Core.Controller and not(entClass == "dak_temachinegun" or entClass == "dak_teautogun" or entClass == "dak_tegun") then
 			Stop = 1
 		end
 	else
@@ -346,42 +350,22 @@ local function DTFilterTrace(Start, End, Filter, Core)
 end
 
 function DTFilterRecurseTrace(Start, End, Filter, Core)
-	local Ent, Pos, Stop = DTFilterTrace(Start, End, Filter, Core)
-	-- local EntTable = {}
 	local Recurse = 1
-	local NewFilter = table.Copy(Filter) --This used to just be = Filter, which doesn't create a new table object.
-	NewFilter[#NewFilter + 1] = Ent
-	-- local newEnt = Ent
-	local LastPos = Pos
-	if Ent:IsValid() then
-		if Ent.Controller == Core.Controller and not(Ent:GetClass() == "dak_temachinegun" or Ent:GetClass() == "dak_teautogun" or Ent:GetClass() == "dak_tegun") then
-			Stop = 1
-		else
-			LastPos = Start
+	local NewFilter = table.Copy(Filter)
+	local LastPos
+
+	while Recurse < 1000 do
+		local newEnt, pos, Stop = DTFilterTrace(Start, End, NewFilter, Core)
+		LastPos = pos
+
+		if Stop == 1 then
+			break
 		end
-	else
-		LastPos = Start
-	end
-	if Stop == 1 then
-		return LastPos
-	end
-	while Stop == 0 and Recurse < 1000 do
-		local newEnt, LastPos, Stop = DTFilterTrace(Start, End, NewFilter, Core)
-		if newEnt:IsValid() then
-			if newEnt.Controller == Core.Controller and not(newEnt:GetClass() == "dak_temachinegun" or newEnt:GetClass() == "dak_teautogun" or newEnt:GetClass() == "dak_tegun") then
-				Stop = 1
-			else
-				LastPos = Start
-			end
-		else
-			LastPos = Start
-		end
+
 		NewFilter[#NewFilter + 1] = newEnt
 		Recurse = Recurse + 1
-		if Stop == 1 then
-			return LastPos
-		end
 	end
+	return LastPos
 end
 
 function DTGetStandoffMult(Start, End, Caliber, Filter, ShellType,nochecklegit)
