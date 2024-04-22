@@ -902,6 +902,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								for j = 1, #selfTbl.Ammoboxes do
 									if not (selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel") then
 										local splitString = string.Split(selfTbl.Ammoboxes[j].DakName, "m")[3]
+										print(splitString)
 										if gunType == "Short Cannon" or gunType == "Short Autoloader" then
 											if splitString[1] == "S" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "Cannon" or gunType == "Autoloader" then
@@ -917,11 +918,11 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										elseif gunType == "Flamethrower" then
 											if selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "MG" then
-											if splitString[1] == "M" and splitString[2] == "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+											if splitString[1] == "M" and splitString[2] == "G" then print("test") table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "Grenade Launcher" then
 											if splitString[1] == "G" and splitString[2] == "L" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "HMG" then
-											if splitString[1] == "H" and splitString[2] == "M" and splitString == "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
+											if splitString[1] == "H" and splitString[2] == "M" and splitString[3] == "G" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "Autocannon" then
 											if splitString[1] == "A" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "Recoilless Rifle" or gunType == "Autoloading Recoilless Rifle" then
