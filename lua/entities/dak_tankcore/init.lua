@@ -902,7 +902,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								for j = 1, #selfTbl.Ammoboxes do
 									if not (selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel") then
 										local splitString = string.Split(selfTbl.Ammoboxes[j].DakName, "m")[3]
-										print(splitString)
 										if gunType == "Short Cannon" or gunType == "Short Autoloader" then
 											if splitString[1] == "S" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
 										elseif gunType == "Cannon" or gunType == "Autoloader" then
