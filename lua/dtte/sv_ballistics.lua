@@ -222,7 +222,8 @@ local function DTWorldPen(Start, Dir, Pen, Filter, Caliber)
 end
 
 local function CanDamage(Ent)
-	if IsValid(Ent:CPPIGetOwner()) and Ent:CPPIGetOwner():IsPlayer() and Ent:CPPIGetOwner():HasGodMode() then return false end
+	local owner = Ent:CPPIGetOwner()
+	if IsValid(owner) and owner:IsPlayer() and owner:HasGodMode() then return false end
 	if Ent.DakIsTread ~= nil then return false end
 
 	return true
@@ -230,39 +231,43 @@ end
 
 local function DTDealDamage(Ent, Damage, Dealer, entbased)
 	if Ent:GetClass() == "daktank_cap" then return end
-	Ent.DakHealth = Ent.DakHealth - Damage
-	if isfunction(Ent.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end 
+	local entTbl = Ent:GetTable()
+	entTbl.DakHealth = entTbl.DakHealth - Damage
+	if isfunction(entTbl.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end 
 
 	if entbased == true then
 		if (not Dealer) or Dealer.LastDamagedBy == nil or Dealer.LastDamagedBy == NULL then
-			Ent.LastDamagedBy = game.GetWorld()
+			entTbl.LastDamagedBy = game.GetWorld()
 		else
-			Ent.LastDamagedBy = Dealer.LastDamagedBy
+			entTbl.LastDamagedBy = Dealer.LastDamagedBy
 		end
 	else
 		if (not Dealer) or Dealer.DakOwner == nil or Dealer.DakOwner == NULL then
-			Ent.LastDamagedBy = game.GetWorld()
+			entTbl.LastDamagedBy = game.GetWorld()
 		else
-			Ent.LastDamagedBy = Dealer.DakOwner
+			entTbl.LastDamagedBy = Dealer.DakOwner
 		end
 	end
 end
 
 function DTCheckClip(Ent, HitPos, nochecklegit)
-	if not (Ent:GetClass() == "prop_physics") or (Ent.ClipData == nil) then return false end
+	local entTbl = Ent:GetTable()
+	if not (Ent:GetClass() == "prop_physics") or (entTbl.ClipData == nil) then return false end
 	if nochecklegit ~= true then
-		if Ent.DakLegit ~= 1 then return true end
-		if Ent.DakLegit == 1 and IsValid(Ent:GetPhysicsObject()) and Ent:GetPhysicsObject():GetMass() ~= Ent.DakLegitMass then
+		if entTbl.DakLegit ~= 1 then return true end
+
+		local physObj = Ent:GetPhysicsObject()
+		if IsValid(physObj) and physObj:GetMass() ~= entTbl.DakLegitMass then
 			return true
 		end
 	end
 	local HitClip = false
 	local normal
 	local origin
-	for i = 1, #Ent.ClipData do
-		if Ent.ClipData[i].physics == true then return false end
-		normal = Ent:LocalToWorldAngles(Ent.ClipData[i]["n"]):Forward()
-		origin = Ent:LocalToWorld(Ent.ClipData[i]["n"]:Forward() * Ent.ClipData[i]["d"])
+	for i = 1, #entTbl.ClipData do
+		if entTbl.ClipData[i].physics == true then return false end
+		normal = Ent:LocalToWorldAngles(entTbl.ClipData[i]["n"]):Forward()
+		origin = Ent:LocalToWorld(entTbl.ClipData[i]["n"]:Forward() * entTbl.ClipData[i]["d"])
 		HitClip = HitClip or normal:Dot((origin - HitPos):GetNormalized()) > 0
 		if HitClip then return true end
 	end
@@ -417,24 +422,44 @@ end
 function DTCompositesTrace( Ent, StartPos, Dir, Filter )
 	local Phys = Ent:GetPhysicsObject()
 	local Obj = Phys:GetMeshConvexes()
-	for I in pairs( Obj ) do
+	for I in ipairs( Obj ) do
 		local Mesh = Obj[ I ]
 		local H1
 		for K = 1, table.Count( Mesh ), 3 do
+
 			local P1 = Ent:LocalToWorld( Mesh[ K ].pos )
 			local P2 = Ent:LocalToWorld( Mesh[ K + 1 ].pos )
 			local P3 = Ent:LocalToWorld( Mesh[ K + 2 ].pos )
-			local S1 = P2 - P1
-			local S2 = P3 - P1
-			local Norm = S1:Cross( S2 ):GetNormalized()
+
+			--Super hacky Vector optimizations -j
+			--local S1 = P2 - P1
+			--local S2 = P3 - P1
+			--local Norm = S1:Cross( S2 ):GetNormalized()
+			P2:Add(-P1)
+			P3:Add(-P1)
+			local Norm = P2:Cross(P3)
+
+
 			local Pos = util.IntersectRayWithPlane( StartPos, Dir, P1, Norm ) --Thanks Garry
+
 			if Pos then
-				local S3 = Pos - P1
-				local D1 = S1:Dot(S1)
-				local D2 = S1:Dot(S2)
-				local D3 = S1:Dot(S3)
-				local D4 = S2:Dot(S2)
-				local D5 = S2:Dot(S3)
+				--Super hacky Vector optimizations -j
+				--local S3 = Pos - P1
+				--local D1 = S1:Dot(S1)
+				--local D2 = S1:Dot(S2)
+				--local D3 = S1:Dot(S3)
+				--local D4 = S2:Dot(S2)
+				--local D5 = S2:Dot(S3)
+
+				P1:Negate() --This saves literally 1 milisecond total lol - j
+				P1:Add(Pos)
+				
+				local D1 = P2:Dot(P2)
+				local D2 = P2:Dot(P3)
+				local D3 = P2:Dot(P1)
+				local D4 = P3:Dot(P3)
+				local D5 = P3:Dot(P1)
+
 				local ID = 1 / ( D1 * D4 - D2 * D2 )
 				local U = ( D4 * D3 - D2 * D5 ) * ID
 				local V = ( D1 * D5 - D2 * D3 ) * ID
@@ -451,11 +476,18 @@ function DTCompositesTrace( Ent, StartPos, Dir, Filter )
 								checkfilter[#checkfilter + 1] = Ent
 								checktrace.filter = checkfilter
 							end
-						local checkinternaltrace = util.TraceLine( checktrace )
-						if IsValid(checkinternaltrace.Entity) and Pos:Distance(checkinternaltrace.HitPos) < Pos:Distance(H1) and (checkinternaltrace.Entity:GetPhysicsObject():IsValid() and checkinternaltrace.Entity:GetPhysicsObject():GetMass() > 1) then
-							return Pos:Distance(checkinternaltrace.HitPos)
+							local checkinternaltrace = util.TraceLine( checktrace )
+						local distOld = Pos:Distance(H1)
+						if IsValid(checkinternaltrace.Entity) then
+							local distNew = Pos:Distance(checkinternaltrace.HitPos)
+						 	if distNew < distOld then
+								local physObj = checkinternaltrace.Entity:GetPhysicsObject()
+								if (physObj:IsValid() and physObj:GetMass() > 1) then
+									return distNew
+								end
+							end
 						end
-						return Pos:Distance(H1)
+						return distOld
 					else
 						H1 = Pos
 					end
