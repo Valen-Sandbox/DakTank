@@ -2012,7 +2012,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								end
 							end
 
-							WireLib.TriggerOutput(selfTbl, "Crew", selfTbl.LivingCrew)
+							WireLib.TriggerOutput(self, "Crew", selfTbl.LivingCrew)
 							if selfTbl.Composites and table.Count(selfTbl.Composites) > 0 then
 								local compositeStats = {
 									NERA = {
