@@ -67,6 +67,8 @@ function ENT:Initialize()
 	self.RideLimit = Clamp(self:GetRideLimit(), 50, 200)
 	self.SuspensionBias = Clamp(self:GetSuspensionBias(), -0.99, 0.99)
 	self.RightChanges = {}
+	self.RightInAir = {}
+	self.RightLastAbsorbForce = {}
 	self.RightPosChanges = {}
 	self.RightRidePosChanges = {}
 	self.RightLastHeights = {}
@@ -74,6 +76,8 @@ function ENT:Initialize()
 	self.RightInts = {}
 	self.LeftInts = {}
 	self.LeftChanges = {}
+	self.LeftInAir = {}
+	self.LeftLastAbsorbForce = {}
 	self.LeftPosChanges = {}
 	self.LeftRidePosChanges = {}
 	self.SlowThinkTime = CurTime()
@@ -82,6 +86,10 @@ function ENT:Initialize()
 	for i = 1, self.WheelsPerSide do
 		self.RightChanges[i] = 0
 		self.LeftChanges[i] = 0
+		self.RightInAir[i] = false
+		self.LeftInAir[i] = false
+		self.RightLastAbsorbForce[i] = 0
+		self.LeftLastAbsorbForce[i] = 0
 		self.RightPosChanges[i] = self:GetPos()
 		self.LeftPosChanges[i] = self:GetPos()
 		self.RightRidePosChanges[i] = 0
@@ -130,28 +138,33 @@ end
 
 local m_to_in = 100 / 2.54 -- meters to inches
 local in_to_m = 1 / m_to_in
+local impFactor = in_to_m * in_to_m * 180 / math.pi
 local PhysObj = FindMetaTable("PhysObj")
 function PhysObj:ApplyImpulseOffsetF(impulse, position)
 	self:ApplyForceCenter(impulse)
 	local offset = position - self:LocalToWorld(self:GetMassCenter())
-	local angimp = offset:Cross(impulse) * in_to_m * in_to_m * 180 / math.pi
+	local angimp = offset:Cross(impulse) * impFactor
+	self:ApplyTorqueCenter(angimp)
+end
+
+function PhysObj:ApplyImpulseOffsetF_Optimized(impulse, offset) --Requires offset to be passed, so that we don't need to index the physobj a bunch of times when it's called.
+	self:ApplyForceCenter(impulse)
+	local angimp = offset:Cross(impulse) * impFactor
 	self:ApplyTorqueCenter(angimp)
 end
 
 function PhysObj:ApplyImpulseOffsetFTorqueOnly(impulse, position)
-	--self:ApplyForceCenter(impulse)
 	local offset = position - self:LocalToWorld(self:GetMassCenter())
-	local angimp = offset:Cross(impulse) * in_to_m * in_to_m * 180 / math.pi
+	local angimp = offset:Cross(impulse) * impFactor
 	self:ApplyTorqueCenter(angimp)
 end
 
 local function PID(goal, height, lastheight, lastintegral, selfTbl)
 	--goal is ride height
 	--height is current suspension extension
-	local P = 1.125 * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2)
-	-- local I = 1
-	local D = 1.25 * (100 / Clamp(selfTbl:GetRideLimit(), 50, 200))
-	local Time = (1 / selfTbl.RealInt) * 3 --3s to full power
+	local P = 1.125 * selfTbl.SuspensionForceMult
+	local D = 125 / selfTbl.RideLimit
+	local Time = (3 / selfTbl.RealInt) --3s to full power
 	--proportional
 	local Err = (goal - height) / selfTbl.TimeMult
 	local Correction = Err * P
@@ -182,6 +195,9 @@ local function AngPID(goal, height, lastheight, lastintegral, selfTbl)
 end
 
 function ENT:Think()
+	local vector_origin = vector_origin
+	local vector_up = vector_up
+	local angle_zero = angle_zero
 	--checkspherical was here but has been moved to slowthink
 	local self = self
 	local selfTbl = self:GetTable()
@@ -203,6 +219,7 @@ function ENT:Think()
 	selfTbl.RideHeight = selfTbl:GetWheelOffsetZ()
 	selfTbl.RideLimit = Clamp(selfTbl:GetRideLimit(), 50, 200)
 	selfTbl.SuspensionBias = Clamp(selfTbl:GetSuspensionBias(), -0.99, 0.99)
+	selfTbl.SuspensionForceMult = Clamp(selfTbl:GetSuspensionForceMult(), 0, 2)
 	selfTbl.FrontWheelRaise = selfTbl:GetDriveWOffsetZ()
 	selfTbl.RearWheelRaise = selfTbl:GetIdlerWOffsetZ()
 	selfTbl.ForwardOffset = selfTbl:GetWheelOffsetX()
@@ -210,6 +227,7 @@ function ENT:Think()
 	selfTbl.WheelHeight = selfTbl:GetRoadWDiameter()
 	selfTbl.FrontWheelHeight = selfTbl:GetDriveWDiameter()
 	selfTbl.RearWheelHeight = selfTbl:GetIdlerWDiameter()
+	selfTbl.SuspensionDamping = selfTbl:GetSuspensionDamping()
 
 	if curTime >= selfTbl.SlowThinkTime + 1 then
 		selfTbl.SlowThinkTime = curTime
@@ -334,27 +352,24 @@ function ENT:Think()
 
 	local DakTankCore = selfTbl.DakTankCore
 	if IsValid(DakTankCore) and IsValid(DakTankCore.Motors[1]) and DakTankCore.Off ~= true then
-		local motors = DakTankCore.Motors
+		local DakTankCoreTbl = DakTankCore:GetTable()
+		local motors = DakTankCoreTbl.Motors
 		selfTbl.DakSpeed = 0
 		selfTbl.DakFuel = 0
 		selfTbl.DakFuelReq = 0
 		selfTbl.DakHP = 0
 
-		if #motors > 0 then
-			for i, v in ipairs(motors) do
-				if IsValid(v) then
-					selfTbl.DakSpeed = selfTbl.DakSpeed + v.DakSpeed
-					selfTbl.DakFuelReq = selfTbl.DakFuelReq + v.DakFuelReq
-					selfTbl.DakHP = selfTbl.DakHP + v.DakHP
-				end
+		for i, v in ipairs(motors) do
+			if IsValid(v) then
+				selfTbl.DakSpeed = selfTbl.DakSpeed + v.DakSpeed
+				selfTbl.DakFuelReq = selfTbl.DakFuelReq + v.DakFuelReq
+				selfTbl.DakHP = selfTbl.DakHP + v.DakHP
 			end
-		else
-			selfTbl.DakHP = 0
 		end
 
-		if #DakTankCore.Fuel > 0 then
-			for i = 1, #DakTankCore.Fuel do
-				if selfTbl.DakFuel and IsValid(DakTankCore.Fuel[i]) then selfTbl.DakFuel = selfTbl.DakFuel + DakTankCore.Fuel[i].DakFuel end
+		if #DakTankCoreTbl.Fuel > 0 then
+			for i = 1, #DakTankCoreTbl.Fuel do
+				if selfTbl.DakFuel and IsValid(DakTankCoreTbl.Fuel[i]) then selfTbl.DakFuel = selfTbl.DakFuel + DakTankCoreTbl.Fuel[i].DakFuel end
 			end
 		else
 			selfTbl.DakHP = 0
@@ -410,9 +425,9 @@ function ENT:Think()
 			phys = selfParent2:GetPhysicsObject()
 			if selfTbl.InertiaSet == nil and phys:IsMotionEnabled() == true then
 				local oldinertia = phys:GetInertia()
-				local multiplier = 2 
+				local multiplier = 2
 				phys:SetInertia(Vector(oldinertia.x * multiplier, oldinertia.y * multiplier, oldinertia.z * multiplier))
-				phys:SetMass(phys:GetMass())
+				phys:SetMass(phys:GetMass()) --???
 				phys:EnableGravity(false)
 				selfTbl.InertiaSet = 1
 			end
@@ -422,12 +437,11 @@ function ENT:Think()
 			if selfTbl.AddonMass == nil then selfTbl.AddonMass = math.Round(selfTbl.TotalMass * 0.1) end
 			selfTbl.DakSpeed = selfTbl.DakSpeed * (10000 / selfTbl.TotalMass)
 			selfTbl.TopSpeed = (29.851 * selfTbl.DakSpeed) * selfTbl.GearRatio
-			--selfParent = self:GetParent()
 			if IsValid(selfParent) and IsValid(selfParent:GetParent()) then
 				local selfParent2 = selfParent:GetParent()
 				selfTbl.phy = selfParent2:GetPhysicsObject()
 				selfTbl.base = selfParent2
-				selfTbl.base:GetPhysicsObject():SetDamping(0, 0)
+				selfTbl.phy:SetDamping(0, 0)
 			elseif not selfParent2 then
 				selfTbl.phy = self:GetPhysicsObject()
 				selfTbl.base = self
@@ -519,8 +533,9 @@ function ENT:Think()
 
 						if selfTbl.Speed > 0 then
 							--TRACTION CONTROL
-							local _, temp = WorldToLocal(Vector(0, 0, 0), Angle(0, selfTbl.LastYaw, 0), Vector(0, 0, 0), Angle(0, selfTbl.base:GetAngles().yaw, 0))
+							local _, temp = WorldToLocal(vector_origin, Angle(0, selfTbl.LastYaw, 0), vector_origin, Angle(0, selfTbl.base:GetAngles().yaw, 0))
 							local TurnVal = temp.yaw / TimeMult
+
 							local ControlForce = min(max(4, abs(TurnVal * 5)), 10)
 							if selfTbl.Perc >= 0 then
 								if TurnVal > 0.05 and selfTbl.MoveRight == 0 then
@@ -610,13 +625,12 @@ function ENT:Think()
 						if selfTbl.LastGear == nil then selfTbl.LastGear = 1 end
 						if selfTbl.Gear > selfTbl.LastGear then
 							if selfTbl.lastshift + 2.5 < curTime then
-								if #motors > 0 then
-									for i = 1, #motors do
-										if IsValid(motors[i]) then
-											motors[i].Sound:ChangeVolume(0.125, 0)
-											motors[i].Sound:ChangeVolume(0.25, 0.15)
-											motors[i].Sound:ChangePitch(50, 0.1)
-										end
+								for i = 1, #motors do
+									if IsValid(motors[i]) then
+										local snd = motors[i].Sound
+										snd:ChangeVolume(0.125, 0)
+										snd:ChangeVolume(0.25, 0.15)
+										snd:ChangePitch(50, 0.1)
 									end
 								end
 
@@ -629,10 +643,8 @@ function ENT:Think()
 						if selfTbl.MoveForward > 0 or selfTbl.MoveReverse > 0 or selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0 then
 							selfTbl.LastMoving = 1
 							if (selfTbl.MoveForward > 0 or selfTbl.MoveReverse > 0) and not (selfTbl.MoveLeft > 0 or selfTbl.MoveRight > 0) then
-								if #motors > 0 then
-									for i = 1, #motors do
-										if IsValid(motors[i]) then motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1) end
-									end
+								for i = 1, #motors do
+									if IsValid(motors[i]) then motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1) end
 								end
 							else
 								if selfTbl.CarTurning == 0 then
@@ -648,14 +660,12 @@ function ENT:Think()
 										selfTbl.lastdump = curTime
 									end
 
-									if #motors > 0 then
-										for i = 1, #motors do
-											if IsValid(motors[i]) then
-												if selfTbl.CarTurning == 0 then
-													motors[i].Sound:ChangePitch(50, 0.1)
-												else
-													motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1)
-												end
+									for i = 1, #motors do
+										if IsValid(motors[i]) then
+											if selfTbl.CarTurning == 0 then
+												motors[i].Sound:ChangePitch(50, 0.1)
+											else
+												motors[i].Sound:ChangePitch(Clamp(((selfTbl.Speed - selfTbl.LastTopSpeed) / selfTbl.MaxSpeedDif) * min(throttle, 1), 0, 1) * 60 + ((selfTbl.Speed / selfTbl.TopSpeed) * 90) + 50, 0.1)
 											end
 										end
 									end
@@ -670,10 +680,8 @@ function ENT:Think()
 								selfTbl.lastdump = curTime
 							end
 
-							if #motors > 0 then
-								for i = 1, #motors do
-									if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.1) end
-								end
+							for i = 1, #motors do
+								if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.1) end
 							end
 
 							selfTbl.LastMoving = 0
@@ -822,10 +830,8 @@ function ENT:Think()
 					if selfTbl.MoveForward <= 0 and selfTbl.MoveReverse <= 0 and selfTbl.MoveLeft <= 0 and selfTbl.MoveRight <= 0 then
 						selfTbl.RightBrake = 0
 						selfTbl.LeftBrake = 0
-						if #motors > 0 then
-							for i = 1, #motors do
-								if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.5) end
-							end
+						for i = 1, #motors do
+							if IsValid(motors[i]) then motors[i].Sound:ChangePitch(50, 0.5) end
 						end
 					end
 				end
@@ -836,22 +842,25 @@ function ENT:Think()
 				selfTbl.LeftBrake = 1
 				if selfTbl.RPM > 0 then selfTbl.RPM = selfTbl.RPM - 10 end
 				--STANDARD BRAKING, NO FORCE APPLIED
-				if #motors > 0 then
-					for i = 1, #motors do
-						if IsValid(motors[i]) then
-							motors[i].Sound:ChangeVolume(0, 2)
-							motors[i].Sound:ChangePitch(0, 2)
-						end
+				for i = 1, #motors do
+					if IsValid(motors[i]) then
+						local snd = motors[i].Sound
+						snd:ChangeVolume(0, 2)
+						snd:ChangePitch(0, 2)
 					end
 				end
-				--selfTbl.LastYaw = selfTbl.base:GetAngles().yaw
 			end
 
-			local GravxTicks = physenv.GetGravity() * (1 / 66)
+			local phy = selfTbl.phy
+			local centreMass = phy:LocalToWorld(phy:GetMassCenter())
+			local gravity = physenv.GetGravity()
+			local GravxTicks = gravity * (1 / 66)
 			local Pos
 			local ForcePos
 			local selfpos = selfTbl.base:GetPos()
 			local trace = {}
+			local traceMins = Vector(-10, -10, -0)
+			local traceMaxs = Vector(10, 10, 0)
 			local CurTrace
 			local RidePos
 			local SuspensionForce
@@ -872,6 +881,7 @@ function ENT:Think()
 			local FrontWheelRaise = selfTbl.FrontWheelRaise
 			local RearWheelRaise = selfTbl.RearWheelRaise
 			local forward = ForwardEnt:GetForward()
+			local up = selfTbl.ForwardEnt:GetUp()
 			local right = ForwardEnt:GetRight()
 			local CurTraceHitPos
 			local hydrabias = Clamp(selfTbl.Inputs.SuspensionBias.Value, -1, 1)
@@ -891,11 +901,19 @@ function ENT:Think()
 			self:SetNWFloat("HydraSide", hydrabiasside)
 			selfTbl.lasthydrabiasside = hydrabiasside
 			local SuspensionBias = selfTbl.SuspensionBias
-			local wheelweightforce = Vector(0, 0, (selfTbl.AddonMass / (WheelsPerSide * 2)) * -9.8 * (selfTbl.RealInt / TimeMult)) * (selfTbl.PhysicalMass / selfTbl.TotalMass)
+			--TODO: We could avoid creating a vector here for a slight performance boost.
+			local wheelweightforce = vector_up * (selfTbl.AddonMass / (WheelsPerSide * 2)) * -9.8 * (selfTbl.RealInt / TimeMult) * (selfTbl.PhysicalMass / selfTbl.TotalMass)
 			if selfTbl.LastWheelsPerSide ~= WheelsPerSide then
 				for i = 1, WheelsPerSide do
 					selfTbl.RightChanges[i] = 0
 					selfTbl.LeftChanges[i] = 0
+
+					selfTbl.RightInAir[i] = false
+					selfTbl.LeftInAir[i] = false
+
+					selfTbl.RightLastAbsorbForce[i] = 0
+					selfTbl.LeftLastAbsorbForce[i] = 0
+
 					selfTbl.RightPosChanges[i] = selfpos
 					selfTbl.LeftPosChanges[i] = selfpos
 					selfTbl.RightRidePosChanges[i] = 0
@@ -918,38 +936,9 @@ function ENT:Think()
 				if selfTbl.DakHealth < 0 then selfTbl.DakHealth = 0 end
 			end
 
-			local basesize = {selfTbl.base:OBBMaxs().x, selfTbl.base:OBBMaxs().y, selfTbl.base:OBBMaxs().z}
+			local obbMaxs = selfTbl.base:OBBMaxs()
+			local basesize = {obbMaxs.x, obbMaxs.y, obbMaxs.z}
 			sort(basesize, function(a, b) return a > b end)
-			local fwEntYaw = ForwardEnt:GetAngles().yaw
-			local fronttrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * (TrackLength * 0.5),
-				mask = MASK_SOLID_BRUSHONLY
-			}
-
-			local FrontTrace = traceline(fronttrace)
-			local backtrace = {
-				start = selfpos + Vector(0, 0, 100) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
-				endpos = selfpos + Vector(0, 0, -1000) + Angle(0, fwEntYaw, 0):Forward() * -(TrackLength * 0.5),
-				mask = MASK_SOLID_BRUSHONLY
-			}
-
-			local BackTrace = traceline(backtrace)
-			local FrontHit = FrontTrace.HitPos
-			local BackHit = BackTrace.HitPos
-			local HeightDiff = FrontHit.z - BackHit.z
-			local ResistAng = math.atan(HeightDiff / TrackLength) * 57.2958
-			if selfTbl.MoveReverse > 0 then ResistAng = ResistAng * -1 end
-			local TerrainMultiplier = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
-			local TerrainBraking = 0
-			if TerrainMultiplier < 1 then
-				TerrainBraking = (1 - TerrainMultiplier) * 0.125
-			else
-				if selfTbl.Brakes <= 0 then
-					local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
-					selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(physenv.GetGravity().z) * math.sin(math.rad(ResistAng)))
-				end
-			end
 
 			local brakestiffness = selfTbl:GetBrakeStiffness()
 			if selfTbl.Brakes > 0 then brakestiffness = 1 end
@@ -962,27 +951,41 @@ function ENT:Think()
 			local rotatedforward
 			local ForwardEntPos = ForwardEnt:GetPos()
 			local ForwardEntAng = ForwardEnt:GetAngles()
-			local rightbraking = Vector(max(selfTbl.RightBrake * brakestiffness, TerrainBraking), 1, 0) * 2
-			local leftbraking = Vector(max(selfTbl.LeftBrake * brakestiffness, TerrainBraking), 1, 0) * 2
-			local WheelYaw = selfTbl.WheelYaw
-			local ShockForce = 10 * selfTbl.PhysicalMass
+			local wheelBraking = Vector(0,2,0) --Set inside wheel loops, recycled because creating vector objects is expensive (for some reason)
+			--local WheelYaw = selfTbl.WheelYaw
+			local wheelAngleYaw = Angle(0,selfTbl.WheelYaw,0)
+			local ShockForce = selfTbl.PhysicalMass * 5
 			local InAir = true
+			local isWheeled = selfTbl:GetVehicleMode() == "wheeled"
 			--Right side
 			local RightChanges = selfTbl.RightChanges
 			local RightPosChanges = selfTbl.RightPosChanges
 
-			for i = 1, WheelsPerSide do --These two loops are a little over half of the average execution time. They're probably worth focusing on.
+			--There are often traces that don't hit anything, which interferes with how we deal with slopes.
+			--In these cases we set them to an average of resistanceAngles from last tick as an approximation.
+			local avgResistAng = math.max(selfTbl.lastResistAng or 0, -ForwardEntAng[1])
+			--local avgResistAng = selfTbl.lastResistAng
+			local resistCount = 0
+			local resistSum = 0
+
+			local vector110 = Vector(1,1,0) --Optimization
+
+			for i = 1, WheelsPerSide do
 				RideHeight = selfTbl.RideHeight
 				if i > halfwheels then
 					RideHeight = RideHeight - (hydrabias * (math.floor(halfwheels) - (WheelsPerSide - i)) / math.floor(halfwheels) * RideHeight)
-				elseif i <= halfwheels then
+				else
 					RideHeight = RideHeight + (hydrabias * (math.floor(halfwheels) - (i - 1)) / math.floor(halfwheels) * RideHeight)
 				end
 
 				RideHeight = RideHeight + hydrabiasside * RideHeight
-				ForcePos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) + (right * basesize[2] * 0.95)
-				Pos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) + (right * selfTbl.SideDist)
-				if selfTbl:GetVehicleMode() == "wheeled" then
+				local trackVec = (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset))
+				ForcePos = selfpos + trackVec
+				Pos = selfpos + trackVec
+				ForcePos:Add(right * (basesize[2] * 0.95))
+				Pos:Add(right * selfTbl.SideDist)
+
+				if isWheeled then
 					CurRideHeight = RideHeight
 				else
 					if i == WheelsPerSide then
@@ -994,73 +997,124 @@ function ENT:Think()
 					end
 				end
 
+				local strtP = vector_up * (-CurRideHeight + 100)
+				local endP = vector_up * -CurRideHeight
+				strtP:Add(Pos)
+				endP:Add(Pos)
 				trace = {
-					start = Pos + Vector(0, 0, 1) * (-CurRideHeight + 100),
-					endpos = Pos + Vector(0, 0, 1) * -CurRideHeight,
-					mins = Vector(-10, -10, -0),
-					maxs = Vector(10, 10, 0),
+					start = strtP,
+					endpos = endP,
+					mins = traceMins,
+					maxs = traceMaxs,
 					mask = MASK_SOLID_BRUSHONLY
 				}
 
 				CurTrace = tracehull(trace)
-				CurTraceHitPos = CurTrace.HitPos
-				CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
-				lastchange = (CurTraceDist - RightChanges[i]) / selfTbl.RealInt
-				RightChanges[i] = CurTraceDist
-				lastvel = (CurTraceHitPos - RightPosChanges[i]) / TimeMult
-				localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				localfriction = localfriction * rightbraking
-				worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				rotatedforward = ForwardEnt:GetForward()
-				if i <= RearTurners and i <= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					localfriction = localfriction * rightbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					localfriction = localfriction * rightbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				end
+				if not CurTrace.StartSolid then
+					local Ang = CurTrace.HitNormal:AngleEx(forward)
 
-				lastvel = worldfriction - ForwardEntPos
-				RightPosChanges[i] = CurTraceHitPos
-				RidePos = Clamp(CurTraceDist - 100, -10, 10)
-				if RidePos < -0.1 then
-					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
-					if abs(hydrabias) > 0 then AbsorbForce = 1 end
-					FrictionForce = basefriction
-				else
-					AbsorbForce = 0.0
-					FrictionForce = 0
-				end
+					local ResistAng = (Ang[1] + 90) * math.cos(math.rad(Ang[3]))
+					ResistAng = (selfTbl.MoveReverse > 0 and ResistAng * -1) or ResistAng
 
-				multval = 1
-				if i <= halfwheels then
-					multval = multval + SuspensionBias
-				elseif i > halfwheels then
-					multval = multval - SuspensionBias
-				end
+					ResistAng = (CurTrace.Hit and ResistAng) or avgResistAng or 0
+					resistCount = (CurTrace.Hit and resistCount + 1) or resistCount
+					resistSum = (CurTrace.Hit and resistSum + ResistAng) or resistSum
 
-				local CurHeight = RideHeight + CurTraceDist - 100
-				local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.RightLastHeights[i], selfTbl.RightInts[i], selfTbl)
-				selfTbl.RightLastHeights[i] = CurHeight
-				selfTbl.RightInts[i] = LastInt
-				if CurHeight >= RideHeight then
-					Force = 0
-				else
-					InAir = false
-				end
+					local wheelTerrainMult = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
 
-				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
-				lastvelnorm = lastvel:GetNormalized()
-				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
-				selfTbl.RightRidePosChanges[i] = RidePos
-				--print(FrictionForceFinal) ----------FIX ISSUE WHERE THIS SPERGS OUT AND GETS BIG FOR NO RAISIN
-				--print(SuspensionForce)
-				selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (TerrainMultiplier * selfTbl.RightForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					local wheelTerrainBraking = 0
+					if wheelTerrainMult < 1 then
+						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
+						--[[
+						if selfTbl.Brakes <= 0 then
+							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(gravity.z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
+						end
+						--]]
+					end
+					wheelBraking[1] = max(selfTbl.RightBrake * brakestiffness, wheelTerrainBraking) * 2
+
+					CurTraceHitPos = CurTrace.HitPos
+					CurTraceDist = max(CurTrace.StartPos:Distance(CurTraceHitPos), 80)
+					lastchange = (selfTbl.RightInAir[i] and 0) or wheelTerrainMult * (CurTraceDist - RightChanges[i]) / selfTbl.RealInt
+					RightChanges[i] = CurTraceDist
+					selfTbl.RightInAir[i] = false
+
+					lastvel = (CurTraceHitPos - RightPosChanges[i])
+					lastvel:Div(TimeMult)
+
+					rotatedforward = forward * 1 --Copy the existing forward instead of indexing the entity.
+					if i <= RearTurners and i <= halfwheels then --Wheeled vehicles
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						localfriction:Mul(wheelBraking)
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
+					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						localfriction:Mul(wheelBraking)
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
+					else --Tracked vehicles
+						localfriction = ForwardEnt:WorldToLocal(ForwardEntPos + lastvel)
+						localfriction:Mul(wheelBraking)
+						worldfriction = ForwardEnt:LocalToWorld(localfriction)
+					end
+
+					lastvel = worldfriction - ForwardEntPos
+					RightPosChanges[i] = CurTraceHitPos
+					RidePos = Clamp(CurTraceDist - 100, -10, 10)
+					if RidePos < -0.1 then
+						AbsorbForce = selfTbl.SuspensionDamping * (5 / WheelsPerSide)
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
+						FrictionForce = basefriction
+					else
+						AbsorbForce = 0.0
+						FrictionForce = 0
+					end
+
+					multval = 1
+					if i <= halfwheels then
+						multval = multval + SuspensionBias
+					elseif i > halfwheels then
+						multval = multval - SuspensionBias
+					end
+
+					local CurHeight = RideHeight + CurTraceDist - 100
+					local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.RightLastHeights[i], selfTbl.RightInts[i], selfTbl)
+					selfTbl.RightLastHeights[i] = CurHeight
+					selfTbl.RightInts[i] = LastInt
+					if CurHeight >= RideHeight then
+						Force = 0
+					else
+						InAir = false
+					end
+
+					SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					--SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+
+					if not CurTrace.Hit then
+						lastchange = 0
+						selfTbl.RightInAir[i] = true
+						AbsorbForceFinal = 0
+						selfTbl.RightLastAbsorbForce[i] = 0
+					else
+						AbsorbForceFinal = -(Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce) * AbsorbForce) * selfTbl.SuspensionForceMult / TimeMult
+						AbsorbForceFinal = (AbsorbForceFinal + selfTbl.RightLastAbsorbForce[i]) / 2 --Smooth out changes to prevent extreme spikes.
+						selfTbl.RightLastAbsorbForce[i] = AbsorbForceFinal
+					end
+
+					lastvelnorm = lastvel:GetNormalized()
+					--TODO: We could avoid creating a new vector here for a slight performance boost.
+					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+
+					selfTbl.RightRidePosChanges[i] = RidePos
+					--TODO: This equation could be split up to reduce the number of vectors created
+					--My first attempt at that actually ran slower than this. Not sure why.
+
+					AbsorbForceFinal = max(0, AbsorbForceFinal * 2)
+					local AbsorbForceFinalVec = up * AbsorbForceFinal
+					selfTbl.phy:ApplyImpulseOffsetF_Optimized(TimeMult * ((rotatedforward * vector110) * (4 * (wheelTerrainMult * selfTbl.RightForce) / WheelsPerSide) + SuspensionForce + FrictionForceFinal + AbsorbForceFinalVec), ForcePos - centreMass)
+				end
 			end
 
 			--Left side
@@ -1071,14 +1125,19 @@ function ENT:Think()
 				RideHeight = selfTbl.RideHeight
 				if i > halfwheels then
 					RideHeight = RideHeight - (hydrabias * (math.floor(halfwheels) - (WheelsPerSide - i)) / math.floor(halfwheels) * RideHeight)
-				elseif i <= halfwheels then
+				else
 					RideHeight = RideHeight + (hydrabias * (math.floor(halfwheels) - (i - 1)) / math.floor(halfwheels) * RideHeight)
 				end
 
 				RideHeight = RideHeight - hydrabiasside * RideHeight
-				ForcePos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) - (right * basesize[2] * 0.95)
-				Pos = selfpos + (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset)) - (right * selfTbl.SideDist)
-				if selfTbl:GetVehicleMode() == "wheeled" then
+
+				local trackVec = (forward * (((i - 1) * TrackLength / (WheelsPerSide - 1)) - (TrackLength * 0.5) + ForwardOffset))
+				ForcePos = selfpos + trackVec
+				Pos = selfpos + trackVec
+				ForcePos:Add(-right * (basesize[2] * 0.95))
+				Pos:Add(-right * selfTbl.SideDist)
+
+				if isWheeled then
 					CurRideHeight = RideHeight
 				else
 					if i == WheelsPerSide then
@@ -1090,99 +1149,163 @@ function ENT:Think()
 					end
 				end
 
+				local strtP = vector_up * (-CurRideHeight + 100)
+				local endP = vector_up * -CurRideHeight
+				strtP:Add(Pos)
+				endP:Add(Pos)
 				trace = {
-					start = Pos + Vector(0, 0, 1) * (-CurRideHeight + 100),
-					endpos = Pos + Vector(0, 0, 1) * -CurRideHeight,
-					mins = Vector(-10, -10, -0),
-					maxs = Vector(10, 10, 0),
+					start = strtP,
+					endpos = endP,
+					mins = traceMins,
+					maxs = traceMaxs,
 					mask = MASK_SOLID_BRUSHONLY
 				}
 
 				CurTrace = tracehull(trace)
-				CurTraceHitPos = CurTrace.HitPos
-				CurTraceDist = max((CurTrace.StartPos - CurTraceHitPos):Length(), 80)
-				lastchange = (CurTraceDist - LeftChanges[i]) / selfTbl.RealInt
-				LeftChanges[i] = CurTraceDist
-				lastvel = (CurTraceHitPos - LeftPosChanges[i]) / TimeMult
-				localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				localfriction = localfriction * leftbraking
-				worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng)
-				rotatedforward = ForwardEnt:GetForward()
-				if i <= RearTurners and i <= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					localfriction = localfriction * leftbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
-					localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					localfriction = localfriction * leftbraking
-					worldfriction, _ = LocalToWorld(localfriction, Angle(0, 0, 0), ForwardEntPos, ForwardEntAng + Angle(0, -WheelYaw, 0))
-					rotatedforward:Rotate(Angle(0, -WheelYaw, 0))
-				end
+				if not CurTrace.StartSolid then
+					local Ang = CurTrace.HitNormal:AngleEx(forward)
 
-				lastvel = worldfriction - ForwardEntPos
-				LeftPosChanges[i] = CurTraceHitPos
-				RidePos = Clamp(CurTraceDist - 100, -10, 10)
-				if RidePos < -0.1 then
-					AbsorbForce = selfTbl:GetSuspensionDamping() * (5 / WheelsPerSide)
-					if abs(hydrabias) > 0 then AbsorbForce = 1 end
-					FrictionForce = basefriction
-				else
-					AbsorbForce = 0.0
-					FrictionForce = 0
-				end
+					local ResistAng = (Ang[1] + 90) * math.cos(math.rad(Ang[3]))
+					ResistAng = (selfTbl.MoveReverse > 0 and ResistAng * -1) or ResistAng
 
-				multval = 1
-				if i <= halfwheels then
-					multval = multval + SuspensionBias
-				elseif i > halfwheels then
-					multval = multval - SuspensionBias
-				end
+					ResistAng = (CurTrace.Hit and ResistAng) or avgResistAng or 0
+					resistCount = (CurTrace.Hit and resistCount + 1) or resistCount
+					resistSum = (CurTrace.Hit and resistSum + ResistAng) or resistSum
 
-				local CurHeight = RideHeight + CurTraceDist - 100
-				local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.LeftLastHeights[i], selfTbl.LeftInts[i], selfTbl)
-				selfTbl.LeftLastHeights[i] = CurHeight
-				selfTbl.LeftInts[i] = LastInt
-				if CurHeight >= RideHeight then
-					Force = 0
-				else
-					InAir = false
-				end
+					local wheelTerrainMult = Clamp(1 - math.sin(math.rad(ResistAng)), 0, 1)
 
-				SuspensionForce = wheelweightforce + Vector(0, 0, (selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-				AbsorbForceFinal = (-Vector(0, 0, Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce)) * AbsorbForce) * Clamp(selfTbl:GetSuspensionForceMult(), 0, 2) / TimeMult
-				lastvelnorm = lastvel:GetNormalized()
-				FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
-				selfTbl.LeftRidePosChanges[i] = RidePos
-				selfTbl.phy:ApplyImpulseOffsetF(TimeMult * ((rotatedforward * Vector(1, 1, 0)) * 4 * (TerrainMultiplier * selfTbl.LeftForce) / WheelsPerSide + SuspensionForce + Vector(FrictionForceFinal.x, FrictionForceFinal.y, max(0, 2 * AbsorbForceFinal.z))), ForcePos)
+					local wheelTerrainBraking = 0
+					if wheelTerrainMult < 1 then
+						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
+						--[[
+						if selfTbl.Brakes <= 0 then
+							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
+							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(gravity.z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
+						end
+						--]]
+					end
+					wheelBraking[1] = max(selfTbl.LeftBrake * brakestiffness, wheelTerrainBraking) * 2
+
+					CurTraceHitPos = CurTrace.HitPos
+					CurTraceDist = max(CurTrace.StartPos:Distance(CurTraceHitPos), 80)
+
+					lastchange = (selfTbl.LeftInAir[i] and 0) or wheelTerrainMult * (CurTraceDist - LeftChanges[i]) / selfTbl.RealInt
+					LeftChanges[i] = CurTraceDist
+					selfTbl.LeftInAir[i] = false
+
+					lastvel = (CurTraceHitPos - LeftPosChanges[i])
+					lastvel:Div(TimeMult)
+
+					rotatedforward = forward * 1 --Copy the existing forward instead of indexing the entity
+					--TODO: Check if we actually need to use WorldToLocal/LocalToWorld or if we can get the same result more cheaply
+					if i <= RearTurners and i <= halfwheels then --wheeled vehicles
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						localfriction:Mul(wheelBraking)
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng + wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
+					elseif WheelsPerSide - (i - 1) <= FrontTurners and i >= halfwheels then
+						localfriction, _ = WorldToLocal(ForwardEntPos + lastvel, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						localfriction:Mul(wheelBraking)
+						worldfriction, _ = LocalToWorld(localfriction, angle_zero, ForwardEntPos, ForwardEntAng - wheelAngleYaw)
+						rotatedforward:Rotate(-wheelAngleYaw)
+					else --tracked vehicles
+						localfriction = ForwardEnt:WorldToLocal(ForwardEntPos + lastvel)
+						localfriction:Mul(wheelBraking)
+						worldfriction = ForwardEnt:LocalToWorld(localfriction)
+					end
+
+					lastvel = worldfriction - ForwardEntPos
+					LeftPosChanges[i] = CurTraceHitPos
+					RidePos = Clamp(CurTraceDist - 100, -10, 10)
+					if RidePos < -0.1 then
+						AbsorbForce = selfTbl.SuspensionDamping * (5 / WheelsPerSide)
+						if abs(hydrabias) > 0 then AbsorbForce = 1 end
+						FrictionForce = basefriction
+					else
+						AbsorbForce = 0.0
+						FrictionForce = 0
+					end
+
+					multval = 1
+					if i <= halfwheels then
+						multval = multval + SuspensionBias
+					elseif i > halfwheels then
+						multval = multval - SuspensionBias
+					end
+
+					local CurHeight = RideHeight + CurTraceDist - 100
+					local Force, LastInt = PID(RideHeight, CurHeight, selfTbl.LeftLastHeights[i], selfTbl.LeftInts[i], selfTbl)
+					selfTbl.LeftLastHeights[i] = CurHeight
+					selfTbl.LeftInts[i] = LastInt
+					if CurHeight >= RideHeight then
+						Force = 0
+					else
+						InAir = false
+					end
+
+					SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					--SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+
+					if not CurTrace.Hit then
+						lastchange = 0
+						selfTbl.LeftInAir[i] = true
+						AbsorbForceFinal = 0
+						selfTbl.LeftLastAbsorbForce[i] = 0
+					else
+						AbsorbForceFinal = -(Clamp(selfTbl.PhysicalMass * lastchange / (WheelsPerSide * 2), -ShockForce, ShockForce) * AbsorbForce) * selfTbl.SuspensionForceMult / TimeMult
+						AbsorbForceFinal = (AbsorbForceFinal + selfTbl.LeftLastAbsorbForce[i]) / 2
+						selfTbl.LeftLastAbsorbForce[i] = AbsorbForceFinal
+					end
+
+					lastvelnorm = lastvel:GetNormalized()
+					--TODO: We could avoid creating a new vector here for a slight performance boost.
+					FrictionForceFinal = -Vector(Clamp(lastvel.x, -abs(lastvelnorm.x), abs(lastvelnorm.x)), Clamp(lastvel.y, -abs(lastvelnorm.y), abs(lastvelnorm.y)), 0) * FrictionForce
+
+					selfTbl.LeftRidePosChanges[i] = RidePos
+					--TODO: This equation could be split up to reduce the number of vectors created
+
+					AbsorbForceFinal = max(0, AbsorbForceFinal * 2)
+					local AbsorbForceFinalVec = up * AbsorbForceFinal
+					selfTbl.phy:ApplyImpulseOffsetF_Optimized(TimeMult * ((rotatedforward * vector110) * (4 * (wheelTerrainMult * selfTbl.LeftForce) / WheelsPerSide) + SuspensionForce + FrictionForceFinal + AbsorbForceFinalVec), ForcePos - centreMass)
+				end
 			end
 
+
+			selfTbl.lastResistAng = resistSum / resistCount
 			selfTbl.LastWheelsPerSide = WheelsPerSide
 			--mid air stabilization to lower flip rates when going over stuff
 			if InAir then
-				if selfTbl.LastRoll == nil then selfTbl.LastRoll = selfTbl.ForwardEnt:GetAngles().roll end
+				if selfTbl.LastRoll == nil then selfTbl.LastRoll = ForwardEntAng.roll end
 				if selfTbl.LastRollInt == nil then selfTbl.LastRollInt = 0 end
-				local rollforce, rollint = AngPID(0, selfTbl.ForwardEnt:GetAngles().roll, selfTbl.LastRoll, selfTbl.LastRollInt, selfTbl)
+
+				local rollforce, rollint = AngPID(0, ForwardEntAng.roll, selfTbl.LastRoll, selfTbl.LastRollInt, selfTbl)
 				rollforce = Clamp(rollforce, -25, 25)
-				selfTbl.phy:ApplyImpulseOffsetF(-rollforce * selfTbl.ForwardEnt:GetUp() * selfTbl.PhysicalMass * 0.01 * TimeMult, selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetRight() * 100)
-				selfTbl.phy:ApplyImpulseOffsetF(rollforce * selfTbl.ForwardEnt:GetUp() * selfTbl.PhysicalMass * 0.01 * TimeMult, selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetRight() * -100)
-				selfTbl.LastRoll = selfTbl.ForwardEnt:GetAngles().roll
+
+				selfTbl.phy:ApplyImpulseOffsetF(up * -(rollforce * selfTbl.PhysicalMass * 0.01 * TimeMult), selfpos + right * 100)
+				selfTbl.phy:ApplyImpulseOffsetF(up * (rollforce * selfTbl.PhysicalMass * 0.01 * TimeMult), selfpos + right * -100)
+				selfTbl.LastRoll = ForwardEntAng.roll
 				selfTbl.LastRollInt = rollint
-				if selfTbl.LastPitch == nil then selfTbl.LastPitch = selfTbl.ForwardEnt:GetAngles().pitch end
+
+				if selfTbl.LastPitch == nil then selfTbl.LastPitch = ForwardEntAng.pitch end
 				if selfTbl.LastPitchInt == nil then selfTbl.LastPitchInt = 0 end
-				local pitchforce, pitchint = AngPID(0, selfTbl.ForwardEnt:GetAngles().pitch, selfTbl.LastPitch, selfTbl.LastPitchInt, selfTbl)
+				local pitchforce, pitchint = AngPID(0, ForwardEntAng.pitch, selfTbl.LastPitch, selfTbl.LastPitchInt, selfTbl)
 				pitchforce = Clamp(pitchforce, -25, 25)
-				selfTbl.phy:ApplyImpulseOffsetF(-pitchforce * selfTbl.ForwardEnt:GetUp() * selfTbl.PhysicalMass * 0.01 * TimeMult, selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetForward() * 100)
-				selfTbl.phy:ApplyImpulseOffsetF(pitchforce * selfTbl.ForwardEnt:GetUp() * selfTbl.PhysicalMass * 0.01 * TimeMult, selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetForward() * -100)
-				selfTbl.LastPitch = selfTbl.ForwardEnt:GetAngles().pitch
+				selfTbl.phy:ApplyImpulseOffsetF(up * -(pitchforce * selfTbl.PhysicalMass * 0.01 * TimeMult), selfpos + forward * 100)
+				selfTbl.phy:ApplyImpulseOffsetF(up * (pitchforce * selfTbl.PhysicalMass * 0.01 * TimeMult), selfpos + forward * -100)
+				selfTbl.LastPitch = ForwardEntAng.pitch
 				selfTbl.LastPitchInt = pitchint
 			end
 
-			selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * selfTbl.PhysicalMass * physenv.GetGravity())
-			if selfTbl.LastSpeed == nil then selfTbl.LastSpeed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254) end
-			selfTbl.Speed = Vector(0, 0, 0):Distance(selfTbl.phy:GetVelocity()) * (0.277778 * 0.254)
+			selfTbl.phy:ApplyForceCenter(selfTbl.RealInt * selfTbl.PhysicalMass * gravity)
+
+			local vel = selfTbl.phy:GetVelocity()
+
+			selfTbl.Speed = vel:Length() * (0.277778 * 0.254)
+			selfTbl.LastSpeed = selfTbl.LastSpeed or selfTbl.Speed
+
 			local accel = selfTbl.Speed - selfTbl.LastSpeed
-			selfTbl.phy:ApplyImpulseOffsetFTorqueOnly(selfTbl.phy:GetMass() * selfTbl.phy:GetVelocity():GetNormalized() * -accel * Clamp(selfTbl:GetDakInertia(), 0, 10), selfTbl.base:GetPos() + selfTbl.ForwardEnt:GetUp() * 100)
+			selfTbl.phy:ApplyImpulseOffsetFTorqueOnly(selfTbl.phy:GetMass() * vel:GetNormalized() * -accel * Clamp(selfTbl:GetDakInertia(), 0, 10), selfpos + up * 100)
+
 			selfTbl.LastSpeed = selfTbl.Speed
 		end
 
@@ -1212,7 +1335,7 @@ function ENT:Think()
 		end
 
 		selfTbl.RealYaw = totalspeed / #selfTbl.SpeedTable
-		selfTbl.LastYaw = self:GetParent():GetParent():GetAngles().yaw
+		selfTbl.LastYaw = selfParent:GetParent():GetAngles().yaw
 	end
 
 	selfTbl.LastThink = curTime
