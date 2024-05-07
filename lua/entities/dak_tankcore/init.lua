@@ -2061,7 +2061,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 
 										--The way the old code was set up made it possible for composite types not in the list to get through. This maintains that.
 										local entityMods = selfTbl.Composites[i].EntityMods
-										local compositeData = compositeStats[entityMods.CompositeType] or {}
+										local compositeData = (entityMods and compositeStats[entityMods.CompositeType]) or {}
 
 										KE = compositeData.CompKEMult or KE
 										Density = compositeData.Density or Density
@@ -2517,7 +2517,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							if selfTbl.DakHealth then
 								local hasdriver = false
 								for i, seat in ipairs(selfTbl.Seats) do
-									hasdriver = hasdriver or IsValid(seat:GetDriver())
+									hasdriver = hasdriver or (IsValid(seat) and IsValid(seat:GetDriver()))
 								end
 
 								if (selfTbl.DakHealth <= 0 or #selfTbl.Crew < 2 or selfTbl.LivingCrew <= math.max(#selfTbl.Crew - 3, 1) or (gmod.GetGamemode().Name == "DakTank" and selfTbl.LegalUnfreeze ~= true)) and selfTbl.Base:GetPhysicsObject():IsMotionEnabled() or (gmod.GetGamemode().Name == "DakTank" and hasdriver and not selfTbl.Base:GetPhysicsObject():IsMotionEnabled()) then

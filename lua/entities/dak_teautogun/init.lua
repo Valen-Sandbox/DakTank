@@ -2021,9 +2021,15 @@ function ENT:DakTEAutoFire()
 				Shell.DakFireSound = self.DakFireSound1
 				Shell.DakFirePitch = self.DakFirePitch
 				Shell.DakGun = self
+
 				local Driver = nil
 				for i = 1, #self.DakTankCore.Seats do
-					if Driver == nil then if IsValid(self.DakTankCore.Seats[i]:GetDriver()) then Driver = self.DakTankCore.Seats[i]:GetDriver() end end
+					if Driver == nil then
+						local seat = self.DakTankCore.Seats[i]
+						if IsValid(seat) and IsValid(seat:GetDriver()) then
+							Driver = seat:GetDriver()
+						end
+					end
 				end
 
 				Shell.DakGun.DakOwner = Driver
