@@ -99,23 +99,25 @@ end
 local entity = FindMetaTable( "Entity" )
 
 function entity:DTShellApplyForce(HitPos,Normal,Shell)
-	if IsValid(self:GetParent()) then
-		if IsValid(self:GetParent():GetParent()) then
+	local selfParent = self:GetParent()
+	if IsValid(selfParent) then
+		selfParent = selfParent:GetParent()
+		if IsValid(selfParent) then
+			local physObj = selfParent:GetPhysicsObject()
+			if not IsValid(physObj) then return end
+
 			if self.Controller then
-				if IsValid(self:GetParent():GetParent():GetPhysicsObject()) then
-					self:GetParent():GetParent():GetPhysicsObject():ApplyForceOffset( -Normal * (0.5 * (((Shell.DakVelocity:Distance( Vector(0,0,0) )) * 0.254) ^ 2) * Shell.DakMass) / self.Controller.TotalMass * 0.04,self:GetParent():GetParent():GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
-				end
+				physObj:ApplyForceOffset( -Normal * (0.5 * (((Shell.DakVelocity:Length()) * 0.254) ^ 2) * Shell.DakMass) / self.Controller.TotalMass * 0.04,selfParent:GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
 			else
-				if IsValid(self:GetParent():GetParent():GetPhysicsObject()) then
-					local Div = Vector(self:GetParent():GetParent():OBBMaxs().x / 75,self:GetParent():GetParent():OBBMaxs().y / 75,self:GetParent():GetParent():OBBMaxs().z / 75)
-					self:GetParent():GetParent():GetPhysicsObject():ApplyForceOffset( Div * ((Shell.DakVelocity:Distance( Vector(0,0,0) )) * Shell.DakMass / 50000) / self:GetParent():GetParent():GetPhysicsObject():GetMass() * 0.04,self:GetParent():GetParent():GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
-				end
+				local Div = selfParent:OBBMaxs() / 75
+				physObj:ApplyForceOffset( Div * ((Shell.DakVelocity:Length()) * Shell.DakMass / 50000) / physObj:GetMass() * 0.04,selfParent:GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
 			end
 		end
 	else
-		if IsValid(self:GetPhysicsObject()) then
-			local Div = Vector(self:OBBMaxs().x / 75,self:OBBMaxs().y / 75,self:OBBMaxs().z / 75)
-			self:GetPhysicsObject():ApplyForceOffset( Div * ((Shell.DakVelocity:Distance( Vector(0,0,0) )) * Shell.DakMass / 50000) / self:GetPhysicsObject():GetMass() * 0.04,self:GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
+		local physObj = self:GetPhysicsObject()
+		if IsValid(physObj) then
+			local Div = selfParent:OBBMaxs() / 75
+			physObj:ApplyForceOffset( Div * ((Shell.DakVelocity:Length()) * Shell.DakMass / 50000) / physObj:GetMass() * 0.04,self:GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
 		end
 	end
 end
