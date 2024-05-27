@@ -98,6 +98,7 @@ end
 
 local entity = FindMetaTable( "Entity" )
 
+
 function entity:DTShellApplyForce(HitPos,Normal,Shell)
 	local selfParent = self:GetParent()
 	if IsValid(selfParent) then
@@ -116,11 +117,12 @@ function entity:DTShellApplyForce(HitPos,Normal,Shell)
 	else
 		local physObj = self:GetPhysicsObject()
 		if IsValid(physObj) then
-			local Div = selfParent:OBBMaxs() / 75
+			local Div = self:OBBMaxs() / 75
 			physObj:ApplyForceOffset( Div * ((Shell.DakVelocity:Length()) * Shell.DakMass / 50000) / physObj:GetMass() * 0.04,self:GetPos() + self:WorldToLocal(HitPos):GetNormalized() )
 		end
 	end
 end
+
 
 function entity:DTHEApplyForce(HitPos, Pos, Damage, Traces, Multipler)
 	if IsValid(self:GetParent()) then
@@ -502,6 +504,8 @@ end
 
 function DTShellAirBurst(HitPos, Shell, Normal)
 	if Shell.ExplodeNow ~= true then return end
+	--This is kinda bad, but this function relies on a gun existing which can cause lua errors. I'd rather have a shell disappear than the entire system break.
+	if not Shell.DakGun then return end 
 
 	Shell.ExplodeNow = false
 	if Shell.DakExplosive then
@@ -2258,6 +2262,7 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 			end
 
 			if hook.Run("DakTankDamageCheck", ExpTrace.Entity, Owner, Shell.DakGun) ~= false and ExpTrace.HitPos:Distance(Pos) <= Radius * 2 then
+				if not Owner then Owner = game.GetWorld() end
 				--decals don't like using the adjusted by normal Pos
 				util.Decal( "Impact.Concrete", ExpTrace.HitPos - (Direction * 5), ExpTrace.HitPos + (Direction * 5), HitEnt)
 				if ExpTrace.Entity.DakHealth == nil then
@@ -3517,6 +3522,7 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 	local HitPos = HitCheckShellTrace.HitPos
 
 	if hook.Run("DakTankDamageCheck", HitEnt, Shell.DakGun.DakOwner, Shell.DakGun) == false then return end
+	if not Shell.DakGun then return end --Not ideal, but better than breaking the system entirely.
 
 	if HitEnt.DakHealth == nil then
 		DTTE.SetupNewEnt(HitEnt)
