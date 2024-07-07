@@ -1,10 +1,12 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local math = math
 local IsValid = IsValid
 local pairs = pairs
 local ipairs = ipairs
+
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakArmor = 0
@@ -16,6 +18,9 @@ ENT.SentError2 = 0
 ENT.DakCore = NULL
 ENT.DakTurretMotors = {}
 ENT.DakCrew = NULL
+
+DTTE.RegisterEntClass("dak_turretcontrol")
+
 local function GetTurretParents(ent, Results)
 	Results = Results or {}
 	local Parent = ent:GetParent()

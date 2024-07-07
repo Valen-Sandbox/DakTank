@@ -15,6 +15,8 @@ ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.MaxHP = 0
 
+DTTE.RegisterEntClass("dak_tegearbox")
+
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
 	self:PhysicsInit(SOLID_VPHYSICS)

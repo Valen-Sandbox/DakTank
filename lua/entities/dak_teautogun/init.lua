@@ -1,6 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 ENT.DakOwner = NULL
 ENT.DakName = "Base Gun"
 ENT.DakModel = "models/daktanks/cannon25mm.mdl"
@@ -36,6 +37,9 @@ ENT.DakCrew = NULL
 ENT.BasicVelocity = 29527.6
 ENT.muzzle = NULL
 ENT.AutoLoaders = {}
+
+DTTE.RegisterEntClass("dak_teautogun")
+
 function ENT:Initialize()
 	self.ShellLoaded = 0
 	self.ShellLoaded2 = 0

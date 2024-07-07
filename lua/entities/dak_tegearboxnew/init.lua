@@ -15,6 +15,7 @@ local max = math.max
 local min = math.min
 local IsValid = IsValid
 local sort = table.sort
+
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
 ENT.DakName = "Light Motor"
@@ -24,6 +25,9 @@ ENT.DakMass = 1000
 ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.MaxHP = 0
+
+DTTE.RegisterEntClass("dak_tegearboxnew")
+
 function ENT:Initialize()
 	_DakVar_INSTALL(self)
 	self.TimeMult = engine.TickInterval() / (1 / 66)

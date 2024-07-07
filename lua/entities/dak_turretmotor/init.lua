@@ -1,12 +1,17 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+
 ENT.DakEngine = NULL
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakMass = 250
 ENT.DakPooled = 0
+
+DTTE.RegisterEntClass("dak_turretmotor")
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)

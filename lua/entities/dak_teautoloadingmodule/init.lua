@@ -1,7 +1,9 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+
 ENT.DakName = "Autoloader Module"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
@@ -9,6 +11,9 @@ ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakPooled = 0
 ENT.DakGun = nil
+
+DTTE.RegisterEntClass("dak_teautoloadingmodule")
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)

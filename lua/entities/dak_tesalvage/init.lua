@@ -23,6 +23,8 @@ local deathSounds = {
 	"daktanks/closeexp3.mp3"
 }
 
+DTTE.RegisterEntClass("dak_tesalvage")
+
 function ENT:Initialize()
 	if not gibsModels[self:GetModel()] then
 		self:SetMaterial("models/props_buildings/plasterwall021a")

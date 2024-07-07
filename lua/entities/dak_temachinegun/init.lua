@@ -26,12 +26,14 @@ ENT.DakShellPenetration = 1
 ENT.DakShellExplosive = false
 ENT.DakShellBlastRadius = 100
 ENT.DakPenLossPerMeter = 0.0005
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakArmor = 1
 ENT.DakTankCore = nil
 ENT.HasCrew = 0
 ENT.BasicVelocity = 29527.6
 ENT.muzzle = NULL
+
+DTTE.RegisterEntClass("dak_temachinegun")
 
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)

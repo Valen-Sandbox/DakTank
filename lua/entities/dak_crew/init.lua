@@ -1,7 +1,9 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+
 ENT.DakEntity = NULL
 ENT.DakMaxHealth = 5
 ENT.DakHealth = 5
@@ -9,6 +11,9 @@ ENT.DakArmor = 2.5
 ENT.DakName = "Crew"
 ENT.DakMass = 75
 ENT.DakPooled = 0
+
+DTTE.RegisterEntClass("dak_crew")
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)

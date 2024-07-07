@@ -1,7 +1,9 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+
 ENT.DakName = "Fuel Tank"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
@@ -9,6 +11,9 @@ ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakPooled = 0
 ENT.DakFuel = 0
+
+DTTE.RegisterEntClass("dak_tefuel")
+
 local function RecurseTrace(start, endpos, filter)
 	local trace = {}
 	trace.start = start
