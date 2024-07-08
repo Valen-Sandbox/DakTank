@@ -120,7 +120,7 @@ function ENT:Think()
 				local selfParent = self:GetParent()
 				if not(selfParent:IsValid()) then
 					selfTbl.DakOwner:ChatPrint("Parenting Error on " .. selfTbl.DakName .. ". Please reparent, make sure the gate is parented to the aimer prop and the gun is parented to the gate.")
-				elseif not(selfParent:GetParent():IsValid()) then 
+				elseif not(selfParent:GetParent():IsValid()) then
 					selfTbl.DakOwner:ChatPrint("Parenting Error on " .. selfTbl.DakName .. ". Please reparent, make sure the gate is parented to the aimer prop and the gun is parented to the gate.")
 				end
 			end

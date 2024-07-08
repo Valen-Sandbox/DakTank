@@ -237,7 +237,7 @@ local function DTDealDamage(Ent, Damage, Dealer, entbased)
 	if Ent:GetClass() == "daktank_cap" then return end
 	local entTbl = Ent:GetTable()
 	entTbl.DakHealth = entTbl.DakHealth - Damage
-	if isfunction(entTbl.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end 
+	if isfunction(entTbl.DTOnTakeDamage) then Ent:DTOnTakeDamage(Damage) end
 
 	if entbased == true then
 		if (not Dealer) or Dealer.LastDamagedBy == nil or Dealer.LastDamagedBy == NULL then
@@ -457,7 +457,7 @@ function DTCompositesTrace( Ent, StartPos, Dir, Filter )
 
 				P1:Negate() --This saves literally 1 milisecond total lol - j
 				P1:Add(Pos)
-				
+
 				local D1 = P2:Dot(P2)
 				local D2 = P2:Dot(P3)
 				local D3 = P2:Dot(P1)
@@ -4234,8 +4234,7 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 					effectdata:SetAttachment(1)
 					effectdata:SetMagnitude(.5)
 					effectdata:SetScale(Shell.DakCaliber * (Shell.DakBaseVelocity / 29527.6))
-					if Shell.IsFrag then
-					else
+					if not Shell.IsFrag then
 						util.Effect("dakteshellimpact", effectdata, true, true)
 					end
 					util.Decal( "Impact.Concrete", HitPos - ((HitPos-Start):GetNormalized() * 5), HitPos + ((HitPos-Start):GetNormalized() * 5), Shell.DakGun)

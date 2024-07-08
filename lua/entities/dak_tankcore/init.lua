@@ -1481,17 +1481,16 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						end)
 
 						timer.Simple(2, function()
-							do
-								--Finalize Costs and print readout
-								self.PreCost = self.ArmorMult * 50 + self.FirepowerMult * 50
-								self.PreCost = self.PreCost * ((self.SpeedMult + self.GunHandlingMult) * 0.5)
-								self.Cost = math.Round(self.PreCost + self.APSCost)
-								local curera = "WWII"
-								if self.ColdWar == 1 then curera = "Cold War" end
-								if self.Modern == 1 then curera = "Modern" end
-								hook.Run("DakTank_TankAnalysisComplete", self)
-								self.DakOwner:ChatPrint("Tank Analysis Complete: " .. self.Cost .. " point " .. curera .. " tank. Right click tank core with spawner for detailed readout.")
-							end
+							--Finalize Costs and print readout
+							local armorMult = self.ArmorMult or 1
+							self.PreCost = armorMult * 50 + self.FirepowerMult * 50
+							self.PreCost = self.PreCost * ((self.SpeedMult + self.GunHandlingMult) * 0.5)
+							self.Cost = math.Round(self.PreCost + self.APSCost)
+							local curera = "WWII"
+							if self.ColdWar == 1 then curera = "Cold War" end
+							if self.Modern == 1 then curera = "Modern" end
+							hook.Run("DakTank_TankAnalysisComplete", self)
+							self.DakOwner:ChatPrint("Tank Analysis Complete: " .. self.Cost .. " point " .. curera .. " tank. Right click tank core with spawner for detailed readout.")
 						end)
 					end
 

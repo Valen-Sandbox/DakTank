@@ -61,7 +61,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 	if HitEnt.DakHealth == nil then
 		DTTE.SetupNewEnt(HitEnt)
 	end
-	
+
 	if (HitEnt:IsValid() and HitEnt:GetPhysicsObject():IsValid() and not(HitEnt:IsPlayer()) and not(HitEnt:IsNPC()) and not(HitEntTbl.Base == "base_nextbot") and (HitEntTbl.DakHealth ~= nil and HitEntTbl.DakHealth > 0)) then
 		local normal = ShellSimTrace.HitNormal:Dot(-ShellSimTrace.Normal)
 		local HitAng = math.deg(math.acos( normal ))
@@ -102,7 +102,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 
 			local owner = HitEnt:CPPIGetOwner()
 			if HitEntTbl.IsComposite == 1 or (owner ~= nil and owner:IsWorld()) then
-				
+
 				EffArmor = DTCompositesTrace( HitEnt, ShellSimTrace.HitPos, ShellSimTrace.Normal, Filter ) --This is incredibly expensive
 
 				if HitEntTbl.EntityMods == nil then HitEntTbl.EntityMods = {} end
@@ -126,7 +126,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 						Shatter = 1
 					end
 				end
-				
+
 			else
 
 				local mathmax = math.max
@@ -169,7 +169,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 		end
 	end
 
-	
+
 	local EndPos
 	if ShellSimTrace.Hit then
 		EndPos = ShellSimTrace.HitPos
@@ -460,14 +460,14 @@ function DTTE.GetArmorRecurseDisplay(Start, End, depth, ShellType, Caliber, Filt
 
 	while Go == 1 and Recurse < 25 do
 		local newArmor, newEnt, LastPenPos, Shattered, Failed, newHitGun, newHitGear = DTTE.GetEffArmor(Start, End, ShellType, Caliber, NewFilter, core)
-		if newEnt:IsValid() then 
+		if newEnt:IsValid() then
 			local newEntClass = newEnt:GetClass()
 			if newEnt.Controller == core then
 				if newEnt.Marked == true and respectmark == true then
 					newArmor = 0
 				end
 				if mark == true and newEntClass == "prop_physics" then newEnt.Marked = true end
-	
+
 				if (newEntClass == "dak_tegearbox" or newEntClass == "dak_tegearboxnew" or newEntClass == "dak_temotor") then
 					newArmor = newArmor * 0.25
 				elseif(newEntClass == "dak_crew" or newEntClass == "dak_teammo" or newEntClass == "dak_teautoloadingmodule" or newEntClass == "dak_tefuel") then
@@ -502,7 +502,7 @@ function DTTE.GetArmorRecurseDisplay(Start, End, depth, ShellType, Caliber, Filt
 						Armor = Armor + newArmor
 					end
 				end
-				
+
 				if CritEnt == NULL then
 					if newEntClass == "dak_crew" or newEntClass == "dak_teammo" or newEntClass == "dak_teautoloadingmodule" or newEntClass == "dak_tefuel" then
 						if newEntClass == "dak_teammo" then
@@ -531,7 +531,7 @@ function DTTE.GetArmorRecurseDisplay(Start, End, depth, ShellType, Caliber, Filt
 		if Recurse >= 25 then
 			return math.huge, CritEnt, Shatters, Rico, HitGun, HitGear, HitCrit, FirstPenPos, SpallLinerOnCrit, ThickestPos
 		end
-		
+
 		if Go == 0 then
 			if ShellType == "HEAT" or ShellType == "HEATFS" or ShellType == "ATGM" or ShellType == "HESH" then
 				if not(ShellType == "HESH") then
