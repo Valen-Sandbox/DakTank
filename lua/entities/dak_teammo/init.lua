@@ -1,9 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
-
 local DTTE = DTTE
-
 ENT.DakName = "Base Ammo"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 5
@@ -11,9 +9,6 @@ ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakAmmoType = "Base"
 ENT.DakPooled = 0
-
-DTTE.RegisterEntClass("dak_teammo")
-
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)

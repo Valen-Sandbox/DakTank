@@ -1,9 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
-
 local DTTE = DTTE
-
 ENT.DakFuel = NULL
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
@@ -13,9 +11,6 @@ ENT.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
 ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.DakHP = 0
-
-DTTE.RegisterEntClass("dak_temotor")
-
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)

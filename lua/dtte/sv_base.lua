@@ -103,13 +103,6 @@ function DTTE.SetupNewEnt(ent)
 	end
 end
 
--- Set up duplicator functions for the given entity class
-function DTTE.RegisterEntClass(entClass)
-	duplicator.RegisterEntityClass(entClass, function(ply, data)
-		return duplicator.GenericDuplicatorFunction(ply, data)
-	end, "Data")
-end
-
 hook.Add("Think", "DakTankShellTableFunction", function()
 	local ShellList = DTTE.ShellList
 	local RemoveList = {}
