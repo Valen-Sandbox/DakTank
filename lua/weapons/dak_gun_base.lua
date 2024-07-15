@@ -188,7 +188,7 @@ function SWEP:PrimaryAttack()
 						shell.IndicatorStart = owner:GetShootPos()
 						shell.IndicatorEnd = owner:GetShootPos() + owner:GetAimVector() * 1000000
 
-						DakTankShellList[#DakTankShellList + 1] = shell
+						DTTE.ShellList[#DTTE.ShellList + 1] = shell
 					end
 				end
 				if owner:IsPlayer() then

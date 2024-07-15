@@ -3,16 +3,17 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local DTTE = DTTE
+
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
 ENT.DakName = "Light Motor"
 ENT.DakModel = "models/daktanks/engine1.mdl"
 ENT.DakSpeed = 1.1725
 ENT.DakMass = 1000
-ENT.DakPooled=0
+ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.MaxHP = 0
-
 
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
@@ -50,8 +51,8 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
+	DTTE.CheckSpherical(self)
+	if CurTime() >= self.SparkTime + 0.33 then
 		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
@@ -930,7 +931,6 @@ function ENT:Think()
 end
 
 function ENT:PreEntityCopy()
-
 	local info = {}
 	local entids = {}
 
@@ -943,9 +943,8 @@ function ENT:PreEntityCopy()
 
 	duplicator.StoreEntityModifier( self, "DakTek", info )
 
-	//Wire dupe info
+	-- Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
@@ -975,6 +974,6 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 
 		Ent.EntityMods.DakTek = nil
 	end
-	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
 
+	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
 end

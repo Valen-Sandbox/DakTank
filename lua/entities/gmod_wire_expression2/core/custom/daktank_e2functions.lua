@@ -1,5 +1,7 @@
 E2Lib.RegisterExtension("daktank",true)
 
+local DTTE = DTTE
+
 -- E2 Functions
 __e2setcost(1)
 e2function number entity:daktankArmor()
@@ -7,7 +9,7 @@ e2function number entity:daktankArmor()
 	if this.IsWorld() then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 	local SA = -1
 	if IsValid(this:GetPhysicsObject()) then
@@ -20,7 +22,7 @@ e2function number entity:daktankArmor()
 			this.DakArmor = this:OBBMaxs().x/2
 			this.DakIsTread = 1
 		else
-			if this:GetClass()=="prop_physics" then 
+			if this:GetClass()=="prop_physics" then
 				if this.DakBurnStacks then
 					if not(this.DakArmor == 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA) - this.DakBurnStacks*0.25) then
 						this.DakArmor = 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA) - this.DakBurnStacks*0.25
@@ -30,7 +32,7 @@ e2function number entity:daktankArmor()
 						this.DakArmor = 7.8125*(this:GetPhysicsObject():GetMass()/4.6311781)*(288/SA)
 					end
 				end
-				
+
 			end
 		end
 	end
@@ -45,7 +47,7 @@ e2function number entity:daktankHealth()
 	if not IsValid(this) then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 
 	if this.DakHealth == nil then
@@ -59,7 +61,7 @@ e2function number entity:daktankMaxHealth()
 	if not IsValid(this) then return 0 end
 
 	if this.DakArmor == nil then
-		DakTekTankEditionSetupNewEnt(this)
+		DTTE.SetupNewEnt(this)
 	end
 
 	if this.DakMaxHealth == nil then
@@ -472,7 +474,7 @@ e2function number entity:daktankGetGunLoaded()
 end
 
 e2function number daktankHitCrit(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTGetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if Ent:IsWorld() and ArmorVal > 0 then
 		ArmorVal = 1000000
 	end
@@ -481,7 +483,7 @@ e2function number daktankHitCrit(vector Start, vector End, string ShellType, num
 end
 
 e2function number daktankRecurseArmor(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTGetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if not(ArmorVal>-1) then return 1000000 end
 	return ArmorVal
 end

@@ -1,198 +1,136 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
-
 include("shared.lua")
-
+local DTTE = DTTE
 ENT.DakEngine = NULL
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
---ENT.DakName = "TMotor"
---ENT.DakModel = "models/xqm/hydcontrolbox.mdl"
 ENT.DakMass = 250
-ENT.DakPooled=0
-
-
+ENT.DakPooled = 0
 function ENT:Initialize()
-	--self:SetModel(self.DakModel)
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self.DakArmor = 10
 	self.DakHealth = self.DakMaxHealth
-	--local phys = self:GetPhysicsObject()
-	
-	self.Soundtime = CurTime()
- 	self.SparkTime = CurTime()
- 	self.DakBurnStacks = 0
+	self.SparkTime = CurTime()
+	self.DakBurnStacks = 0
 end
 
 function ENT:Think()
-	CheckSpherical(self)
-	if CurTime()>=self.SparkTime+0.33 then
-		if self.DakHealth<=(self.DakMaxHealth*0.80) and self.DakHealth>(self.DakMaxHealth*0.60) then
+	local self = self
+	local selfTbl = self:GetTable()
+
+	DTTE.CheckSpherical(self)
+	if CurTime() >= selfTbl.SparkTime + 0.33 then
+		local scale
+		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
+			scale = 1
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
+			scale = 2
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
+			scale = 3
+		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
+			scale = 4
+		end
+
+		if scale then
 			local effectdata = EffectData()
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetEntity(self)
 			effectdata:SetAttachment(1)
 			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(1)
+			effectdata:SetScale(scale)
 			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+3 then
-				self:EmitSound( "dak/shock.wav", 60, math.Rand(60,150), 0.4, 6)
-				self.Soundtime=CurTime()
-			end
 		end
-		if self.DakHealth<=(self.DakMaxHealth*0.60) and self.DakHealth>(self.DakMaxHealth*0.40) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(2)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+2 then
-				self:EmitSound( "dak/shock.wav", 60, math.Rand(60,150), 0.5, 6)
-				self.Soundtime=CurTime()
-			end
-		end
-		if self.DakHealth<=(self.DakMaxHealth*0.40) and self.DakHealth>(self.DakMaxHealth*0.20) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(3)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+1 then
-				self:EmitSound( "dak/shock.wav", 60, math.Rand(60,150), 0.6, 6)
-				self.Soundtime=CurTime()
-			end
-		end
-		if self.DakHealth<=(self.DakMaxHealth*0.20) then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(4)
-			util.Effect("daktedamage", effectdata)
-			if CurTime()>=self.Soundtime+0.5 then
-				self:EmitSound( "dak/shock.wav", 60, math.Rand(60,150), 0.75, 6)
-				self.Soundtime=CurTime()
-			end
-		end
-		self.SparkTime=CurTime()
+
+		selfTbl.SparkTime = CurTime()
 	end
 
-	if self.DakName == "Turret Motor" then
-		self.DakName = "Small Turret Motor"
-	end
-	if self.DakName == "TMotor" then
-		self.DakName = "Small Turret Motor"
-	end
-
-	if self.DakName == "Small Turret Motor" then
-		self.DakMaxHealth = 10
-		self.DakMass = 250
-		self.DakModel = "models/xqm/hydcontrolbox.mdl"	
-		self.DakRotMult = 0.1
-	end
-	if self.DakName == "Medium Turret Motor" then
-		self.DakMaxHealth = 20
-		self.DakMass = 500
-		self.DakModel = "models/props_c17/utilityconducter001.mdl"	
-		self.DakRotMult = 0.25
-	end
-	if self.DakName == "Large Turret Motor" then
-		self.DakMaxHealth = 50
-		self.DakMass = 1000
-		self.DakModel = "models/props_c17/substation_transformer01d.mdl"	
-		self.DakRotMult = 0.6
-	end
-	if self.DakModel then
-		if self:GetModel() ~= self.DakModel then
-			self:SetModel(self.DakModel)
-			--self:PhysicsInit(SOLID_VPHYSICS)
-			self:SetMoveType(MOVETYPE_VPHYSICS)
-			self:SetSolid(SOLID_VPHYSICS)
-		end
-	end
-	if self.DakHealth > self.DakMaxHealth then
-		self.DakHealth = self.DakMaxHealth
-	end
-	if self.DakRotMult then
-		self.DakRotMult = self.DakRotMult * self.DakHealth/self.DakMaxHealth
-	end
-	if self.DakDead == true then
-		self.DakRotMult = 0
-		self.DakHealth = 0
-	end
-	if self:GetPhysicsObject():GetMass() ~= self.DakMass then self:GetPhysicsObject():SetMass(self.DakMass) end
-	
-	if self:IsOnFire() and self.DakDead ~= true then
-		self.DakHealth = self.DakHealth - 1*0.33
-		if self.DakHealth <= 0 then
-			if self.DakOwner:IsPlayer() and self.DakOwner~=NULL then self.DakOwner:ChatPrint(self.DakName.." Destroyed!") end
-			self:SetMaterial("models/props_buildings/plasterwall021a")
-			self:SetColor(Color(100,100,100,255))
-			self.DakDead = true
-		end
+	if selfTbl.DakName == "Turret Motor" or selfTbl.DakName == "TMotor" then selfTbl.DakName = "Small Turret Motor" end
+	if selfTbl.DakName == "Small Turret Motor" then
+		selfTbl.DakMaxHealth = 10
+		selfTbl.DakMass = 250
+		selfTbl.DakModel = "models/xqm/hydcontrolbox.mdl"
+		selfTbl.DakRotMult = 0.1
+	elseif selfTbl.DakName == "Medium Turret Motor" then
+		selfTbl.DakMaxHealth = 20
+		selfTbl.DakMass = 500
+		selfTbl.DakModel = "models/props_c17/utilityconducter001.mdl"
+		selfTbl.DakRotMult = 0.25
+	elseif selfTbl.DakName == "Large Turret Motor" then
+		selfTbl.DakMaxHealth = 50
+		selfTbl.DakMass = 1000
+		selfTbl.DakModel = "models/props_c17/substation_transformer01d.mdl"
+		selfTbl.DakRotMult = 0.6
 	end
 
-    self:NextThink(CurTime()+0.33)
-    return true
+	if selfTbl.DakModel and self:GetModel() ~= selfTbl.DakModel then
+		self:SetModel(selfTbl.DakModel)
+		self:SetMoveType(MOVETYPE_VPHYSICS)
+		self:SetSolid(SOLID_VPHYSICS)
+	end
+
+	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
+	if selfTbl.DakRotMult then selfTbl.DakRotMult = selfTbl.DakRotMult * selfTbl.DakHealth / selfTbl.DakMaxHealth end
+	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+	if selfTbl.DakDead then
+		selfTbl.DakRotMult = 0
+		selfTbl.DakHealth = 0
+	elseif self:IsOnFire() then
+		selfTbl.DakHealth = selfTbl.DakHealth - 0.33
+		self:DTOnTakeDamage(0.33)
+	end
+
+	self:NextThink(CurTime() + 0.33)
+	return true
+end
+
+function ENT:DTOnTakeDamage(Damage)
+	if self.DakDead then return end
+	if self.DakHealth <= 0 then
+		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
+		self:SetMaterial("models/props_buildings/plasterwall021a")
+		self:SetColor(Color(100, 100, 100, 255))
+		self.DakDead = true
+		return
+	end
 end
 
 function ENT:PreEntityCopy()
-
 	local info = {}
-	local entids = {}
-
-	if IsValid(self.TurretController) then
-		info.TurretID = self.TurretController:EntIndex()
-	end
+	--local entids = {}
+	if IsValid(self.TurretController) then info.TurretID = self.TurretController:EntIndex() end
 	info.DakName = self.DakName
 	info.DakMass = self.DakMass
 	info.DakModel = self.DakModel
 	info.DakMaxHealth = self.DakMaxHealth
 	info.DakHealth = self.DakHealth
-
-	duplicator.StoreEntityModifier( self, "DakTek", info )
-
-	//Wire dupe info
-	self.BaseClass.PreEntityCopy( self )
-	
+	duplicator.StoreEntityModifier(self, "DakTek", info)
+	--Wire dupe info
+	self.BaseClass.PreEntityCopy(self)
 end
 
-function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
-	if (Ent.EntityMods) and (Ent.EntityMods.DakTek) then
+function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
+	if Ent.EntityMods and Ent.EntityMods.DakTek then
 		if Ent.EntityMods.DakTek.TurretID then
-			local Eng = CreatedEntities[ Ent.EntityMods.DakTek.TurretID ]
-			if Eng and IsValid(Eng) then
-				self.TurretController = Eng
-			end
+			local Eng = CreatedEntities[Ent.EntityMods.DakTek.TurretID]
+			if Eng and IsValid(Eng) then self.TurretController = Eng end
 		end
+
 		self.DakName = Ent.EntityMods.DakTek.DakName
 		self.DakMass = Ent.EntityMods.DakTek.DakMass
 		self.DakModel = Ent.EntityMods.DakTek.DakModel
 		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
 		self.DakHealth = self.DakMaxHealth
 		self.DakOwner = Player
-		if Ent.EntityMods.DakTek.DakColor == nil then
-		else
+		if Ent.EntityMods.DakTek.DakColor then
 			self:SetColor(Ent.EntityMods.DakTek.DakColor)
 		end
 
-		--self:PhysicsDestroy()
-		--self:SetModel(self.DakModel)
-		--self:PhysicsInit(SOLID_VPHYSICS)
-		--self:SetMoveType(MOVETYPE_VPHYSICS)
-		--self:SetSolid(SOLID_VPHYSICS)
-
 		self:Activate()
-
 		Ent.EntityMods.DakTek = nil
 	end
-	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
 
+	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
 end

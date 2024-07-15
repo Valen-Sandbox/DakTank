@@ -1,7 +1,7 @@
 include("shared.lua")
 
 function ENT:Draw()
-
-	self:DrawModel()
-
+	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) < 1600000 then
+		self:DrawModel()
+	end
 end

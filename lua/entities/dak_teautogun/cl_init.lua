@@ -1,9 +1,7 @@
 include("shared.lua")
 
 function ENT:Draw()
-
 	self:DrawModel()
-
 end
 
 function ENT:Think()
@@ -50,7 +48,7 @@ function ENT:Think()
 			self:SetSequence( self:LookupSequence( "recoil" ) )
 			self.CycleVal = 0.0
 			self:SetCycle( self.CycleVal )
-			timer.Destroy("RecoilTimer")
+			timer.Remove("RecoilTimer")
 			timer.Create( "RecoilTimer"..self:EntIndex()..CurTime(), 0.01, 100, function()
 				if self.CycleVal ~= nil then
 					self.CycleVal = self.CycleVal + 0.025

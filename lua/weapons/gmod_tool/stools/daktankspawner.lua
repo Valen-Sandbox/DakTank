@@ -1,7 +1,7 @@
 TOOL.Category = "DakTank"
 TOOL.Name = "#Tool.daktankspawner.listname"
 TOOL.Command = nil
-TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud 
+TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 if CLIENT then
 	language.Add( "Tool.daktankspawner.listname", "DakTank Spawner" )
 	language.Add( "Tool.daktankspawner.name", "DakTank Spawner" )
@@ -35,6 +35,8 @@ TOOL.crewcolors = {
 	Color(0,0,0)
 }
 
+local DTTE = DTTE
+
 --Main spawning function, creates entities based on the options selected in the menu and updates current entities
 function TOOL:LeftClick( trace )
 	if SERVER then
@@ -53,7 +55,7 @@ function TOOL:LeftClick( trace )
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end
 				self.spawnedent:SetPos(trace.Entity:GetPos())
-				self.spawnedent:SetAngles(trace.Entity:GetAngles())		
+				self.spawnedent:SetAngles(trace.Entity:GetAngles())
 				if trace.Entity:GetParent():IsValid() then
 					self.spawnedent:SetMoveType(MOVETYPE_NONE)
 					self.spawnedent:SetParent(trace.Entity:GetParent())
@@ -67,7 +69,7 @@ function TOOL:LeftClick( trace )
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end
 				self.spawnedent:SetPos(trace.Entity:GetPos())
-				self.spawnedent:SetAngles(trace.Entity:GetAngles())		
+				self.spawnedent:SetAngles(trace.Entity:GetAngles())
 				if trace.Entity:GetParent():IsValid() then
 					self.spawnedent:SetMoveType(MOVETYPE_NONE)
 					self.spawnedent:SetParent(trace.Entity:GetParent())
@@ -81,7 +83,7 @@ function TOOL:LeftClick( trace )
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end
 				self.spawnedent:SetPos(trace.Entity:GetPos())
-				self.spawnedent:SetAngles(trace.Entity:GetAngles())		
+				self.spawnedent:SetAngles(trace.Entity:GetAngles())
 				if trace.Entity:GetParent():IsValid() then
 					self.spawnedent:SetMoveType(MOVETYPE_NONE)
 					self.spawnedent:SetParent(trace.Entity:GetParent())
@@ -104,7 +106,7 @@ function TOOL:LeftClick( trace )
 			self.DakName = "Medium Turret Motor"
 			self.DakModel = "models/props_c17/utilityconducter001.mdl"
 		end
-		if Selection == "LTMotor" then 
+		if Selection == "LTMotor" then
 			self.DakMaxHealth = 50
 			self.DakHealth = 50
 			self.DakName = "Large Turret Motor"
@@ -689,7 +691,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm Autocannon"
 			self.DakModel = "models/daktanks/autocannon100mm2.mdl"
-			
+
 			if self.DakCaliber < 37 then
 				self.DakFireSound = "daktanks/ac25.mp3"
 			end
@@ -706,7 +708,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm ATGM Launcher"
 			self.DakModel = "models/daktanks/launcher100mm2.mdl"
-			
+
 			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 		end
 		if Selection == "Dual ATGM Launcher" then
@@ -715,7 +717,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm Dual ATGM Launcher"
 			self.DakModel = "models/daktanks/duallauncher100mm2.mdl"
-			
+
 			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 		end
 		if Selection == "Autoloading ATGM Launcher" then
@@ -724,7 +726,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm Autoloading ATGM Launcher"
 			self.DakModel = "models/daktanks/launcher100mm2.mdl"
-			
+
 			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 		end
 		if Selection == "Autoloading Dual ATGM Launcher" then
@@ -733,7 +735,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm Autoloading Dual ATGM Launcher"
 			self.DakModel = "models/daktanks/duallauncher100mm2.mdl"
-			
+
 			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
 		end
 		if Selection == "Recoilless Rifle" then
@@ -765,7 +767,7 @@ function TOOL:LeftClick( trace )
 			self.DakMaxHealth = self.DakCaliber
 			self.DakName = self.DakCaliber.."mm Autoloading Recoilless Rifle"
 			self.DakModel = "models/daktanks/recoillessrifle100mm2.mdl"
-			
+
 			if self.DakCaliber < 50 then
 				self.DakFireSound = "daktanks/new/cannons/37mm/cannon_37mm_kwk36_shot_01.mp3"
 			end
@@ -1345,7 +1347,7 @@ function TOOL:LeftClick( trace )
 					local Caliber = self.DakCaliber*10--GetConVar("daktankspawner_DTTE_GunCaliber"):GetInt()
 					self.spawnedent:SetModelScale( self.spawnedent:GetModelScale() * (Caliber/1000), 0 )
 					local mins, maxs = self.spawnedent:GetCollisionBounds()
-					self.spawnedent:PhysicsDestroy()	
+					self.spawnedent:PhysicsDestroy()
 					local x0 = mins[1] -- Define the min corner of the box
 					local y0 = mins[2]
 					local z0 = mins[3]
@@ -1395,7 +1397,7 @@ function TOOL:LeftClick( trace )
 						local Caliber = self.DakCaliber*10--GetConVar("daktankspawner_DTTE_GunCaliber"):GetInt()
 						self.spawnedent:SetModelScale( self.spawnedent:GetModelScale() * (Caliber/1000), 0 )
 						local mins, maxs = self.spawnedent:GetCollisionBounds()
-						self.spawnedent:PhysicsDestroy()	
+						self.spawnedent:PhysicsDestroy()
 						local x0 = mins[1] -- Define the min corner of the box
 						local y0 = mins[2]
 						local z0 = mins[3]
@@ -1480,7 +1482,7 @@ function TOOL:LeftClick( trace )
 				self.spawnedent.Inputs.Fire.SrcId = trace.Entity.Inputs.Fire.SrcId
 				self.spawnedent.Inputs.Fire.Name = trace.Entity.Inputs.Fire.Name
 				self.spawnedent.Inputs.Fire.Src = trace.Entity.Inputs.Fire.Src
-				self.spawnedent.Inputs.Fire.Num = trace.Entity.Inputs.Fire.Num	
+				self.spawnedent.Inputs.Fire.Num = trace.Entity.Inputs.Fire.Num
 				self.spawnedent.Inputs.Fire.Material = trace.Entity.Inputs.Fire.Material
 				self.spawnedent.Inputs.Fire.Width = trace.Entity.Inputs.Fire.Width
 				self.spawnedent.Inputs.Fire.Value = trace.Entity.Inputs.Fire.Value
@@ -1676,15 +1678,15 @@ function TOOL:LeftClick( trace )
 		end
 	end
 end
- 
+
 --Information readout function, displays some useful information in chat on any entity that is right clicked
 function TOOL:RightClick( trace )
 	if SERVER then
 		if IsValid(trace.Entity) then
 			if trace.Entity.DakArmor == nil then
-				DakTekTankEditionSetupNewEnt(trace.Entity)
+				DTTE.SetupNewEnt(trace.Entity)
 			end
-			if trace.Entity:GetClass()=="prop_physics" then 
+			if trace.Entity:GetClass()=="prop_physics" then
 				local SA = trace.Entity:GetPhysicsObject():GetSurfaceArea()
 				if trace.Entity.IsDakTekFutureTech == 1 then
 					trace.Entity.DakArmor = 1000
@@ -1695,7 +1697,7 @@ function TOOL:RightClick( trace )
 						trace.Entity.DakIsTread = 1
 					else
 						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
-							DTArmorSanityCheck(trace.Entity)
+							DTTE.ArmorSanityCheck(trace.Entity)
 						end
 					end
 				end
@@ -1771,7 +1773,7 @@ function TOOL:RightClick( trace )
 									Era = "Modern"
 								end
 								ply:ChatPrint(Target.Cost.." point "..Era.." tank.")
-								--ply:ChatPrint("Base Costs")	
+								--ply:ChatPrint("Base Costs")
 								ply:ChatPrint("Armor Cost: "..math.Round((Target.ArmorMult*50),2).." points (main arc: "..math.Round((Target.ArmorMult*50)/Target.ArmorSideMult,2)..", side arc multiplier: "..math.Round(Target.ArmorSideMult,2)..").")
 								ply:ChatPrint("Spall Liner Coverage: Frontal: "..math.Round((Target.FrontalSpallLinerCoverage*100),0).."%, "..math.Round(1+(Target.FrontalSpallLinerCoverage*0.25),2).." Multiplier, Side: "..math.Round((Target.SideSpallLinerCoverage*100),0).."%, "..math.Round(1+(Target.SideSpallLinerCoverage*0.25),2).." Multiplier")
 								ply:ChatPrint("Firepower Cost: "..math.Round(Target.FirepowerMult*50,2).." points (Penetration: "..math.Round(Target.PenMult,2)..", DPS: "..math.Round(Target.DPSMult,2)..").")
@@ -1894,7 +1896,7 @@ function TOOL:Reload( trace )
 	end
 end
 
-function DTSpawnerEngineLabel(name,desc,health,armor,weight,speed,power,fuel)
+local function DTSpawnerEngineLabel(name, desc, health, armor, weight, speed, power, fuel)
 	local s1 = name.."\n\n"
 	local s2 = desc.."\n\n"
 	local s3 = "Engine Stats:\n"
@@ -1909,7 +1911,7 @@ end
 
 function TOOL.BuildCPanel( panel )
 	panel:SetMouseInputEnabled( true )
-	
+
 	--Panel creation zone--
 	local ctrl 					 = vgui.Create( "DTree", panel )
 	local DLabel 				 = vgui.Create( "DLabel", panel )
@@ -1923,7 +1925,7 @@ function TOOL.BuildCPanel( panel )
 	local GearboxModelSelect 	 = vgui.Create( "DComboBox", panel )
 	local AutoloaderMagazineSelect 	 = vgui.Create( "DComboBox", panel )
 	local TurretMotorSelect 	 = vgui.Create( "DComboBox", panel )
-	
+
 	--Variables
 	local CrateModel 	   = ""
 	local Volume		   = 0
@@ -1932,6 +1934,7 @@ function TOOL.BuildCPanel( panel )
 	local Caliber		   = 5
 	local GunType		   = ""
 	local EntType		   = ""
+	local AmmoType		   = ""
 	local AmmoTypes 	   = {}
 	local AmmoTypeGun    = ""
 	local AutoloaderMagazine   = ""
@@ -1963,7 +1966,7 @@ function TOOL.BuildCPanel( panel )
 	engineList["Ultra Engine"] = function()
 		DLabel:SetText(DTSpawnerEngineLabel("Ultra Engine","Ultra engine for use in super heavy tanks.","360","360","5020","800","2400","1440"))
 	end
-	
+
 	--Table containing the description of the available gearboxes
 	local gearboxList = {}
 	gearboxList["Micro Gearbox"] = function()
@@ -1984,7 +1987,7 @@ function TOOL.BuildCPanel( panel )
 	gearboxList["Ultra Gearbox"] = function()
 		DLabel:SetText( "Ultra "..GearboxDirection.." Mount Gearbox\n\nUltra gearbox for landcruisers.\n\nGearbox Stats:\nHealth:                 480\nArmor:                 480mm\nWeight:               5050kg\nPower Rating:      4800 HP" )
 	end
-	
+
 	--Table containing the description of the autoloader magazines
 	local magazineList = {}
 	magazineList["Small Autoloader Magazine"] = function()
@@ -1996,7 +1999,7 @@ function TOOL.BuildCPanel( panel )
 	magazineList["Large Autoloader Magazine"] = function()
 		DLabel:SetText( "Large Autoloader Magazine\n\nLarge sized magazine required to load an autoloader.\n\nMag Stats:\nArmor:   10mm\nWeight: 3000kg\nHealth:  100" )
 	end
-	
+
 	--Table containing the description of the Turret Motors
 	local turretmotorList = {}
 	turretmotorList["Small Turret Motor"] = function()
@@ -2015,10 +2018,10 @@ function TOOL.BuildCPanel( panel )
 		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, cooks off when damaged.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*2*ShellLength,2).."mm\nDamage:        "..math.Round((25*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                WWII" )
 	end
 	selectedAmmo["HE"] = function()
-		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186),2).."mm\nFrag Pen:      "..math.Round(((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186))*0.1,2).."mm\nDamage:        "..math.Round((25*0.5*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*5,2).."\nBlast Radius:  "..math.Round(((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186))*0.0254,2).."m\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                WWII" )	
+		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186),2).."mm\nFrag Pen:      "..math.Round(((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186))*0.1,2).."mm\nDamage:        "..math.Round((25*0.5*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*5,2).."\nBlast Radius:  "..math.Round(((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186))*0.0254,2).."m\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                WWII" )
 	end
 	selectedAmmo["APHE"] = function()
-		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*1.65*ShellLength,2).."mm\nFrag Pen:      "..math.Round((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186)*0.1,2).."mm\nDamage:        "..math.Round((25*0.5*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*2.5,2).."\nBlast Radius:  "..math.Round(0.1*0.0254*((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186)),2).."m\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                WWII" )	
+		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*1.65*ShellLength,2).."mm\nFrag Pen:      "..math.Round((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186)*0.1,2).."mm\nDamage:        "..math.Round((25*0.5*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*2.5,2).."\nBlast Radius:  "..math.Round(0.1*0.0254*((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186)),2).."m\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                WWII" )
 	end
 	selectedAmmo["HEAT"] = function()
 		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*5.4*0.431,2).."mm Cold War, "..math.Round(Caliber*1.2,2).."mm WWII\nFrag Pen:      "..math.Round((2.137015-0.1086095*Caliber+0.002989107*Caliber^2)*(-0.005372093*(ShellLength*50)+1.118186)*0.75,2).."mm\nDamage:        "..math.Round((25*0.125*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*2.5,2).."\nBlast Radius:  "..math.Round(0.5*0.0254*((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186)),2).."m\nVelocity:         "..math.Round(29527.6*0.75*ShellLength*0.0254).." m/s\nEra:                WWII" )
@@ -2042,9 +2045,9 @@ function TOOL.BuildCPanel( panel )
 		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*1.25,2).."mm\nDamage:        0\nSplash Dmg:   "..math.Round(Caliber*2.5,2).."\nBlast Radius:  "..math.Round(0.5*0.0254*((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186)),2).."m\nVelocity:         "..math.Round(29527.6*0.0254*ShellLength).." m/s\nEra:                Cold War" )
 	end
 	selectedAmmo["SM"] = function()
-		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*0.1*ShellLength,2).."mm\nFrag Pen:      0mm\nDamage:        "..math.Round((25*0.25*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*0.5,2).."\nBlast Radius:  "..math.Round((((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186))*0.0254),2).."m\nVelocity:         "..math.Round(29527.6*0.42*0.0254*ShellLength).." m/s\nEra:                WWII" )	
+		DLabel:SetText( Caliber.."mm "..GunType.." "..AmmoType.." Ammo\n\nMakes guns shootier, also explodes.\n\nCrate Stats:\nHealth:  10\nWeight: "..AmmoWeight.."kg\nAmmo:   "..AmmoCount.." round(s)\n\nAmmo Stats:\nPenetration:  "..math.Round(Caliber*0.1*ShellLength,2).."mm\nFrag Pen:      0mm\nDamage:        "..math.Round((25*0.25*math.pi*((Caliber*0.02*0.5)^2)*(Caliber*0.02*ShellLengthExact)),2).."\nSplash Dmg:   "..math.Round(Caliber*0.5,2).."\nBlast Radius:  "..math.Round((((((Caliber/155)*50)*39)*(-0.005372093*(ShellLength*50)+1.118186))*0.0254),2).."m\nVelocity:         "..math.Round(29527.6*0.42*0.0254*ShellLength).." m/s\nEra:                WWII" )
 	end
-	
+
 	--Table containing the description of the fuel tanks
 	local fuelList = {}
 	fuelList["Micro Fuel Tank"] = function()
@@ -2065,7 +2068,7 @@ function TOOL.BuildCPanel( panel )
 	fuelList["Ultra Fuel Tank"] = function()
 		DLabel:SetText( "Ultra Fuel Tank\n\nMassive fuel tank designed for super heavy tanks running the largest of engines.\n\nFuel Tank Stats:\nHealth:    60\nWeight:   1900kg\nCapacity: 1440L" )
 	end
-	
+
 	--Table containing the description of the available weapons
 	local gunList = {}
 	gunList["ATGM Launcher"] = function()
@@ -2136,11 +2139,11 @@ function TOOL.BuildCPanel( panel )
 	gunList["Mortar"] = function()
 		DLabel:SetText( Caliber.."mm Mortar\n\nL/15 gun with great HE performance for its size and weight but nearly useless kinetic penetration. It can reload extremely quick for its caliber and takes little space to load. Additional space around the breech, ignoring crew, ammo, details, and seats, will lead to faster reload times along with keeping the ammo close to the breech.\n\nWeapon Stats:\nWeight:        "..math.Round(((((Caliber*2.75)*(Caliber*3)*(Caliber*3))+(math.pi*(Caliber^2)*(Caliber*15))-(math.pi*((Caliber/2)^2)*(Caliber*15)))*0.001*7.8125)/1000).." kg\nReloads: \n\nAP: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5150) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5150)/25 ) , 1).. "\nHE: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5350) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5350)/25 ) , 1).. "\nHEAT: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3550) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3550)/25 ) , 1).. "\nHESH: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3450) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3450)/25 ) , 1).. "\nATGM: "..math.Round( 0.75*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*6.5)*3550) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3550)/25 ) , 1).. "\nHEATFS: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3550) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*3550)/25 ) , 1).. "\nAPHE: "..math.Round( 1.279318 + 0.2484886*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5450) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*2.75)*5450)/25 ) , 1).. "\n\nReload Area: "..math.Round(ShellLength*10*Caliber*0.0393701,2).." inches, all directions\n\n" )
 	end
-	
+
 	--AmmoData Key--1 = AP Pen Multiplier, 2 = AP Velocity, 3 = HE Pen Multiplier, 4 = HE Blast and Frag Pen Multiplier, 5 = HE Velocity, 6 = HEAT Pen Multiplier, 7 = HEAT Velocity, 8 = HESH Pen Multiplier, 9 = HESH Velocity
-	
+
 	--Base Velocity = 29527.6
-	--Lenght Mult 
+	--Lenght Mult
 	--AP PEN
 	--HE PEN
 	--HE FRAG/BLAST PEN
@@ -2304,7 +2307,7 @@ function TOOL.BuildCPanel( panel )
 		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke"}
 		DermaNumSlider:SetMinMax( 40, 420 )
 	end
-	
+
 	--Table containing the volume of the available ammo crates
 	local crateList = {}
 	crateList["6x6x3 Ammo Box"] = function()
@@ -2336,8 +2339,8 @@ function TOOL.BuildCPanel( panel )
 	end
 	crateList["24x36x48 Ammo Box"] = function()
 		Volume = 41098.6796875
-	end	
-	
+	end
+
 	--Table containing the information of the different tree nodes
 	local selection = {}
 	------------- Guide -------------
@@ -2464,7 +2467,7 @@ function TOOL.BuildCPanel( panel )
 		TurretMotorSelect:SetVisible( true )
 		DLabel:SetVisible(true)
 		DLabel:SetPos( 15, 380 )
-		
+
 		if TurretMotorSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Turret Motors\n\nThese are electric motors that help to turn the turret. They're very useful for heavier vehicles." )
 		else
@@ -2495,7 +2498,7 @@ function TOOL.BuildCPanel( panel )
 		FuelModelSelect:SetVisible( true )
 		DLabel:SetVisible( true )
 		DLabel:SetPos( 15, 380 )
-		
+
 		if FuelModelSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Fuel\n\nFuel tanks are required to run your engine, there are different sizes providing different bonuses." )
 		else
@@ -2513,7 +2516,7 @@ function TOOL.BuildCPanel( panel )
 		if GearboxDirectionSelect:GetSelectedID() ~= nil then
 			GearboxModelSelect:SetVisible( true )
 		end
-		
+
 		if GearboxModelSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Auto Tread Gearboxes\n\nTransfers the power of your engines to the wheels, you'll need heavy gearboxes to handle high power engines. Comes with auto generated treads for easy editing." )
 		else
@@ -2530,7 +2533,7 @@ function TOOL.BuildCPanel( panel )
 		if GearboxDirectionSelect:GetSelectedID() ~= nil then
 			GearboxModelSelect:SetVisible( true )
 		end
-		
+
 		if GearboxModelSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Gearboxes\n\nTransfers the power of your engines to the wheels, you'll need heavy gearboxes to handle high power engines." )
 		else
@@ -2548,7 +2551,7 @@ function TOOL.BuildCPanel( panel )
 		AmmoBoxSelect:SetVisible( true )
 		DLabel:SetVisible(true)
 		DLabel:SetPos( 15, 405 )
-		
+
 		if AmmoBoxSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Weapons\n\nThis kills the enemy, point at things you want removed." )
 		else
@@ -2562,7 +2565,7 @@ function TOOL.BuildCPanel( panel )
 		AutoloaderMagazineSelect:SetVisible( true )
 		DLabel:SetVisible(true)
 		DLabel:SetPos( 15, 380 )
-		
+
 		if AutoloaderMagazineSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Autoloader Magazines\n\nThese are the magazines that hold shells and supply them to an autoloader. They are explosive." )
 		else
@@ -2575,7 +2578,7 @@ function TOOL.BuildCPanel( panel )
 		AmmoBoxSelect:SetVisible( true )
 		DLabel:SetVisible( true )
 		DLabel:SetPos( 15, 455 )
-			
+
 		if AmmoBoxSelect:GetSelected() == "Flamethrower" then
 			DLabel:SetPos( 15, 380 )
 			DLabel:SetText( "Flamethrower Fuel\n\nFlamethrower fuel tank, more armored than normal ammo boxes but more likely to be crit, use with caution.\n\nCrate Stats:\nArmor:  12.5mm\nWeight: 500kg\nHealth:  30\n\nFuel Stats:\nCapacity:      15 seconds\nDamage:        0.75\nRate of Fire: 3960 streams/minute" )
@@ -2594,11 +2597,11 @@ function TOOL.BuildCPanel( panel )
 					end
 				end
 			end
-				
+
 			if AmmoTypeSelect:GetSelectedID() ~= nil then
 				AmmoModelSelect:SetVisible( true )
 			end
-				
+
 			if AmmoTypeSelect:GetSelectedID() == nil or AmmoModelSelect:GetSelectedID() == nil then
 				DLabel:SetText( "Ammunition\n\nKeeps guns shooty." )
 			else
@@ -2691,7 +2694,7 @@ function TOOL.BuildCPanel( panel )
 	panel.PerformLayoutLegacy = panel.PerformLayout
 	function panel:PerformLayout( Width, Height )
 		local PanelWidth = Width-30
-		
+
 		ctrl:SetSize( PanelWidth, 300 )
 		DLabel:SetWide( PanelWidth )
 		AmmoBoxSelect:SetSize( PanelWidth, 20 )
@@ -2704,7 +2707,7 @@ function TOOL.BuildCPanel( panel )
 		GearboxModelSelect:SetSize( PanelWidth, 20 )
 		AutoloaderMagazineSelect:SetSize( PanelWidth, 20 )
 		TurretMotorSelect:SetSize( PanelWidth, 20 )
-		
+
 		self:PerformLayoutLegacy( Width, Height )
 	end
 
@@ -2770,8 +2773,8 @@ function TOOL.BuildCPanel( panel )
 	AmmoTypeSelect.OnSelect = function( panel, index, value )
 		local String = string.Explode( " ", value )
 		if ( #String > 4 ) then
-			AmmoType = string.sub( String[1], 1, 1 )..string.sub( String[2], 1, 1 )..string.sub( String[3], 1, 1 )..string.sub( String[4], 1, 1 )..string.sub( String[5], 1, 1 ) ..string.sub( String[6], 1, 1 ) 
-		elseif ( #String > 2 ) then 
+			AmmoType = string.sub( String[1], 1, 1 )..string.sub( String[2], 1, 1 )..string.sub( String[3], 1, 1 )..string.sub( String[4], 1, 1 )..string.sub( String[5], 1, 1 ) ..string.sub( String[6], 1, 1 )
+		elseif ( #String > 2 ) then
 			AmmoType = string.sub( String[1], 1, 1 )..string.sub( String[2], 1, 1 )..string.sub( String[3], 1, 1 )..string.sub( String[4], 1, 1 )
 		elseif ( #String > 1 ) then
 			AmmoType = string.sub( String[1], 1, 1 )..string.sub( String[2], 1, 1 )
@@ -2904,7 +2907,7 @@ function TOOL.BuildCPanel( panel )
 	updateUI()
 
 	--Creation of the main tree menu
-	DTTE_NodeList={}
+	local DTTE_NodeList = {}
 	DTTE_NodeList["Guide"] 		= ctrl:AddNode( "DakTank Guide", "icon16/book.png" )
 		DTTE_NodeList["Help1"] 	= DTTE_NodeList["Guide"]:AddNode( "DakTank Guide: The Basics", "icon16/page.png" )
 		DTTE_NodeList["Help2"] 	= DTTE_NodeList["Guide"]:AddNode( "DakTank Guide: Armor", "icon16/page.png" )
@@ -2929,9 +2932,9 @@ function TOOL.BuildCPanel( panel )
 
 	DTTE_NodeList["Utilities"] 	  = ctrl:AddNode( "Utilities", "icon16/folder_brick.png" )
 		DTTE_NodeList["Core"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Tank Core", "icon16/cog.png" )
-		DTTE_NodeList["Crew1"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Standing Crew Member", "icon16/cog.png" )	
-		DTTE_NodeList["Crew2"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Sitting Crew Member", "icon16/cog.png" )	
-		DTTE_NodeList["Crew3"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Driver Position Crew Member", "icon16/cog.png" )	
+		DTTE_NodeList["Crew1"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Standing Crew Member", "icon16/cog.png" )
+		DTTE_NodeList["Crew2"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Sitting Crew Member", "icon16/cog.png" )
+		DTTE_NodeList["Crew3"] 	  = DTTE_NodeList["Utilities"]:AddNode( "Driver Position Crew Member", "icon16/cog.png" )
 		DTTE_NodeList["TControl"] = DTTE_NodeList["Utilities"]:AddNode( "Turret Controller", "icon16/cog.png" )
 		DTTE_NodeList["TMotor"]   = DTTE_NodeList["Utilities"]:AddNode( "Turret Motor", "icon16/cog.png" )
 

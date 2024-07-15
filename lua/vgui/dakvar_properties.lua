@@ -1,4 +1,3 @@
-
 -- STRING
 do
 	local PANEL = {}

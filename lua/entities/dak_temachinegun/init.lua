@@ -36,54 +36,54 @@ ENT.muzzle = NULL
 function ENT:Initialize()
 	--self:SetModel(self.DakModel)
 	self.DakHealth = self.DakMaxHealth
-	
+
 	self:PhysicsInit(SOLID_VPHYSICS)
 	--self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
 	--local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
-	
+
 	self.Inputs = Wire_CreateInputs(self, { "Fire", "FuzeDelay" })
 	self.Outputs = WireLib.CreateOutputs( self, { "Cooldown" , "CooldownPercent", "MaxCooldown", "Ammo", "AmmoType [STRING]", "MuzzleVel", "ShellMass", "Penetration" } )
- 	self.Held = false
- 	self.Soundtime = CurTime()
- 	self.SlowThinkTime = 0
- 	self.MidThinkTime = CurTime()
- 	self.LastFireTime = CurTime()
- 	self.CurrentAmmoType = 1
- 	self.DakBurnStacks = 0
- 	self.BasicVelocity = 29527.6
- 	self.truefire = false
+	self.Held = false
+	self.Soundtime = CurTime()
+	self.SlowThinkTime = 0
+	self.MidThinkTime = CurTime()
+	self.LastFireTime = CurTime()
+	self.CurrentAmmoType = 1
+	self.DakBurnStacks = 0
+	self.BasicVelocity = 29527.6
+	self.truefire = false
 
 	function self:SetupDataTables()
- 		self:NetworkVar("Bool",0,"Firing")
- 		self:NetworkVar("Float",0,"Timer")
- 		self:NetworkVar("Float",1,"Cooldown")
- 		self:NetworkVar("String",0,"Model")
- 	end
- 	self:SetNWFloat("Caliber",self.DakCaliber)
- 	self.FireRateMod = math.Clamp(self:GetRateOfFire(),0,1)
+		self:NetworkVar("Bool",0,"Firing")
+		self:NetworkVar("Float",0,"Timer")
+		self:NetworkVar("Float",1,"Cooldown")
+		self:NetworkVar("String",0,"Model")
+	end
+	self:SetNWFloat("Caliber",self.DakCaliber)
+	self.FireRateMod = math.Clamp(self:GetRateOfFire(),0,1)
 
- 	self.muzzle = ents.Create("prop_physics")
- 	self.muzzle:SetAngles(self:GetForward():Angle()+Angle(0,-90,0))
- 	self.muzzle:SetPos(self:GetPos())
- 	self.muzzle:SetMoveType(MOVETYPE_NONE)
- 	self.muzzle:PhysicsInit(SOLID_NONE)
- 	self.muzzle:SetParent(self)
- 	self.muzzle:SetModel( "models/daktanks/smokelauncher40mm.mdl" )
- 	self.muzzle:DrawShadow(false)
- 	self.muzzle:SetColor( Color(255, 255, 255, 0) )
- 	self.muzzle:SetRenderMode( RENDERMODE_TRANSCOLOR )
- 	self.muzzle:Spawn()
- 	self.muzzle:Activate()
- 	self.muzzle:SetMoveType(MOVETYPE_NONE)
- 	self.muzzle:PhysicsInit(SOLID_NONE)
+	self.muzzle = ents.Create("prop_physics")
+	self.muzzle:SetAngles(self:GetForward():Angle()+Angle(0,-90,0))
+	self.muzzle:SetPos(self:GetPos())
+	self.muzzle:SetMoveType(MOVETYPE_NONE)
+	self.muzzle:PhysicsInit(SOLID_NONE)
+	self.muzzle:SetParent(self)
+	self.muzzle:SetModel( "models/daktanks/smokelauncher40mm.mdl" )
+	self.muzzle:DrawShadow(false)
+	self.muzzle:SetColor( Color(255, 255, 255, 0) )
+	self.muzzle:SetRenderMode( RENDERMODE_TRANSCOLOR )
+	self.muzzle:Spawn()
+	self.muzzle:Activate()
+	self.muzzle:SetMoveType(MOVETYPE_NONE)
+	self.muzzle:PhysicsInit(SOLID_NONE)
 end
 
 function ENT:Think()
 	self.FuzeDelay = self.Inputs.FuzeDelay.Value
-	if self.ScaleSet == true then 
+	if self.ScaleSet == true then
 		if self.DakGunType == nil then self:Remove() end
 		if not(self:GetModel() == self.DakModel) then
 			self:SetModel(self.DakModel)
@@ -170,7 +170,7 @@ function ENT:Think()
 					end
 				end
 			end
-			
+
 			--SmokeLauncher
 			if self.DakGunType == "Smoke Launcher" then
 				self.DakName = self.DakCaliber.."mm Smoke Launcher"
@@ -333,7 +333,7 @@ function ENT:Think()
 					end
 				end
 			end
-			
+
 			--SmokeLauncher
 			if self.DakGunType == "Smoke Launcher" then
 				self.DakName = self.DakCaliber.."mm Smoke Launcher"
@@ -476,7 +476,7 @@ util.AddNetworkString( "daktankshotfired" )
 function ENT:DakTEFire()
 	if ( self.Firing and self.DakDead ~= true) then
 		if IsValid(self.DakTankCore) then
-			self.AmmoCount = 0 
+			self.AmmoCount = 0
 			if not(self.DakTankCore.Ammoboxes == nil) then
 				for i = 1, #self.DakTankCore.Ammoboxes do
 					if IsValid(self.DakTankCore.Ammoboxes[i]) then
@@ -567,7 +567,7 @@ function ENT:DakTEFire()
 				else
 					Shell.FuzeDelay = self.FuzeDelay
 				end
-				DakTankShellList[#DakTankShellList+1] = Shell
+				DTTE.ShellList[#DTTE.ShellList+1] = Shell
 
 				local FiringSound = {self.DakFireSound1,self.DakFireSound2,self.DakFireSound3}
 
@@ -599,7 +599,7 @@ function ENT:DakTEFire()
 				--else
 				--	sound.Play( FiringSound[math.random(1,3)], self:GetPos(), 100, 100*math.Rand(0.95, 1.05), 1 )
 				--end
-							
+
 
 				local effectdata = EffectData()
 				local muzzlepos1
@@ -635,7 +635,7 @@ function ENT:DakTEFire()
 		end
 	end
 	if IsValid(self.DakTankCore) then
-		self.AmmoCount = 0 
+		self.AmmoCount = 0
 		if not(self.DakTankCore.Ammoboxes == nil) then
 			for i = 1, #self.DakTankCore.Ammoboxes do
 				if IsValid(self.DakTankCore.Ammoboxes[i]) then
@@ -713,7 +713,7 @@ function ENT:PreEntityCopy()
 
 	//Wire dupe info
 	self.BaseClass.PreEntityCopy( self )
-	
+
 end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
@@ -747,18 +747,3 @@ function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 	end
 	self.BaseClass.PostEntityPaste( self, Player, Ent, CreatedEntities )
 end
-
-
---[[
-function GetAncestor ( Entity )
-    if not IsValid(Entity) return end
-    
-    local Parent = Entity
-    
-    while Parent:GetParent() do
-        Parent = Parent:GetParent()
-    end
-    
-    return Parent
-end
-]]--

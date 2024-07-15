@@ -8,7 +8,7 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 			local CurPlayer = player.GetAll()[i]
 			if not(CurPlayer:InVehicle()) and CurPlayer:GetInfoNum( "EnableDakTankInfoScanner", 1 ) == 1 then
 				local HitEnt = CurPlayer:GetEyeTraceNoCursor().Entity
-				if CurPlayer.DakHudLastTarget == nil or CurPlayer.DakHudLastTarget ~= HitEnt or (HitEnt.Controller and util.TableToJSON( HitEnt.Controller.frontarmortable ) ~= CurPlayer.DakHudArmorLast) then
+				if CurPlayer.DakHudLastTarget == nil or CurPlayer.DakHudLastTarget ~= HitEnt or (HitEnt.Controller and HitEnt.Controller.frontarmortable and util.TableToJSON( HitEnt.Controller.frontarmortable ) ~= CurPlayer.DakHudArmorLast) then
 					if HitEnt.Controller then
 						local Target = HitEnt.Controller
 						if Target.Cost then
@@ -42,7 +42,7 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 							else
 								InfoTable1[10] = "-HP/T: 0."
 							end
-							
+
 							InfoTable1[11] = "-Crew Count: "..(#Target.Crew)
 
 							local info2count = 1
@@ -52,7 +52,7 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 							local GunsSorted = table.Copy( Target.Guns )
 							table.sort( GunsSorted, function(a, b)
 								if a.DakMass ~= nil and b.DakMass ~= nil then
-									return a.DakMass > b.DakMass 
+									return a.DakMass > b.DakMass
 								else
 									return false
 								end
@@ -80,7 +80,7 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 							local TurretsSorted = table.Copy( Target.TurretControls )
 							table.sort( TurretsSorted, function(a, b)
 								if a.DakMass ~= nil and b.DakMass ~= nil then
-									return a.DakMass > b.DakMass 
+									return a.DakMass > b.DakMass
 								else
 									return false
 								end
@@ -218,7 +218,7 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 									end
 								end
 							end
-							
+
 
 							--all clear
 							if info3count == 1 then
