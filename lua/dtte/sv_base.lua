@@ -232,7 +232,7 @@ hook.Add("Think", "DakTankShellTableFunction", function()
 								if shell.DakVelocity:Length() < 27559.1 and (shType == "HEAT" or shType == "HEATFS" or shType == "ATGM") and shell.ShotDown ~= 1  then --max vel of shell it can catch 700m/s based off en.wikipedia.org/wiki/Drozd
 									local APS = ents.FindByClass("dak_tankcore")
 									for i, apsCore in ipairs(APS) do
-										if apsCore.APSEnable then 
+										if apsCore.APSEnable then
 
 											local pos = apsCore:GetPos()
 											local dist = ShellTrace.HitPos:Distance(pos) -- If < 275, it's in range ~7m based off drozd again
@@ -255,7 +255,7 @@ hook.Add("Think", "DakTankShellTableFunction", function()
 													apsCore.APSShots = apsCore.APSShots - 1
 													shell.ShotDown = 1
 													ExpPos = pos + (ShellTrace.StartPos - pos):GetNormalized() * 275
-													break 
+													break
 												end
 											end
 										end

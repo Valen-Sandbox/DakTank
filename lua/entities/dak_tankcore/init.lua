@@ -318,14 +318,14 @@ function ENT:Initialize()
 end
 
 local function GetPhysCons(ent, Results)
-	local Results = Results or {}
+	Results = Results or {}
 	if not IsValid(ent) then return end
 	if Results[ent] then return end
 	Results[ent] = ent
 	local Constraints = constraint.GetTable(ent)
-	for k, v in ipairs(Constraints) do
+	for _, v in ipairs(Constraints) do
 		if not (v.Type == "NoCollide") and not (v.Type == "Rope") and not ((v.Type == "AdvBallsocket") and v.onlyrotation == 1) then
-			for i, Ent in pairs(v.Entity) do
+			for _, Ent in pairs(v.Entity) do
 				GetPhysCons(Ent.Entity, Results)
 			end
 		end
@@ -334,7 +334,7 @@ local function GetPhysCons(ent, Results)
 end
 
 local function GetParents(ent, Results)
-	local Results = Results or {}
+	Results = Results or {}
 	local Parent = ent:GetParent()
 	Results[ent] = ent
 	if IsValid(Parent) then GetParents(Parent, Results) end
@@ -343,7 +343,7 @@ end
 
 local function GetPhysicalConstraints(Ent, Table)
 	if not IsValid(Ent) then return end
-	local Table = Table or {}
+	Table = Table or {}
 	if Table[Ent] then return end
 	Table[Ent] = true
 	for _, V in ipairs(constraint.GetTable(Ent)) do
@@ -520,7 +520,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						end
 
 						--Setup crew armor and bounds tables
-						for i, crew in ipairs(selfTbl.Crew) do
+						for _, crew in ipairs(selfTbl.Crew) do
 							crew.FrontArmorTable = {}
 							crew.RearArmorTable = {}
 							crew.SideArmorTable = {}
@@ -538,7 +538,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 						--Check top and bottom bounds of vehicle for each crew position
 						selfTbl.RealBounds = {}
 						-- local ent, HitCrit, ThickestPos
-						for i, crew in ipairs(selfTbl.Crew) do
+						for _, crew in ipairs(selfTbl.Crew) do
 							local mins = crew:OBBMins() * 0.9
 							local maxs = crew:OBBMins() * 0.9
 
@@ -568,7 +568,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 
 								local _, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(aimPoint + upVec, aimPoint - downVec, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
 								if IsValid(ent) and ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 and (ThickestPos ~= aimPoint + upVec) then
-									crewTbl.TopBounds[#crewTbl.TopBounds + 1] = ThickestPos 
+									crewTbl.TopBounds[#crewTbl.TopBounds + 1] = ThickestPos
 								end
 
 								_, ent, _, _, _, _, HitCrit, _, _, _, _, ThickestPos = DTTE.GetArmorRecurseNoStop(aimPoint - upVec, aimPoint + downVec, selfTbl.MaxSize * 2, "AP", 75, player.GetAll(), self)
@@ -716,8 +716,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local ArmorVal1 = 0
 							local ent
 							local aimpos
-							local gunhit = 0
-							local gearhit = 0
 							local HitCrit = 0
 							local hitpos
 							local SpallLiner = 0
@@ -729,18 +727,16 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							for i = 1, #selfTbl.Crew do
 								for j = 1, #selfTbl.Crew[i].aimpoints do
 									aimpos = selfTbl.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] - forward * selfTbl.BestLength * 2, selfTbl.Crew[i].aimpoints[j] + forward * 25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, _, _, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] - forward * selfTbl.BestLength * 2, selfTbl.Crew[i].aimpoints[j] + forward * 25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
-										if ent.Controller == self and ent:GetClass() == "dak_crew" then
-											if HitCrit == 1 then
-												for k = 1, #Crews do
-													Crews[k].RearArmorTable[#Crews[k].RearArmorTable + 1] = Armors[k]
-												end
-
-												selfTbl.Crew[i].RearBounds[#selfTbl.Crew[i].RearBounds + 1] = ThickestPos
-												ArmorValTable[#ArmorValTable + 1] = ArmorVal1
-												if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
+										if ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 then
+											for k = 1, #Crews do
+												Crews[k].RearArmorTable[#Crews[k].RearArmorTable + 1] = Armors[k]
 											end
+
+											selfTbl.Crew[i].RearBounds[#selfTbl.Crew[i].RearBounds + 1] = ThickestPos
+											ArmorValTable[#ArmorValTable + 1] = ArmorVal1
+											if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
 										end
 
 										HitTable[#HitTable + 1] = hitpos
@@ -793,8 +789,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							local ArmorVal1 = 0
 							local ent
 							local aimpos
-							local gunhit = 0
-							local gearhit = 0
 							local HitCrit = 0
 							local hitpos
 							local SpallLiner = 0
@@ -806,18 +800,16 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							for i = 1, #selfTbl.Crew do
 								for j = 1, #selfTbl.Crew[i].aimpoints do
 									aimpos = selfTbl.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] - right * selfTbl.BestWidth * 2, selfTbl.Crew[i].aimpoints[j] + right * 25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, _, _, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] - right * selfTbl.BestWidth * 2, selfTbl.Crew[i].aimpoints[j] + right * 25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
-										if ent.Controller == self and ent:GetClass() == "dak_crew" then
-											if HitCrit == 1 then
-												for k = 1, #Crews do
-													Crews[k].SideArmorTable[#Crews[k].SideArmorTable + 1] = Armors[k]
-												end
-
-												selfTbl.Crew[i].LeftBounds[#selfTbl.Crew[i].LeftBounds + 1] = ThickestPos
-												ArmorValTable[#ArmorValTable + 1] = ArmorVal1
-												if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
+										if ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 then
+											for k = 1, #Crews do
+												Crews[k].SideArmorTable[#Crews[k].SideArmorTable + 1] = Armors[k]
 											end
+
+											selfTbl.Crew[i].LeftBounds[#selfTbl.Crew[i].LeftBounds + 1] = ThickestPos
+											ArmorValTable[#ArmorValTable + 1] = ArmorVal1
+											if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
 										end
 
 										HitTable[#HitTable + 1] = hitpos
@@ -833,18 +825,16 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							for i = 1, #selfTbl.Crew do
 								for j = 1, #selfTbl.Crew[i].aimpoints do
 									aimpos = selfTbl.Crew[i].aimpoints[j]
-									ArmorVal1, ent, _, _, gunhit, gearhit, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] + right * selfTbl.BestWidth * 2, selfTbl.Crew[i].aimpoints[j] - right * 25, distance, "AP", 75, player.GetAll(), self)
+									ArmorVal1, ent, _, _, _, _, HitCrit, hitpos, SpallLiner, Armors, Crews, ThickestPos = DTTE.GetArmorRecurseNoStop(selfTbl.Crew[i].aimpoints[j] + right * selfTbl.BestWidth * 2, selfTbl.Crew[i].aimpoints[j] - right * 25, distance, "AP", 75, player.GetAll(), self)
 									if IsValid(ent) then
-										if ent.Controller == self and ent:GetClass() == "dak_crew" then
-											if HitCrit == 1 then
-												for k = 1, #Crews do
-													Crews[k].SideArmorTable[#Crews[k].SideArmorTable + 1] = Armors[k]
-												end
-
-												selfTbl.Crew[i].RightBounds[#selfTbl.Crew[i].RightBounds + 1] = ThickestPos
-												ArmorValTable[#ArmorValTable + 1] = ArmorVal1
-												if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
+										if ent.Controller == self and ent:GetClass() == "dak_crew" and HitCrit == 1 then
+											for k = 1, #Crews do
+												Crews[k].SideArmorTable[#Crews[k].SideArmorTable + 1] = Armors[k]
 											end
+
+											selfTbl.Crew[i].RightBounds[#selfTbl.Crew[i].RightBounds + 1] = ThickestPos
+											ArmorValTable[#ArmorValTable + 1] = ArmorVal1
+											if SpallLiner == 1 then SpallLinerCount = SpallLinerCount + 1 end
 										end
 
 										HitTable[#HitTable + 1] = hitpos
@@ -900,7 +890,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							for i = 1, #selfTbl.Crew do
 								local crewMesh = selfTbl.Crew[i]:GetPhysicsObject():GetMesh()
 								for j = 1, #crewMesh do
-									for k, v in pairs(crewMesh[j]) do
+									for _, v in pairs(crewMesh[j]) do
 										CrewMeshs[#CrewMeshs + 1] = selfTbl.Crew[i]:LocalToWorld(v)
 									end
 								end
@@ -929,7 +919,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								local ammoBoxes = selfTbl.Guns[i].AmmoBoxes
 								local gunType = selfTbl.Guns[i].DakGunType
 								for j = 1, #selfTbl.Ammoboxes do
-									if not (selfTbl.Ammoboxes[j].DakAmmoType == "Flamethrower Fuel") then
+									if selfTbl.Ammoboxes[j].DakAmmoType ~= "Flamethrower Fuel" then
 										local splitString = string.Split(selfTbl.Ammoboxes[j].DakName, "m")[3]
 										if gunType == "Short Cannon" or gunType == "Short Autoloader" then
 											if splitString[1] == "S" and splitString[2] == "C" then table.insert(ammoBoxes, selfTbl.Ammoboxes[j]) end
@@ -1435,7 +1425,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											local TurretCost = math.log(RotationSpeed * 100, 100)
 											if self.TurretControls[i].RemoteWeapon == true then
 												self.TurretControls[i].CoreRemoteMult = math.Min(100 / WeaponMass, 1)
-												TurretCost = TurretCost * 1.5 
+												TurretCost = TurretCost * 1.5
 											end
 
 											if self.TurretControls[i]:GetFCS() == true then
@@ -1515,7 +1505,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 
 							--This is done like 3 times. It should be a local function. I can't be bothered to fix that right now though.
 							local turrets2 = {}
-							for i, turret in ipairs(turrets) do 
+							for i, turret in ipairs(turrets) do
 								local TurEnts = {}
 								if turret.WiredTurret ~= NULL then
 									table.insert(selfTbl.Contraption, turret.WiredTurret)
@@ -1641,7 +1631,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								end
 							end
 
-							--PrintTable(self.Contraption)
 							local hash = {}
 							local res = {}
 							for _, v in ipairs(selfTbl.Contraption) do
@@ -1740,28 +1729,24 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										CurrentRes.Controller = self
 									elseif CurrentRes:GetClass() == "prop_physics" then
 										CurrentRes.Controller = self
-										
-										--clip conversion
-										if CurrentRes.ClipData and #CurrentRes.ClipData > 0 then
-											if CurrentRes.ClipData[1].physics ~= true then
-												local Clips = {}
-												local curEnt = CurrentRes
-												DTTE.ArmorSanityCheck(CurrentRes)
-												local CurArmor = CurrentRes.DakArmor
-												for j, data in ipairs(CurrentRes.ClipData) do
-													local tbl = {
-														ent = CurrentRes,
-														armor = CurArmor,
-														n = data.n,
-														d = data.d,
-														inside = data.inside
-													}
-													table.insert(selfTbl.Clips, tbl)
-												end
 
-												ProperClipping.RemoveClips(CurrentRes)
-												CurrentRes.ClipData = {}
+										--clip conversion
+										if CurrentRes.ClipData and #CurrentRes.ClipData > 0 and CurrentRes.ClipData[1].physics ~= true then
+											DTTE.ArmorSanityCheck(CurrentRes)
+											local CurArmor = CurrentRes.DakArmor
+											for _, data in ipairs(CurrentRes.ClipData) do
+												local tbl = {
+													ent = CurrentRes,
+													armor = CurArmor,
+													n = data.n,
+													d = data.d,
+													inside = data.inside
+												}
+												table.insert(selfTbl.Clips, tbl)
 											end
+
+											ProperClipping.RemoveClips(CurrentRes)
+											CurrentRes.ClipData = {}
 										end
 
 										if CurrentRes.IsComposite == 1 then
@@ -1874,7 +1859,6 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								end
 							end
 
-							--PrintTable(self.Contraption)
 							if IsValid(self.Gearbox) then
 								self.Gearbox.TotalMass = Mass
 								self.Gearbox.ParentMass = ParentMass
@@ -2469,11 +2453,9 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								if selfTbl.HitBox[i] ~= NULL then if selfTbl.HitBox[i].Controller == self then if selfTbl.HitBox[i]:IsSolid() then selfTbl.CurMass = selfTbl.CurMass + selfTbl.HitBox[i]:GetPhysicsObject():GetMass() end end end
 							end
 
-							if not (selfTbl.CurMass > selfTbl.LastCurMass) then
-								if selfTbl.DamageCycle > 0 then
-									if selfTbl.LastRemake + 3 > CurTime() then selfTbl.DamageCycle = 0 end
-									selfTbl.CurrentHealth = selfTbl.CurrentHealth - selfTbl.DamageCycle
-								end
+							if selfTbl.CurMass <= selfTbl.LastCurMass and selfTbl.DamageCycle > 0 then
+								if selfTbl.LastRemake + 3 > CurTime() then selfTbl.DamageCycle = 0 end
+								selfTbl.CurrentHealth = selfTbl.CurrentHealth - selfTbl.DamageCycle
 							end
 
 							if selfTbl.CurrentHealth >= selfTbl.DakMaxHealth then
@@ -2496,7 +2478,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							if math.abs(curvel:Length() - selfTbl.LastVel:Length()) > 1000 then
 								local crewJobs = {"Gunner", "Driver", "Loader"}
 
-								for i, crew in ipairs(selfTbl.Crew) do
+								for _, crew in ipairs(selfTbl.Crew) do
 									crew.DakHealth = crew.DakHealth - ((curvel:Distance(selfTbl.LastVel) - 1000) / 100)
 									if crew.DakHealth <= 0 then
 										if crew.DakOwner:IsPlayer() then
@@ -2515,7 +2497,7 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 							--####################OPTIMIZE ZONE END###################--
 							if selfTbl.DakHealth then
 								local hasdriver = false
-								for i, seat in ipairs(selfTbl.Seats) do
+								for _, seat in ipairs(selfTbl.Seats) do
 									hasdriver = hasdriver or (IsValid(seat) and IsValid(seat:GetDriver()))
 								end
 
@@ -2734,12 +2716,11 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	local entids = {}
 	local CompositesIDs = {}
 	if self.Composites ~= nil then
 		if table.Count(self.Composites) > 0 then
 			for i = 1, table.Count(self.Composites) do
-				if not (self.Composites[i] == nil) then table.insert(CompositesIDs, self.Composites[i]:EntIndex()) end
+				if self.Composites[i] ~= nil then table.insert(CompositesIDs, self.Composites[i]:EntIndex()) end
 			end
 		end
 
@@ -2750,7 +2731,7 @@ function ENT:PreEntityCopy()
 	if self.ERA ~= nil then
 		if table.Count(self.ERA) > 0 then
 			for i = 1, table.Count(self.ERA) do
-				if not (self.ERA[i] == nil) then table.insert(ERAIDs, self.ERA[i]:EntIndex()) end
+				if self.ERA[i] ~= nil then table.insert(ERAIDs, self.ERA[i]:EntIndex()) end
 			end
 		end
 
@@ -2868,7 +2849,7 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 			end
 		end
 		]]
-		--
+
 		self.DakName = Ent.EntityMods.DakTek.DakName
 		self.DakHealth = Ent.EntityMods.DakTek.DakHealth
 		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
@@ -2884,7 +2865,7 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 	local maxx = {}
 	local maxy = {}
 	local maxz = {}
-	for k, v in pairs(CreatedEntities) do
+	for _, v in pairs(CreatedEntities) do
 		if IsValid(v) then
 			if v:GetPhysicsObject() and v:GetPhysicsObject():GetSurfaceArea() ~= nil and v:GetPhysicsObject():GetMass() > 1 then --get surface area checks if not made spherical to avoid getting wheels in here
 				mins = self:WorldToLocal(v:LocalToWorld(v:OBBMins()))
@@ -2907,9 +2888,7 @@ function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 	table.sort(maxz)
 	self.HitBoxMins = Vector(minx[1], miny[1], minz[1])
 	self.HitBoxMaxs = Vector(maxx[#maxx], maxy[#maxy], maxz[#maxz])
-	--print(self.HitBoxMins)
-	--print(self.HitBoxMaxs)
-	--print(self.HitBoxMaxs - self.HitBoxMins)
+
 	self.PreCostTimerFirst = CurTime()
 	self.DakOwner = Player
 	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
