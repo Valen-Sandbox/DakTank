@@ -20,28 +20,28 @@ net.Receive( "daktankcoredetail", function()
 		cur = DetailInfoTable[i]
 		Detailplate = ents.CreateClientProp( cur.Model )
 		parentent = ents.GetByIndex( cur.Parent )
-		--if parentent:IsValid() then
-		Detailplate:SetPos(parentent:LocalToWorld(cur.LocalPos))
-		Detailplate:SetAngles(parentent:LocalToWorldAngles(cur.LocalAng))
-		Detailplate:SetMaterial(cur.Mat)
-		Detailplate:SetBodyGroups(cur.Bodygroups)
-		Detailplate:SetSkin(cur.Skin)
-		for j=0, 31 do
-			Detailplate:SetSubMaterial( j, cur.SubMaterials[j] )
-		end
-		Detailplate:SetRenderMode(cur.RenderMode)
-		Detailplate:SetColor(cur.Col)
-		Detailplate:SetParent(parentent)
-		Detailplate:SetMoveType(MOVETYPE_NONE)
-		if cur.ClipData ~= nil then
-			for j=1, #cur.ClipData do
-				ProperClipping.AddVisualClip(Detailplate, cur.ClipData[j].n:Forward(), cur.ClipData[j].d, cur.ClipData[j].inside, false)
+		if parentent:IsValid() then --Not sure why this was commented out, given not having it can cause a lua error
+			Detailplate:SetPos(parentent:LocalToWorld(cur.LocalPos))
+			Detailplate:SetAngles(parentent:LocalToWorldAngles(cur.LocalAng))
+			Detailplate:SetMaterial(cur.Mat)
+			Detailplate:SetBodyGroups(cur.Bodygroups)
+			Detailplate:SetSkin(cur.Skin)
+			for j=0, 31 do
+				Detailplate:SetSubMaterial( j, cur.SubMaterials[j] )
+			end
+			Detailplate:SetRenderMode(cur.RenderMode)
+			Detailplate:SetColor(cur.Col)
+			Detailplate:SetParent(parentent)
+			Detailplate:SetMoveType(MOVETYPE_NONE)
+			if cur.ClipData ~= nil then
+				for j=1, #cur.ClipData do
+					ProperClipping.AddVisualClip(Detailplate, cur.ClipData[j].n:Forward(), cur.ClipData[j].d, cur.ClipData[j].inside, false)
+				end
+			end
+			if locPly[tostring( core )].Detail ~= nil then
+				locPly[tostring( core )].Detail[#locPly[tostring( core )].Detail+1] = Detailplate
 			end
 		end
-		if locPly[tostring( core )].Detail ~= nil then
-			locPly[tostring( core )].Detail[#locPly[tostring( core )].Detail+1] = Detailplate
-		end
-		--end
 	end
 end )
 
