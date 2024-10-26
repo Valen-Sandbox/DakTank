@@ -1025,12 +1025,10 @@ function ENT:Think()
 					local wheelTerrainBraking = 0
 					if wheelTerrainMult < 1 then
 						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
-						--[[
 						if selfTbl.Brakes <= 0 then
 							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
 							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(gravity.z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
 						end
-						--]]
 					end
 					wheelBraking[1] = max(selfTbl.RightBrake * brakestiffness, wheelTerrainBraking) * 2
 
@@ -1089,8 +1087,10 @@ function ENT:Think()
 						InAir = false
 					end
 
-					SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-					--SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					--SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					SuspensionForce[1] = 0
+					SuspensionForce[2] = 0
 
 					if not CurTrace.Hit then
 						lastchange = 0
@@ -1113,6 +1113,8 @@ function ENT:Think()
 
 					AbsorbForceFinal = max(0, AbsorbForceFinal * 2)
 					local AbsorbForceFinalVec = up * AbsorbForceFinal
+					AbsorbForceFinalVec[1] = 0
+					AbsorbForceFinalVec[2] = 0
 					selfTbl.phy:ApplyImpulseOffsetF_Optimized(TimeMult * ((rotatedforward * vector110) * (4 * (wheelTerrainMult * selfTbl.RightForce) / WheelsPerSide) + SuspensionForce + FrictionForceFinal + AbsorbForceFinalVec), ForcePos - centreMass)
 				end
 			end
@@ -1177,12 +1179,10 @@ function ENT:Think()
 					local wheelTerrainBraking = 0
 					if wheelTerrainMult < 1 then
 						wheelTerrainBraking = (1 - wheelTerrainMult) * 0.125
-						--[[
 						if selfTbl.Brakes <= 0 then
 							local fw = (selfTbl.MoveReverse <= 0 and -forward) or forward
 							selfTbl.phy:ApplyForceCenter( (selfTbl.RealInt * fw * selfTbl.PhysicalMass * abs(gravity.z) * math.sin(math.rad(ResistAng))) / (WheelsPerSide * 2 * 10) )
 						end
-						--]]
 					end
 					wheelBraking[1] = max(selfTbl.LeftBrake * brakestiffness, wheelTerrainBraking) * 2
 
@@ -1243,8 +1243,10 @@ function ENT:Think()
 						InAir = false
 					end
 
-					SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
-					--SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					--SuspensionForce = wheelweightforce + vector_up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					SuspensionForce = wheelweightforce + up * ((selfTbl.PhysicalMass * 1.2) * (min(Force, 10) / WheelsPerSide) * multval)
+					SuspensionForce[1] = 0
+					SuspensionForce[2] = 0
 
 					if not CurTrace.Hit then
 						lastchange = 0
@@ -1266,6 +1268,8 @@ function ENT:Think()
 
 					AbsorbForceFinal = max(0, AbsorbForceFinal * 2)
 					local AbsorbForceFinalVec = up * AbsorbForceFinal
+					AbsorbForceFinalVec[1] = 0
+					AbsorbForceFinalVec[2] = 0
 					selfTbl.phy:ApplyImpulseOffsetF_Optimized(TimeMult * ((rotatedforward * vector110) * (4 * (wheelTerrainMult * selfTbl.LeftForce) / WheelsPerSide) + SuspensionForce + FrictionForceFinal + AbsorbForceFinalVec), ForcePos - centreMass)
 				end
 			end
