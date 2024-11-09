@@ -1,6 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 ENT.DakOwner = NULL
 ENT.DakName = "Base Gun"
 ENT.DakModel = "models/daktanks/cannon25mm.mdl"
@@ -36,6 +37,7 @@ ENT.DakCrew = NULL
 ENT.BasicVelocity = 29527.6
 ENT.muzzle = NULL
 ENT.AutoLoaders = {}
+
 function ENT:Initialize()
 	self.ShellLoaded = 0
 	self.ShellLoaded2 = 0
@@ -103,7 +105,7 @@ function ENT:Think()
 	selfTbl.FuzeDelay = selfTbl.Inputs.FuzeDelay.Value
 	if selfTbl.ScaleSet == true then
 		if selfTbl.DakGunType == nil then self:Remove() end
-		if not (self:GetModel() == selfTbl.DakModel) then
+		if self:GetModel() ~= selfTbl.DakModel then
 			self:SetModel(selfTbl.DakModel)
 			self:SetMoveType(MOVETYPE_VPHYSICS)
 			self:SetSolid(SOLID_VPHYSICS)
@@ -1890,6 +1892,7 @@ function ENT:DakTEAutoAmmoCheck()
 	WireLib.TriggerOutput(self, "MuzzleVel", selfTbl.DakShellVelocity)
 	WireLib.TriggerOutput(self, "ShellMass", selfTbl.DakShellMass)
 	WireLib.TriggerOutput(self, "Penetration", selfTbl.DakShellPenetration)
+
 	if IsValid(selfTbl.DakTankCore) then
 		selfTbl.AmmoCount = 0
 		selfTbl.SortedAmmo = {}
@@ -2179,7 +2182,8 @@ function ENT:DakTEAutoFire()
 end
 
 function ENT:DakTEAutoGunAmmoSwap()
-	local Propellant = math.Clamp(self:GetPropellant(), 10, 100) * 0.01
+	-- local Propellant = math.Clamp(self:GetPropellant(), 10, 100) * 0.01
+
 	if self.AmmoSwap then
 		self.CurrentAmmoType = self.CurrentAmmoType + 1
 		if self.CurrentAmmoType > 11 then self.CurrentAmmoType = 1 end
@@ -2190,6 +2194,7 @@ function ENT:DakTEAutoGunAmmoSwap()
 	self.timer = CurTime()
 	self.timer2 = CurTime()
 	self.LastFireTime = CurTime()
+
 	if self.CurrentAmmoType == 1 then
 		WireLib.TriggerOutput(self, "AmmoType", "Armor Piercing")
 		self.DakAmmoType = self.DakAP
@@ -2200,9 +2205,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellPenetration = self.BaseDakShellPenetration
 		self.DakShellVelocity = self.BaseDakShellVelocity
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 2 then
@@ -2215,9 +2217,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellPenetration = self.DakMaxHealth * 0.2
 		self.DakShellVelocity = self.BaseDakShellVelocity
 		self.DakShellFragPen = self.DakBaseShellFragPen * 0.1
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 3 then
@@ -2232,9 +2231,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 0.75
 		self.DakPenLossPerMeter = 0.0
 		self.DakShellFragPen = self.DakBaseShellFragPen * 0.75 * 0.1
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 4 then
@@ -2248,9 +2244,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 4 / 3
 		self.DakPenLossPerMeter = 0.001
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 5 then
@@ -2264,9 +2257,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity
 		self.DakPenLossPerMeter = 0.0
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 6 then
@@ -2281,9 +2271,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = 12600
 		self.DakPenLossPerMeter = 0.0
 		self.DakShellFragPen = self.DakBaseShellFragPen * 0.75 * 0.1
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 7 then
@@ -2298,9 +2285,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 1.3333
 		self.DakPenLossPerMeter = 0.0
 		self.DakShellFragPen = self.DakBaseShellFragPen * 0.75 * 0.1
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 8 then
@@ -2314,9 +2298,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 2.394
 		self.DakPenLossPerMeter = 0.001
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 9 then
@@ -2330,9 +2311,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity
 		self.DakPenLossPerMeter = 0.0005
 		self.DakShellFragPen = self.DakBaseShellFragPen * 0.1
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 10 then
@@ -2346,9 +2324,6 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 4 / 3
 		self.DakPenLossPerMeter = 0.001
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
 
 	if self.CurrentAmmoType == 11 then
@@ -2362,10 +2337,11 @@ function ENT:DakTEAutoGunAmmoSwap()
 		self.DakShellVelocity = self.BaseDakShellVelocity * 0.42
 		self.DakPenLossPerMeter = 0.001
 		self.DakShellFragPen = 0
-		WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
-		WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
-		WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 	end
+
+	WireLib.TriggerOutput(self, "MuzzleVel", self.DakShellVelocity)
+	WireLib.TriggerOutput(self, "ShellMass", self.DakShellMass)
+	WireLib.TriggerOutput(self, "Penetration", self.DakShellPenetration)
 
 	if IsValid(self.DakTankCore) then
 		self.AmmoCount = 0

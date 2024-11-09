@@ -1,11 +1,12 @@
 local LastThink = CurTime()
-util.AddNetworkString( "daktankhud" )
-util.AddNetworkString( "daktankhud2" )
-util.AddNetworkString( "daktankhud3" )
+
+util.AddNetworkString("daktankhud")
+util.AddNetworkString("daktankhud2")
+util.AddNetworkString("daktankhud3")
+
 hook.Add( "Think", "DakTankInfoScannerFunction", function()
-	if CurTime()-1 >= LastThink then
-		for i=1, #player.GetAll() do
-			local CurPlayer = player.GetAll()[i]
+	if CurTime() - 1 >= LastThink then
+		for _, CurPlayer in player.Iterator() do
 			if not(CurPlayer:InVehicle()) and CurPlayer:GetInfoNum( "EnableDakTankInfoScanner", 1 ) == 1 then
 				local HitEnt = CurPlayer:GetEyeTraceNoCursor().Entity
 				if CurPlayer.DakHudLastTarget == nil or CurPlayer.DakHudLastTarget ~= HitEnt or (HitEnt.Controller and HitEnt.Controller.frontarmortable and util.TableToJSON( HitEnt.Controller.frontarmortable ) ~= CurPlayer.DakHudArmorLast) then

@@ -2,11 +2,11 @@ local DTTE = DTTE
 local math = math
 local bmax = 16384
 local bmin = -bmax
+
 hook.Add("InitPostEntity", "DakTekTankEditionRunOnLoadHook", function()
 	local Settings = physenv.GetPerformanceSettings() -- copy table from physenfv
 	Settings.MaxVelocity = 1000000 -- change max velocity
 	physenv.SetPerformanceSettings(Settings) -- push max velocity back into engine.
-	print("DakTekTankEditionLoaded")
 end)
 
 function DTTE.CheckSpherical(ent)
