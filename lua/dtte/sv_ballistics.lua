@@ -582,6 +582,58 @@ function DTShellAirBurst(HitPos, Shell, Normal)
 	Shell.DakDamage = 0
 end
 
+local function DestroyEnt(Ent, Filter, Shell)
+	if Ent.DakHealth > 0 or Ent.DakPooled ~= 0 then return end
+
+	local class = Ent:GetClass()
+
+	if class == "dak_crew" then
+		for _ = 1, 15 do
+			util.Decal("Blood", Ent:GetPos(), Ent:GetPos() + (VectorRand() * 500), Ent)
+		end
+	end
+
+	Filter[#Filter + 1] = Ent
+
+	if string.Explode("_", class, false)[1] == "dak" then
+		local owner = Ent.DakOwner
+
+		if class ~= "dak_tesalvage" and owner:IsValid() and owner:IsPlayer() and Ent.DakDead ~= true then
+			if class == "dak_crew" then
+				if Ent.Job == 1 then
+					owner:ChatPrint("Gunner Killed!")
+				elseif Ent.Job == 2 then
+					owner:ChatPrint("Driver Killed!")
+				elseif Ent.Job == 3 then
+					owner:ChatPrint("Loader Killed!")
+				else
+					owner:ChatPrint("Passenger Killed!")
+				end
+				Ent:SetMaterial("models/flesh")
+			else
+				owner:ChatPrint(Ent.DakName .. " Destroyed!")
+				Ent:SetMaterial("models/props_buildings/plasterwall021a")
+				Ent:SetColor(Color(100,100,100,255))
+			end
+		end
+
+		Ent.DakDead = true
+	else
+		local salvage = ents.Create("dak_tesalvage")
+		Shell.salvage = salvage
+		salvage.DakModel = Ent:GetModel()
+		salvage:SetPos(Ent:GetPos())
+		salvage:SetAngles(Ent:GetAngles())
+		salvage:Spawn()
+		Filter[#Filter + 1] = salvage
+		Ent:Remove()
+	end
+
+	if Shell.salvage then
+		Shell.Filter[#Shell.Filter + 1] = Shell.salvage
+	end
+end
+
 local function KillEnemy(Ent, Owner, Shell, TraceCount, Damage, DamageMult)
 	if not Ent:IsValid() then return end
 
@@ -604,19 +656,19 @@ local function KillEnemy(Ent, Owner, Shell, TraceCount, Damage, DamageMult)
 			end
 		else
 			local Pain = DamageInfo()
-			Pain:SetDamageForce( Direction * (Damage / TraceCount) * DamageMult * 10 * Shell.DakMass )
-			Pain:SetDamage( (Damage / TraceCount) * DamageMult )
+			Pain:SetDamageForce(Direction * (Damage / TraceCount) * DamageMult * 10 * Shell.DakMass)
+			Pain:SetDamage((Damage / TraceCount) * DamageMult)
 			if Owner:IsPlayer() and Shell and Shell.DakGun then
-				Pain:SetAttacker( Owner )
-				Pain:SetInflictor( Shell.DakGun )
+				Pain:SetAttacker(Owner)
+				Pain:SetInflictor(Shell.DakGun)
 			else
-				Pain:SetAttacker( game.GetWorld() )
-				Pain:SetInflictor( game.GetWorld() )
+				Pain:SetAttacker(game.GetWorld())
+				Pain:SetInflictor(game.GetWorld())
 			end
-			Pain:SetReportedPosition( Shell.DakGun:GetPos() )
-			Pain:SetDamagePosition( Ent:GetPos() )
+			Pain:SetReportedPosition(Shell.DakGun:GetPos())
+			Pain:SetDamagePosition(Ent:GetPos())
 			Pain:SetDamageType(DMG_BLAST)
-			Ent:TakeDamageInfo( Pain )
+			Ent:TakeDamageInfo(Pain)
 		end
 	end
 end
@@ -1121,50 +1173,8 @@ local function DTShellContinue(Start, End, Shell, Normal, HitNonHitable)
 							end
 						end
 					end
-					if HitEnt.DakHealth <= 0 and HitEnt.DakPooled == 0 then
-						if HitEnt:GetClass() == "dak_crew" then
-							if HitEnt.DakHealth <= 0 then
-								for blood = 1, 15 do
-									util.Decal( "Blood", HitEnt:GetPos(), HitEnt:GetPos() + (VectorRand() * 500), HitEnt)
-								end
-							end
-						end
-						Shell.Filter[#Shell.Filter + 1] = HitEnt
-						if (string.Explode("_",HitEnt:GetClass(),false)[1] == "dak") then
-							local PrintEnt = HitEnt
-							if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-								if PrintEnt:GetClass() == "dak_crew" then
-									if PrintEnt.Job == 1 then
-										PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-									elseif PrintEnt.Job == 2 then
-										PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-									elseif PrintEnt.Job == 3 then
-										PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-									else
-										PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-									end
-									PrintEnt:SetMaterial("models/flesh")
-								else
-									PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-									PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-									PrintEnt:SetColor(Color(100,100,100,255))
-								end
-							end
-							PrintEnt.DakDead = true
-						else
-							local salvage = ents.Create( "dak_tesalvage" )
-							Shell.salvage = salvage
-							salvage.DakModel = HitEnt:GetModel()
-							salvage:SetPos( HitEnt:GetPos())
-							salvage:SetAngles( HitEnt:GetAngles())
-							salvage:Spawn()
-							Shell.Filter[#Shell.Filter + 1] = salvage
-							HitEnt:Remove()
-						end
-						if Shell.salvage then
-							Shell.Filter[#Shell.Filter + 1] = Shell.salvage
-						end
-					end
+
+					DestroyEnt(HitEnt, Shell.Filter, Shell)
 				end
 			end
 			if HitEnt:IsValid() then
@@ -1517,47 +1527,8 @@ local function ContEXP(Filter, IgnoreEnt, Pos, Damage, Radius, Caliber, Pen, Own
 				Filter[#Filter + 1] = IgnoreEnt
 				ContEXP(Filter, ExpTrace.Entity, Pos, Damage * (1 - EffArmor / Pen), Radius, Caliber, Pen - EffArmor, Owner, Direction, Shell, Recurses)
 			end
-			if ExpTrace.Entity.DakHealth <= 0 and ExpTrace.Entity.DakPooled == 0 then
-				if ExpTrace.Entity:GetClass() == "dak_crew" then
-					if ExpTrace.Entity.DakHealth <= 0 then
-						for blood = 1, 15 do
-							util.Decal( "Blood", ExpTrace.Entity:GetPos(), ExpTrace.Entity:GetPos() + (VectorRand() * 500), ExpTrace.Entity)
-						end
-					end
-				end
-				Filter[#Filter + 1] = ExpTrace.Entity
-				if (string.Explode("_",ExpTrace.Entity:GetClass(),false)[1] == "dak") then
-					local PrintEnt = ExpTrace.Entity
-					if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-						if PrintEnt:GetClass() == "dak_crew" then
-							if PrintEnt.Job == 1 then
-								PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-							elseif PrintEnt.Job == 2 then
-								PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-							elseif PrintEnt.Job == 3 then
-								PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-							else
-								PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-							end
-							PrintEnt:SetMaterial("models/flesh")
-						else
-							PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-							PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-							PrintEnt:SetColor(Color(100,100,100,255))
-						end
-					end
-					PrintEnt.DakDead = true
-				else
-					local salvage = ents.Create( "dak_tesalvage" )
-					Shell.salvage = salvage
-					salvage.DakModel = ExpTrace.Entity:GetModel()
-					salvage:SetPos( ExpTrace.Entity:GetPos())
-					salvage:SetAngles( ExpTrace.Entity:GetAngles())
-					salvage:Spawn()
-					Filter[#Filter + 1] = salvage
-					ExpTrace.Entity:Remove()
-				end
-			end
+
+			DestroyEnt(ExpTrace.Entity, Filter, Shell)
 		end
 		if (ExpTrace.Entity:IsValid()) and not(ExpTrace.Entity:IsNPC()) and not(ExpTrace.Entity:IsPlayer()) then
 			ExpTrace.Entity:DTHEApplyForce(ExpTrace.HitPos, Pos, Damage, traces, 0.35)
@@ -1657,47 +1628,8 @@ function DTAPHE(Pos, Damage, Radius, Caliber, Pen, Owner, Shell, HitEnt)
 						end
 						ContEXP(Filter,ExpTrace.Entity,Pos,Damage * (1-EffArmor / Pen),Radius,Caliber,Pen-EffArmor,Owner,Direction,Shell)
 					end
-					if ExpTrace.Entity.DakHealth <= 0 and ExpTrace.Entity.DakPooled == 0 then
-						if ExpTrace.Entity:GetClass() == "dak_crew" then
-							if ExpTrace.Entity.DakHealth <= 0 then
-								for blood = 1, 15 do
-									util.Decal( "Blood", ExpTrace.Entity:GetPos(), ExpTrace.Entity:GetPos() + (VectorRand() * 500), ExpTrace.Entity)
-								end
-							end
-						end
-						Filter[#Filter + 1] = ExpTrace.Entity
-						if (string.Explode("_",ExpTrace.Entity:GetClass(),false)[1] == "dak") then
-							local PrintEnt = ExpTrace.Entity
-							if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-								if PrintEnt:GetClass() == "dak_crew" then
-									if PrintEnt.Job == 1 then
-										PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-									elseif PrintEnt.Job == 2 then
-										PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-									elseif PrintEnt.Job == 3 then
-										PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-									else
-										PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-									end
-									PrintEnt:SetMaterial("models/flesh")
-								else
-									PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-									PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-									PrintEnt:SetColor(Color(100,100,100,255))
-								end
-							end
-							PrintEnt.DakDead = true
-						else
-							local salvage = ents.Create( "dak_tesalvage" )
-							Shell.salvage = salvage
-							salvage.DakModel = ExpTrace.Entity:GetModel()
-							salvage:SetPos( ExpTrace.Entity:GetPos())
-							salvage:SetAngles( ExpTrace.Entity:GetAngles())
-							salvage:Spawn()
-							Filter[#Filter + 1] = salvage
-							ExpTrace.Entity:Remove()
-						end
-					end
+
+					DestroyEnt(ExpTrace.Entity, Filter, Shell)
 				end
 				if (ExpTrace.Entity:IsValid()) and not(ExpTrace.Entity:IsNPC()) and not(ExpTrace.Entity:IsPlayer()) and ExpTrace.Entity.Base ~= "base_nextbot" then
 					ExpTrace.Entity:DTHEApplyForce(ExpTrace.HitPos, Pos, Damage, traces, 0.35)
@@ -1710,8 +1642,7 @@ function DTAPHE(Pos, Damage, Radius, Caliber, Pen, Owner, Shell, HitEnt)
 end
 
 function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
-	if nocheck == true then
-	else
+	if nocheck ~= true then
 		local newtrace = {}
 			newtrace.start = Pos - (Shell.DakVelocity:GetNormalized() * 1000)
 			newtrace.endpos = Pos + (Shell.DakVelocity:GetNormalized() * 1000)
@@ -1889,47 +1820,8 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 										end
 										ContEXP(Filter,ExpTrace.Entity,Pos,Damage * (1-EffArmor / Pen),Radius,Caliber,Pen-EffArmor,Owner,Direction,Shell)
 									end
-									if ExpTrace.Entity.DakHealth <= 0 and ExpTrace.Entity.DakPooled == 0 then
-										if ExpTrace.Entity:GetClass() == "dak_crew" then
-											if ExpTrace.Entity.DakHealth <= 0 then
-												for blood = 1, 15 do
-													util.Decal( "Blood", ExpTrace.Entity:GetPos(), ExpTrace.Entity:GetPos() + (VectorRand() * 500), ExpTrace.Entity)
-												end
-											end
-										end
-										Filter[#Filter + 1] = ExpTrace.Entity
-										if (string.Explode("_",ExpTrace.Entity:GetClass(),false)[1] == "dak") then
-											local PrintEnt = ExpTrace.Entity
-											if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-												if PrintEnt:GetClass() == "dak_crew" then
-													if PrintEnt.Job == 1 then
-														PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-													elseif PrintEnt.Job == 2 then
-														PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-													elseif PrintEnt.Job == 3 then
-														PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-													else
-														PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-													end
-													PrintEnt:SetMaterial("models/flesh")
-												else
-													PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-													PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-													PrintEnt:SetColor(Color(100,100,100,255))
-												end
-											end
-											PrintEnt.DakDead = true
-										else
-											local salvage = ents.Create( "dak_tesalvage" )
-											Shell.salvage = salvage
-											salvage.DakModel = ExpTrace.Entity:GetModel()
-											salvage:SetPos( ExpTrace.Entity:GetPos())
-											salvage:SetAngles( ExpTrace.Entity:GetAngles())
-											salvage:Spawn()
-											Filter[#Filter + 1] = salvage
-											ExpTrace.Entity:Remove()
-										end
-									end
+
+									DestroyEnt(ExpTrace.Entity, Filter, Shell)
 								end
 								if (ExpTrace.Entity:IsValid()) and not(ExpTrace.Entity:IsNPC()) and not(ExpTrace.Entity:IsPlayer()) and ExpTrace.Entity.Base ~= "base_nextbot" then
 									ExpTrace.Entity:DTHEApplyForce(ExpTrace.HitPos, Pos, Damage, traces, 0.35)
@@ -2007,14 +1899,9 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 											ExpPain:SetDamage( Damage * 1 * (1 - (Dist / Radius)) )
 										end
 									end
-									if Owner ~= nil then
-										if Owner:IsValid() and Owner:IsPlayer() and Shell and Shell.DakGun then
-											ExpPain:SetAttacker( Owner )
-											ExpPain:SetInflictor( Shell.DakGun )
-										else
-											ExpPain:SetAttacker( game.GetWorld() )
-											ExpPain:SetInflictor( game.GetWorld() )
-										end
+									if Owner ~= nil and Owner:IsValid() and Owner:IsPlayer() and Shell and Shell.DakGun then
+										ExpPain:SetAttacker( Owner )
+										ExpPain:SetInflictor( Shell.DakGun )
 									else
 										ExpPain:SetAttacker( game.GetWorld() )
 										ExpPain:SetInflictor( game.GetWorld() )
@@ -2037,105 +1924,37 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 
 		for i = 1, #Shell.DakDamageList do
 			local CurTarget = Shell.DakDamageList[i]
-			local HPPerc = 0
-			if IsValid(CurTarget) then
-				if IsValid(CurTarget:CPPIGetOwner()) and CurTarget:CPPIGetOwner():IsPlayer() then
-					if CurTarget:CPPIGetOwner():IsWorld() then
-						if CurTarget.DakIsTread == nil then
-							if CurTarget:GetPos():Distance(Pos) > Radius / 2 then
-								if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-									DTDealDamage(CurTarget, math.Clamp(( (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)) ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									DTDealDamage(CurTarget.Controller, math.Clamp(( (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								else
-									DTDealDamage(CurTarget, math.Clamp(( (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)) ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								end
-							else
-								if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-									DTDealDamage(CurTarget, math.Clamp(( (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)) ) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									DTDealDamage(CurTarget.Controller, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								else
-									DTDealDamage(CurTarget, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								end
-							end
-						end
-						CurTarget.DakLastDamagePos = Pos
-						if CurTarget.DakHealth <= 0 and CurTarget.DakPooled == 0 then
-							if CurTarget:GetClass() == "dak_crew" then
-								if CurTarget.DakHealth <= 0 then
-									for blood = 1, 15 do
-										util.Decal( "Blood", CurTarget:GetPos(), CurTarget:GetPos() + (VectorRand() * 500), CurTarget)
-									end
-								end
-							end
-							Shell.RemoveList[#Shell.RemoveList + 1] = CurTarget
-							--table.insert(Shell.RemoveList,CurTarget)
-						end
+
+			if IsValid(CurTarget) and CanDamage(CurTarget) then
+				if CurTarget.DakIsTread == nil then
+					local TargetArmor = DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)
+					local TargetDist = CurTarget:GetPos():Distance(Pos)
+					local DamageMult = TargetDist > Radius / 2 and 1 - (TargetDist / Radius) or 1
+					local InitialDamage = ((Damage / table.Count(Shell.DakDamageList)) * (Pen / TargetArmor)) * DamageMult
+					local TargetClass = CurTarget:GetClass()
+
+					if TargetClass == "dak_tegun" or TargetClass == "dak_temachinegun" or TargetClass == "dak_teautogun" then
+						DTDealDamage(CurTarget, math.Clamp(InitialDamage * 0.001, 0, TargetArmor * 2), Shell.DakGun)
+						DTDealDamage(CurTarget.Controller, math.Clamp(InitialDamage, 0, TargetArmor * 2), Shell.DakGun)
 					else
-						if CurTarget:CPPIGetOwner():HasGodMode() == false and not(CurTarget:CPPIGetOwner():IsWorld()) then
-							if CurTarget.DakIsTread == nil then
-								if CurTarget:GetPos():Distance(Pos) > Radius / 2 then
-									if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-										DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-										DTDealDamage(CurTarget.Controller, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									else
-										DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									end
-								else
-									if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-										DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-										DTDealDamage(CurTarget.Controller, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									else
-										DTDealDamage(CurTarget, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-									end
-								end
-							end
-							CurTarget.DakLastDamagePos = Pos
-							if CurTarget.DakHealth <= 0 and CurTarget.DakPooled == 0 then
-								if CurTarget:GetClass() == "dak_crew" then
-									if CurTarget.DakHealth <= 0 then
-										for blood = 1, 15 do
-											util.Decal( "Blood", CurTarget:GetPos(), CurTarget:GetPos() + (VectorRand() * 500), CurTarget)
-										end
-									end
-								end
-								Shell.RemoveList[#Shell.RemoveList + 1] = CurTarget
-								--table.insert(Shell.RemoveList,CurTarget)
-							end
+						DTDealDamage(CurTarget, math.Clamp(InitialDamage, 0, TargetArmor * 2), Shell.DakGun)
+					end
+				end
+
+				CurTarget.DakLastDamagePos = Pos
+
+				if CurTarget.DakHealth <= 0 and CurTarget.DakPooled == 0 then
+					if CurTarget:GetClass() == "dak_crew" and CurTarget.DakHealth <= 0 then
+						for _ = 1, 15 do
+							util.Decal("Blood", CurTarget:GetPos(), CurTarget:GetPos() + (VectorRand() * 500), CurTarget)
 						end
 					end
-				else
-					if CurTarget.DakIsTread == nil then
-						if CurTarget:GetPos():Distance(Pos) > Radius / 2 then
-							if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-								DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								DTDealDamage(CurTarget.Controller, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-							else
-								DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * (1 - (CurTarget:GetPos():Distance(Pos) / Radius)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-							end
-						else
-							if CurTarget:GetClass() == "dak_tegun" or CurTarget:GetClass() == "dak_temachinegun" or CurTarget:GetClass() == "dak_teautogun" then
-								DTDealDamage(CurTarget, math.Clamp((  (Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber))  ) * 0.001,0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-								DTDealDamage(CurTarget.Controller, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-							else
-								DTDealDamage(CurTarget, math.Clamp((Damage / table.Count(Shell.DakDamageList)) * (Pen / DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(CurTarget, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
-							end
-						end
-					end
-					CurTarget.DakLastDamagePos = Pos
-					if CurTarget.DakHealth <= 0 and CurTarget.DakPooled == 0 then
-						if CurTarget:GetClass() == "dak_crew" then
-							if CurTarget.DakHealth <= 0 then
-								for blood = 1, 15 do
-									util.Decal( "Blood", CurTarget:GetPos(), CurTarget:GetPos() + (VectorRand() * 500), CurTarget)
-								end
-							end
-						end
-						Shell.RemoveList[#Shell.RemoveList + 1] = CurTarget
-						--table.insert(Shell.RemoveList,CurTarget)
-					end
+					Shell.RemoveList[#Shell.RemoveList + 1] = CurTarget
+					--table.insert(Shell.RemoveList,CurTarget)
 				end
 			end
 		end
+
 		for i = 1, #Shell.RemoveList do
 			if (string.Explode("_",Shell.RemoveList[i]:GetClass(),false)[1] == "dak") then
 				local PrintEnt = Shell.RemoveList[i]
@@ -2273,54 +2092,14 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 							end
 							ContEXP(Filter,ExpTrace.Entity,Pos,Damage * (1-EffArmor / Pen),Radius,Caliber,Pen-EffArmor,Owner,Direction,Shell)
 						end
-						if ExpTrace.Entity.DakHealth <= 0 and ExpTrace.Entity.DakPooled == 0 then
-							if ExpTrace.Entity:GetClass() == "dak_crew" then
-								if ExpTrace.Entity.DakHealth <= 0 then
-									for blood = 1, 15 do
-										util.Decal( "Blood", ExpTrace.Entity:GetPos(), ExpTrace.Entity:GetPos() + (VectorRand() * 500), ExpTrace.Entity)
-									end
-								end
-							end
-							Filter[#Filter + 1] = ExpTrace.Entity
-							if (string.Explode("_",ExpTrace.Entity:GetClass(),false)[1] == "dak") then
-								local PrintEnt = ExpTrace.Entity
-								if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-									if PrintEnt:GetClass() == "dak_crew" then
-										if PrintEnt.Job == 1 then
-											PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-										elseif PrintEnt.Job == 2 then
-											PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-										elseif PrintEnt.Job == 3 then
-											PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-										else
-											PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-										end
-										PrintEnt:SetMaterial("models/flesh")
-									else
-										PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-										PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-										PrintEnt:SetColor(Color(100,100,100,255))
-									end
-								end
-								PrintEnt.DakDead = true
-							else
-								local salvage = ents.Create( "dak_tesalvage" )
-								Shell.salvage = salvage
-								salvage.DakModel = ExpTrace.Entity:GetModel()
-								salvage:SetPos( ExpTrace.Entity:GetPos())
-								salvage:SetAngles( ExpTrace.Entity:GetAngles())
-								salvage:Spawn()
-								Filter[#Filter + 1] = salvage
-								ExpTrace.Entity:Remove()
-							end
-						end
+
+						DestroyEnt(ExpTrace.Entity, Filter, Shell)
 					end
 					if (ExpTrace.Entity:IsValid()) and not(ExpTrace.Entity:IsNPC()) and not(ExpTrace.Entity:IsPlayer()) and ExpTrace.Entity.Base ~= "base_nextbot" then
 						ExpTrace.Entity:DTHEApplyForce(ExpTrace.HitPos, Pos, Damage, traces, 0.35)
 					end
 				end
 
-				--print((Damage / traces) * 1)
 				KillEnemy(ExpTrace.Entity, Owner, Shell, traces, Damage, 1)
 			end
 		end
@@ -2401,47 +2180,9 @@ local function ContSpall(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, 
 					DTDealDamage(SpallTrace.Entity, math.Clamp(Damage * (Pen / DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
 				end
 			end
-			if SpallTrace.Entity.DakHealth <= 0 and SpallTrace.Entity.DakPooled == 0 then
-				if SpallTrace.Entity:GetClass() == "dak_crew" then
-					if SpallTrace.Entity.DakHealth <= 0 then
-						for blood = 1, 15 do
-							util.Decal( "Blood", SpallTrace.Entity:GetPos(), SpallTrace.Entity:GetPos() + (VectorRand() * 500), SpallTrace.Entity)
-						end
-					end
-				end
-				Filter[#Filter + 1] = SpallTrace.Entity
-				if (string.Explode("_",SpallTrace.Entity:GetClass(),false)[1] == "dak") then
-					local PrintEnt = SpallTrace.Entity
-					if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-						if PrintEnt:GetClass() == "dak_crew" then
-							if PrintEnt.Job == 1 then
-								PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-							elseif PrintEnt.Job == 2 then
-								PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-							elseif PrintEnt.Job == 3 then
-								PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-							else
-								PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-							end
-							PrintEnt:SetMaterial("models/flesh")
-						else
-							PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-							PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-							PrintEnt:SetColor(Color(100,100,100,255))
-						end
-					end
-					PrintEnt.DakDead = true
-				else
-					local salvage = ents.Create( "dak_tesalvage" )
-					Shell.salvage = salvage
-					salvage.DakModel = SpallTrace.Entity:GetModel()
-					salvage:SetPos( SpallTrace.Entity:GetPos())
-					salvage:SetAngles( SpallTrace.Entity:GetAngles())
-					salvage:Spawn()
-					Filter[#Filter + 1] = salvage
-					SpallTrace.Entity:Remove()
-				end
-			end
+
+			DestroyEnt(SpallTrace.Entity, Filter, Shell)
+
 			local EffArmor = (DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber) / math.abs(SpallTrace.HitNormal:Dot(Direction)))
 			if SpallTrace.Entity.IsComposite == 1 or (SpallTrace.Entity:CPPIGetOwner() ~= nil and SpallTrace.Entity:CPPIGetOwner():IsWorld()) then
 				if SpallTrace.Entity.EntityMods == nil then SpallTrace.Entity.EntityMods = {} end
@@ -2534,7 +2275,7 @@ function DTSpall(Pos,Armor,HitEnt,Caliber,Pen,Owner,Shell,Dir)
 	--	SpallDamage = SpallDamage * (traces / 50)
 	--	traces = 50
 	--end
-	local DEBUGSpallDamage = 0
+
 	for i = 1, traces do
 		local Filter = table.Copy( Shell.Filter )
 		local Direction = ((Angle(math.Rand(-Ang,Ang),math.Rand(-Ang,Ang),math.Rand(-Ang,Ang))) + Dir:Angle()):Forward()
@@ -2603,48 +2344,9 @@ function DTSpall(Pos,Armor,HitEnt,Caliber,Pen,Owner,Shell,Dir)
 							DTDealDamage(SpallTrace.Entity, math.Clamp(SpallDamage * (SpallPen / DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
 						end
 					end
-					DEBUGSpallDamage = DEBUGSpallDamage + math.Clamp(SpallDamage * (SpallPen / DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2)
-					if SpallTrace.Entity.DakHealth <= 0 and SpallTrace.Entity.DakPooled == 0 then
-						if SpallTrace.Entity:GetClass() == "dak_crew" then
-							if SpallTrace.Entity.DakHealth <= 0 then
-								for blood = 1, 15 do
-									util.Decal( "Blood", SpallTrace.Entity:GetPos(), SpallTrace.Entity:GetPos() + (VectorRand() * 500), SpallTrace.Entity)
-								end
-							end
-						end
-						Filter[#Filter + 1] = SpallTrace.Entity
-						if (string.Explode("_",SpallTrace.Entity:GetClass(),false)[1] == "dak") then
-							local PrintEnt = SpallTrace.Entity
-							if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-								if PrintEnt:GetClass() == "dak_crew" then
-									if PrintEnt.Job == 1 then
-										PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-									elseif PrintEnt.Job == 2 then
-										PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-									elseif PrintEnt.Job == 3 then
-										PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-									else
-										PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-									end
-									PrintEnt:SetMaterial("models/flesh")
-								else
-									PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-									PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-									PrintEnt:SetColor(Color(100,100,100,255))
-								end
-							end
-							PrintEnt.DakDead = true
-						else
-							local salvage = ents.Create( "dak_tesalvage" )
-							Shell.salvage = salvage
-							salvage.DakModel = SpallTrace.Entity:GetModel()
-							salvage:SetPos( SpallTrace.Entity:GetPos())
-							salvage:SetAngles( SpallTrace.Entity:GetAngles())
-							salvage:Spawn()
-							Filter[#Filter + 1] = salvage
-							SpallTrace.Entity:Remove()
-						end
-					end
+
+					DestroyEnt(SpallTrace.Entity, Filter, Shell)
+
 					local EffArmor = (DTTE.GetArmor(SpallTrace.Entity, Shell.DakShellType, Shell.DakCaliber) / math.abs(SpallTrace.HitNormal:Dot(Direction)))
 					if SpallTrace.Entity.IsComposite == 1 or (SpallTrace.Entity:CPPIGetOwner() ~= nil and SpallTrace.Entity:CPPIGetOwner():IsWorld()) then
 						if SpallTrace.Entity.EntityMods == nil then SpallTrace.Entity.EntityMods = {} end
@@ -2791,58 +2493,23 @@ local function ContHEAT(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, S
 					Pen = Pen * math.sqrt(math.sqrt(StandoffCalibers)) / 1.185
 				end
 			end
+
+			local TargetArmor = DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)
+
 			if CanDamage(HEATTrace.Entity) then
 				if HEATTrace.Entity:GetClass() == "dak_tegun" or HEATTrace.Entity:GetClass() == "dak_temachinegun" or HEATTrace.Entity:GetClass() == "dak_teautogun" then
-					DTDealDamage(HEATTrace.Entity, math.Clamp(Damage * ((Pen-HeatPenLoss) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2) * 0.001,Shell.DakGun)
-					DTDealDamage(HEATTrace.Entity.Controller, math.Clamp(Damage * ((Pen-HeatPenLoss) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity, math.Clamp(Damage * ((Pen-HeatPenLoss) / TargetArmor),0,TargetArmor * 2) * 0.001,Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity.Controller, math.Clamp(Damage * ((Pen-HeatPenLoss) / TargetArmor),0,TargetArmor * 2),Shell.DakGun)
 				else
-					DTDealDamage(HEATTrace.Entity, math.Clamp(Damage * ((Pen-HeatPenLoss) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity, math.Clamp(Damage * ((Pen-HeatPenLoss) / TargetArmor),0,TargetArmor * 2),Shell.DakGun)
 				end
 			end
 			--print("Secondary Impact Damage")
-			--print(math.Clamp(Damage * ((Pen-HeatPenLoss) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2))
-			if HEATTrace.Entity.DakHealth <= 0 and HEATTrace.Entity.DakPooled == 0 then
-				if HEATTrace.Entity:GetClass() == "dak_crew" then
-					if HEATTrace.Entity.DakHealth <= 0 then
-						for blood = 1, 15 do
-							util.Decal( "Blood", HEATTrace.Entity:GetPos(), HEATTrace.Entity:GetPos() + (VectorRand() * 500), HEATTrace.Entity)
-						end
-					end
-				end
-				Filter[#Filter + 1] = HEATTrace.Entity
-				if (string.Explode("_",HEATTrace.Entity:GetClass(),false)[1] == "dak") then
-					local PrintEnt = HEATTrace.Entity
-					if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-						if PrintEnt:GetClass() == "dak_crew" then
-							if PrintEnt.Job == 1 then
-								PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-							elseif PrintEnt.Job == 2 then
-								PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-							elseif PrintEnt.Job == 3 then
-								PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-							else
-								PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-							end
-							PrintEnt:SetMaterial("models/flesh")
-						else
-							PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-							PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-							PrintEnt:SetColor(Color(100,100,100,255))
-						end
-					end
-					PrintEnt.DakDead = true
-				else
-					local salvage = ents.Create( "dak_tesalvage" )
-					Shell.salvage = salvage
-					salvage.DakModel = HEATTrace.Entity:GetModel()
-					salvage:SetPos( HEATTrace.Entity:GetPos())
-					salvage:SetAngles( HEATTrace.Entity:GetAngles())
-					salvage:Spawn()
-					Filter[#Filter + 1] = salvage
-					HEATTrace.Entity:Remove()
-				end
-			end
-			local EffArmor = (DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) / math.abs(HEATTraceLine.HitNormal:Dot(Direction)))
+			--print(math.Clamp(Damage * ((Pen-HeatPenLoss) / TargetArmor),0,TargetArmor * 2))
+
+			DestroyEnt(HEATTrace.Entity, Filter, Shell)
+
+			local EffArmor = (TargetArmor / math.abs(HEATTraceLine.HitNormal:Dot(Direction)))
 			if HEATTrace.Entity.IsComposite == 1 or (HEATTrace.Entity:CPPIGetOwner() ~= nil and HEATTrace.Entity:CPPIGetOwner():IsWorld()) then
 				if HEATTrace.Entity.EntityMods == nil then HEATTrace.Entity.EntityMods = {} end
 				if HEATTrace.Entity.EntityMods.CompKEMult == nil then HEATTrace.Entity.EntityMods.CompKEMult = 9.2 end
@@ -2891,7 +2558,7 @@ local function ContHEAT(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, S
 	util.Effect("dakteballistictracer", effectdata)
 end
 
-function DTHEAT(Pos,HitEnt,Caliber,Pen,Damage,Owner,Shell)
+function DTHEAT(Pos, HitEnt, Caliber, Pen, Damage, Owner, Shell)
 	local IsHEATFS = Shell.DakShellType == "HEATFS" or Shell.DakShellType == "ATGM"
 	local HEATPen = Pen
 	local HEATDamage = IsHEATFS and Damage or Damage / 5
@@ -2970,58 +2637,23 @@ function DTHEAT(Pos,HitEnt,Caliber,Pen,Damage,Owner,Shell)
 			else
 				HEATPen = HEATPen * math.sqrt(math.sqrt(StandoffCalibers)) / 1.185
 			end
+
+			local TargetArmor = DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)
+
 			if CanDamage(HEATTrace.Entity) then
 				if HEATTrace.Entity:GetClass() == "dak_tegun" or HEATTrace.Entity:GetClass() == "dak_temachinegun" or HEATTrace.Entity:GetClass() == "dak_teautogun" then
-					DTDealDamage(HEATTrace.Entity, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2) * 0.001,Shell.DakGun)
-					DTDealDamage(HEATTrace.Entity.Controller, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / TargetArmor),0,TargetArmor * 2) * 0.001,Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity.Controller, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / TargetArmor),0,TargetArmor * 2),Shell.DakGun)
 				else
-					DTDealDamage(HEATTrace.Entity, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2),Shell.DakGun)
+					DTDealDamage(HEATTrace.Entity, math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / TargetArmor),0,TargetArmor * 2),Shell.DakGun)
 				end
 			end
 			--print("First Impact Damage")
-			--print(math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber)),0,DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) * 2))
-			if HEATTrace.Entity.DakHealth <= 0 and HEATTrace.Entity.DakPooled == 0 then
-				if HEATTrace.Entity:GetClass() == "dak_crew" then
-					if HEATTrace.Entity.DakHealth <= 0 then
-						for blood = 1, 15 do
-							util.Decal( "Blood", HEATTrace.Entity:GetPos(), HEATTrace.Entity:GetPos() + (VectorRand() * 500), HEATTrace.Entity)
-						end
-					end
-				end
-				Filter[#Filter + 1] = HEATTrace.Entity
-				if (string.Explode("_",HEATTrace.Entity:GetClass(),false)[1] == "dak") then
-					local PrintEnt = HEATTrace.Entity
-					if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-						if PrintEnt:GetClass() == "dak_crew" then
-							if PrintEnt.Job == 1 then
-								PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-							elseif PrintEnt.Job == 2 then
-								PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-							elseif PrintEnt.Job == 3 then
-								PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-							else
-								PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-							end
-							PrintEnt:SetMaterial("models/flesh")
-						else
-							PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-							PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-							PrintEnt:SetColor(Color(100,100,100,255))
-						end
-					end
-					PrintEnt.DakDead = true
-				else
-					local salvage = ents.Create( "dak_tesalvage" )
-					Shell.salvage = salvage
-					salvage.DakModel = HEATTrace.Entity:GetModel()
-					salvage:SetPos( HEATTrace.Entity:GetPos())
-					salvage:SetAngles( HEATTrace.Entity:GetAngles())
-					salvage:Spawn()
-					Filter[#Filter + 1] = salvage
-					HEATTrace.Entity:Remove()
-				end
-			end
-			local EffArmor = (DTTE.GetArmor(HEATTrace.Entity, Shell.DakShellType, Shell.DakCaliber) / math.abs(HEATTraceLine.HitNormal:Dot(Direction)))
+			--print(math.Clamp(HEATDamage * (math.Clamp(HEATPen-HeatPenLoss,HEATPen * 0.05,HEATPen) / TargetArmor),0,TargetArmor * 2))
+
+			DestroyEnt(HEATTrace.Entity, Filter, Shell)
+
+			local EffArmor = (TargetArmor / math.abs(HEATTraceLine.HitNormal:Dot(Direction)))
 			if HEATTrace.Entity.IsComposite == 1 or (HEATTrace.Entity:CPPIGetOwner() ~= nil and HEATTrace.Entity:CPPIGetOwner():IsWorld()) then
 				if HEATTrace.Entity.EntityMods == nil then HEATTrace.Entity.EntityMods = {} end
 				if HEATTrace.Entity.EntityMods.CompKEMult == nil then HEATTrace.Entity.EntityMods.CompKEMult = 9.2 end
@@ -3355,18 +2987,9 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 			else
 				if Shell.DakShellType == "HESH" then
 					if HitEnt.IsComposite == 1 or (HitEnt:CPPIGetOwner() ~= nil and HitEnt:CPPIGetOwner():IsWorld()) then
-						if Shell.DakCaliber * 1.25 > CompArmor and HitAng < 80 then
-							Shell.Filter[#Shell.Filter + 1] = HitEnt
-							Shell.HeatPen = true
-							DTSpall(HitPos,EffArmor,HitEnt,Shell.DakCaliber,Shell.DakCaliber * 1.25,Shell.DakGun.DakOwner,Shell,((HitPos - (Normal * 2)) - HitPos):Angle():Forward())
-							Shell.Pos = HitPos
-							Shell.LifeTime = 0
-							Shell.DakVelocity = Vector(0,0,0)
-							Shell.DakDamage = 0
-							Shell.ExplodeNow = true
-						end
-					else
-						if Shell.DakCaliber * 1.25 > DTTE.GetArmor(HitEnt, Shell.DakShellType, Shell.DakCaliber) and HitAng < 80 then
+						local ArmorCheck = Shell.DakCaliber * 1.25 > CompArmor or Shell.DakCaliber * 1.25 > DTTE.GetArmor(HitEnt, Shell.DakShellType, Shell.DakCaliber)
+
+						if ArmorCheck and HitAng < 80 then
 							Shell.Filter[#Shell.Filter + 1] = HitEnt
 							Shell.HeatPen = true
 							DTSpall(HitPos,EffArmor,HitEnt,Shell.DakCaliber,Shell.DakCaliber * 1.25,Shell.DakGun.DakOwner,Shell,((HitPos - (Normal * 2)) - HitPos):Angle():Forward())
@@ -3380,18 +3003,9 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 				end
 				if Shell.DakShellType == "HE" then
 					if HitEnt.IsComposite == 1 or (HitEnt:CPPIGetOwner() ~= nil and HitEnt:CPPIGetOwner():IsWorld()) then
-						if Shell.DakFragPen * 10 > CompArmor and HitAng < 70 then
-							Shell.Filter[#Shell.Filter + 1] = HitEnt
-							Shell.HeatPen = true
-							DTSpall(HitPos,EffArmor,HitEnt,Shell.DakCaliber,Shell.DakFragPen * 10,Shell.DakGun.DakOwner,Shell,((HitPos - (Normal * 2)) - HitPos):Angle():Forward())
-							Shell.Pos = HitPos
-							Shell.LifeTime = 0
-							Shell.DakVelocity = Vector(0,0,0)
-							Shell.DakDamage = 0
-							Shell.ExplodeNow = true
-						end
-					else
-						if Shell.DakFragPen * 10 > DTTE.GetArmor(HitEnt, Shell.DakShellType, Shell.DakCaliber) and HitAng < 70 then
+						local ArmorCheck = Shell.DakFragPen * 10 > CompArmor or Shell.DakFragPen * 10 > DTTE.GetArmor(HitEnt, Shell.DakShellType, Shell.DakCaliber)
+
+						if ArmorCheck and HitAng < 70 then
 							Shell.Filter[#Shell.Filter + 1] = HitEnt
 							Shell.HeatPen = true
 							DTSpall(HitPos,EffArmor,HitEnt,Shell.DakCaliber,Shell.DakFragPen * 10,Shell.DakGun.DakOwner,Shell,((HitPos - (Normal * 2)) - HitPos):Angle():Forward())
@@ -3525,50 +3139,8 @@ function DTShellHit(Start, End, HitEnt, Shell, Normal)
 				end
 				--soundhere bounce sound
 			end
-			if HitEnt.DakHealth <= 0 and HitEnt.DakPooled == 0 then
-				if HitEnt:GetClass() == "dak_crew" then
-					if HitEnt.DakHealth <= 0 then
-						for blood = 1, 15 do
-							util.Decal( "Blood", HitEnt:GetPos(), HitEnt:GetPos() + (VectorRand() * 500), HitEnt)
-						end
-					end
-				end
-				Shell.Filter[#Shell.Filter + 1] = HitEnt
-				if (string.Explode("_",HitEnt:GetClass(),false)[1] == "dak") then
-					local PrintEnt = HitEnt
-					if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-						if PrintEnt:GetClass() == "dak_crew" then
-							if PrintEnt.Job == 1 then
-								PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-							elseif PrintEnt.Job == 2 then
-								PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-							elseif PrintEnt.Job == 3 then
-								PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-							else
-								PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-							end
-							PrintEnt:SetMaterial("models/flesh")
-						else
-							PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-							PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-							PrintEnt:SetColor(Color(100,100,100,255))
-						end
-					end
-					PrintEnt.DakDead = true
-				else
-					local salvage = ents.Create( "dak_tesalvage" )
-					Shell.salvage = salvage
-					salvage.DakModel = HitEnt:GetModel()
-					salvage:SetPos( HitEnt:GetPos())
-					salvage:SetAngles( HitEnt:GetAngles())
-					salvage:Spawn()
-					Shell.Filter[#Shell.Filter + 1] = salvage
-					HitEnt:Remove()
-				end
-				if Shell.salvage then
-					Shell.Filter[#Shell.Filter + 1] = Shell.salvage
-				end
-			end
+
+			DestroyEnt(HitEnt, Shell.Filter, Shell)
 		end
 	end
 	if HitEnt:IsValid() then
@@ -3942,47 +3514,8 @@ function entity:DTExplosion(Pos,Damage,Radius,Caliber,Pen,Owner)
 						end
 						ContEXP(Filter, ExpTrace.Entity, Pos, Damage * (1 - EffArmor / Pen), Radius, Caliber, Pen - EffArmor, Owner, Direction, self)
 					end
-					if ExpTrace.Entity.DakHealth <= 0 and ExpTrace.Entity.DakPooled == 0 then
-						if ExpTrace.Entity:GetClass() == "dak_crew" then
-							if ExpTrace.Entity.DakHealth <= 0 then
-								for blood = 1, 15 do
-									util.Decal( "Blood", ExpTrace.Entity:GetPos(), ExpTrace.Entity:GetPos() + (VectorRand() * 500), ExpTrace.Entity)
-								end
-							end
-						end
-						Filter[#Filter + 1] = ExpTrace.Entity
-						if (string.Explode("_",ExpTrace.Entity:GetClass(),false)[1] == "dak") then
-							local PrintEnt = ExpTrace.Entity
-							if PrintEnt:GetClass() ~= "dak_tesalvage" and PrintEnt.DakOwner:IsValid() and PrintEnt.DakOwner:IsPlayer() and PrintEnt.DakDead ~= true then
-								if PrintEnt:GetClass() == "dak_crew" then
-									if PrintEnt.Job == 1 then
-										PrintEnt.DakOwner:ChatPrint("Gunner Killed!")
-									elseif PrintEnt.Job == 2 then
-										PrintEnt.DakOwner:ChatPrint("Driver Killed!")
-									elseif PrintEnt.Job == 3 then
-										PrintEnt.DakOwner:ChatPrint("Loader Killed!")
-									else
-										PrintEnt.DakOwner:ChatPrint("Passenger Killed!")
-									end
-									PrintEnt:SetMaterial("models/flesh")
-								else
-									PrintEnt.DakOwner:ChatPrint(PrintEnt.DakName .. " Destroyed!")
-									PrintEnt:SetMaterial("models/props_buildings/plasterwall021a")
-									PrintEnt:SetColor(Color(100,100,100,255))
-								end
-							end
-							PrintEnt.DakDead = true
-						else
-							local salvage = ents.Create( "dak_tesalvage" )
-							self.salvage = salvage
-							salvage.DakModel = ExpTrace.Entity:GetModel()
-							salvage:SetPos( ExpTrace.Entity:GetPos())
-							salvage:SetAngles( ExpTrace.Entity:GetAngles())
-							salvage:Spawn()
-							Filter[#Filter + 1] = salvage
-							ExpTrace.Entity:Remove()
-						end
-					end
+
+					DestroyEnt(ExpTrace.Entity, Filter, self)
 				end
 				if (ExpTrace.Entity:IsValid()) and not(ExpTrace.Entity:IsNPC()) and not(ExpTrace.Entity:IsPlayer()) and ExpTrace.Entity.Base ~= "base_nextbot" then
 					ExpTrace.Entity:DTHEApplyForce(ExpTrace.HitPos, Pos, Damage, traces, 0.0035)
