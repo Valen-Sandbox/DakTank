@@ -208,11 +208,11 @@ function ENT:Think()
 				local startPos = self:GetPos() + self:GetForward() * breechoffset
 				local caliber = self.DakCaliber * 0.5
 				local filter = {self, self:GetParent(), self:GetParent():GetParent()}
-				local BackDist = DTSimpleRecurseTrace(startPos, startPos - (self:GetForward() * 1000), caliber, filter, self, false)
-				local LeftDist = DTSimpleRecurseTrace(startPos, startPos - (self:GetRight() * 1000), caliber, filter, self, false)
-				local RightDist = DTSimpleRecurseTrace(startPos, startPos + (self:GetRight() * 1000), caliber, filter, self, false)
-				local UpDist = DTSimpleRecurseTrace(startPos, startPos + (self:GetUp() * 1000), caliber, filter, self, false)
-				local DownDist = DTSimpleRecurseTrace(startPos, startPos - (self:GetUp() * 1000), caliber, filter, self, false)
+				local BackDist = DTTE.SimpleRecurseTrace(startPos, startPos - (self:GetForward() * 1000), caliber, filter, self, false)
+				local LeftDist = DTTE.SimpleRecurseTrace(startPos, startPos - (self:GetRight() * 1000), caliber, filter, self, false)
+				local RightDist = DTTE.SimpleRecurseTrace(startPos, startPos + (self:GetRight() * 1000), caliber, filter, self, false)
+				local UpDist = DTTE.SimpleRecurseTrace(startPos, startPos + (self:GetUp() * 1000), caliber, filter, self, false)
+				local DownDist = DTTE.SimpleRecurseTrace(startPos, startPos - (self:GetUp() * 1000), caliber, filter, self, false)
 				local ShellSize = (self.ShellLengthMult * 10 * self.DakCaliber * 0.0393701)
 				if self.ReloadMult == nil then
 					local quickmult = ( math.min((BackDist/ShellSize),2) + math.min((LeftDist/ShellSize),2) + math.min((RightDist/ShellSize),2) + math.min((UpDist/ShellSize),2) + math.min((DownDist/ShellSize),2) )*0.2

@@ -67,7 +67,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 		local HitAng = math.deg(math.acos( normal ))
 		local physobj = HitEnt:GetPhysicsObject()
 
-		if not((DTCheckClip(HitEnt,ShellSimTrace.HitPos,nochecklegit)) or (physobj:GetMass() <= 1 and not(HitEnt:IsVehicle()) and HitEntTbl.IsDakTekFutureTech ~= 1) or HitEntTbl.DakName == "Damaged Component") then
+		if not((DTTE.CheckClip(HitEnt,ShellSimTrace.HitPos,nochecklegit)) or (physobj:GetMass() <= 1 and not(HitEnt:IsVehicle()) and HitEntTbl.IsDakTekFutureTech ~= 1) or HitEntTbl.DakName == "Damaged Component") then
 
 			local HitEntClass = HitEnt:GetClass()
 			local SA = physobj:GetSurfaceArea()
@@ -103,7 +103,7 @@ function DTTE.GetEffArmor(Start, End, ShellType, Caliber, Filter, core, nocheckl
 			local owner = HitEnt:CPPIGetOwner()
 			if HitEntTbl.IsComposite == 1 or (owner ~= nil and owner:IsWorld()) then
 
-				EffArmor = DTCompositesTrace( HitEnt, ShellSimTrace.HitPos, ShellSimTrace.Normal, Filter ) --This is incredibly expensive
+				EffArmor = DTTE.CompositesTrace( HitEnt, ShellSimTrace.HitPos, ShellSimTrace.Normal, Filter ) --This is incredibly expensive
 
 				if HitEntTbl.EntityMods == nil then HitEntTbl.EntityMods = {} end
 				if HitEntTbl.EntityMods.CompKEMult == nil then HitEntTbl.EntityMods.CompKEMult = 9.2 end

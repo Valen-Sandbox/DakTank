@@ -1711,9 +1711,9 @@ function TOOL:RightClick( trace )
 				local PHP = math.Round((HP/MHP)*100, 1 )
 				if trace.Entity.IsComposite == 1 then
 					if Target.EntityMods.DakName then
-						ply:ChatPrint(Target.EntityMods.DakName..", ".. math.Round((DTCompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompKEMult),2).." Armor(mm) vs KE, ".. math.Round((DTCompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompCEMult),2).." Armor(mm) vs HEAT, ".. HP.."/"..MHP.." Health, "..PHP.."% Health")
+						ply:ChatPrint(Target.EntityMods.DakName..", ".. math.Round((DTTE.CompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompKEMult),2).." Armor(mm) vs KE, ".. math.Round((DTTE.CompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompCEMult),2).." Armor(mm) vs HEAT, ".. HP.."/"..MHP.." Health, "..PHP.."% Health")
 					else
-						ply:ChatPrint("Composite, ".. math.Round((DTCompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompKEMult),2).." Armor(mm) vs KE, ".. math.Round((DTCompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompCEMult),2).." Armor(mm) vs HEAT, ".. HP.."/"..MHP.." Health, "..PHP.."% Health")
+						ply:ChatPrint("Composite, ".. math.Round((DTTE.CompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompKEMult),2).." Armor(mm) vs KE, ".. math.Round((DTTE.CompositesTrace( Target, trace.HitPos, trace.Normal, {ply} )*trace.Entity.EntityMods.CompCEMult),2).." Armor(mm) vs HEAT, ".. HP.."/"..MHP.." Health, "..PHP.."% Health")
 					end
 				else
 					if Target:GetClass() ~= "dak_tankcore" then

@@ -1080,8 +1080,8 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 											addpos = xcur * aspectratio + ycur
 										end
 
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
+										local ForwardHit = DTTE.FilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
+										local BackwardHit = DTTE.FilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
 
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos + scanforward * distance or BackwardHit == startpos + addpos - scanforward * distance then depth = 0 end
@@ -1135,8 +1135,8 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										end
 
 										-- SpallLiner = 0
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanright * distance, startpos + addpos + scanright * distance, allPlayers, self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanright * distance, startpos + addpos - scanright * distance, allPlayers, self)
+										local ForwardHit = DTTE.FilterRecurseTrace(startpos + addpos - scanright * distance, startpos + addpos + scanright * distance, allPlayers, self)
+										local BackwardHit = DTTE.FilterRecurseTrace(startpos + addpos + scanright * distance, startpos + addpos - scanright * distance, allPlayers, self)
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanright * distance or BackwardHit == startpos + addpos + scanright * distance then depth = 0 end
 										local TraceStart = ForwardHit
@@ -1189,8 +1189,8 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 										end
 
 										-- SpallLiner = 0
-										local ForwardHit = DTFilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
-										local BackwardHit = DTFilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
+										local ForwardHit = DTTE.FilterRecurseTrace(startpos + addpos - scanforward * distance, startpos + addpos + scanforward * distance, allPlayers, self)
+										local BackwardHit = DTTE.FilterRecurseTrace(startpos + addpos + scanforward * distance, startpos + addpos - scanforward * distance, allPlayers, self)
 										local depth = math.Max(ForwardHit:Distance(BackwardHit) * 0.5, 50)
 										if ForwardHit == startpos + addpos - scanforward * distance or BackwardHit == startpos + addpos + scanforward * distance then depth = 0 end
 										local TraceStart = ForwardHit

@@ -295,7 +295,7 @@ function TOOL:Think()
 				if trace.Entity.IsComposite == 1 then
 					if trace.Entity.EntityMods.CompKEMult == nil then trace.Entity.EntityMods.CompKEMult = 9.2 end
 					if trace.Entity.EntityMods.CompCEMult == nil then trace.Entity.EntityMods.CompCEMult = 18.4 end
-					local CompArmor = math.Round((DTCompositesTrace( trace.Entity, trace.HitPos, trace.Normal, {self:GetOwner()} )*1),2)
+					local CompArmor = math.Round((DTTE.CompositesTrace( trace.Entity, trace.HitPos, trace.Normal, {self:GetOwner()} )*1),2)
 					self.Weapon:SetNWFloat("Armor",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 					self.Weapon:SetNWFloat("AP",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 					self.Weapon:SetNWFloat("HEAT",math.Round(CompArmor*trace.Entity.EntityMods.CompCEMult,2))
