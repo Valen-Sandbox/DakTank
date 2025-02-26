@@ -11,7 +11,8 @@ end)
 
 function DTTE.CheckSpherical(ent)
 	local PhysObj = ent:GetPhysicsObject()
-	if not PhysObj:GetMesh() then
+
+	if IsValid(PhysObj) and not PhysObj:GetMesh() then
 		if ent.SentSphereMessage == nil and IsValid(ent.DakOwner) then
 			ent.DakOwner:ChatPrint(ent.DakName .. " is made spherical and will be removed if unfrozen.")
 			ent.SentSphereMessage = true

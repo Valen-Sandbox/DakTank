@@ -34,6 +34,10 @@ ENT.DakTankCore = nil
 ENT.DakCrew = NULL
 ENT.BasicVelocity = 29527.6
 ENT.muzzle = NULL
+ENT.ShellLengthMult = 1
+ENT.ShellLengthExact = 1
+ENT.DakGunType = "N/A"
+ENT.DakCaliber = 0
 
 function ENT:Initialize()
 	self.ShellLoaded = 0
@@ -457,11 +461,16 @@ function ENT:Think()
 			self.ReloadSound = "daktanks/dakreloadheavy.mp3"
 		end
 
-		if self:GetPhysicsObject():IsValid() and self:GetPhysicsObject():GetMass() ~= self.DakMass then
-			self:GetPhysicsObject():SetMass(self.DakMass)
+		local physObj = self:GetPhysicsObject()
+
+		if physObj:IsValid() then
+			if physObj:GetMass() ~= self.DakMass then
+				physObj:SetMass(self.DakMass)
+			end
+
+			self.DakArmor = 3.90625 * (physObj:GetMass() / 4.6311781) * (288 / physObj:GetSurfaceArea()) - self.DakBurnStacks * 0.25
 		end
 
-		self.DakArmor = 3.90625 * (self:GetPhysicsObject():GetMass() / 4.6311781) * (288 / self:GetPhysicsObject():GetSurfaceArea()) - self.DakBurnStacks * 0.25
 		self.SlowThinkTime = CurTime()
 	end
 
