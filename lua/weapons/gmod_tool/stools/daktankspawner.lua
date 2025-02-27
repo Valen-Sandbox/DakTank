@@ -290,485 +290,18 @@ function TOOL:LeftClick( trace )
 			self.DakModel = "models/daktanks/alclip3.mdl"
 		end
 		--GUNS--
-		if Selection == "Cannon" then
-			self.DakGunType = "Cannon"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
+		SelectedClass = Classes.Weapons[Selection]
+
+		if SelectedClass then
+			local MinCal = SelectedClass.MinCaliber
+			local MaxCal = SelectedClass.MaxCaliber
+
+			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")), 2), MinCal, MaxCal)
+			self.DakGunType = Selection
 			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Cannon"
-			self.DakModel = "models/daktanks/cannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-		end
-		if Selection == "Long Cannon" then
-			self.DakGunType = "Long Cannon"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Long Cannon"
-			self.DakModel = "models/daktanks/longcannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-
-		end
-		if Selection == "Short Cannon" then
-			self.DakGunType = "Short Cannon"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Short Cannon"
-			self.DakModel = "models/daktanks/shortcannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-		end
-		if Selection == "Howitzer" then
-			self.DakGunType = "Howitzer"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),50,240)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Howitzer"
-			self.DakModel = "models/daktanks/howitzer100mm2.mdl"
-
-			if self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/h50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 105 then
-				self.DakFireSound = "daktanks/h75.mp3"
-			end
-			if self.DakCaliber >= 105 and self.DakCaliber < 122 then
-				self.DakFireSound = "daktanks/h105.mp3"
-			end
-			if self.DakCaliber >= 122 and self.DakCaliber < 155 then
-				self.DakFireSound = "daktanks/h122.mp3"
-			end
-			if self.DakCaliber >= 155 and self.DakCaliber < 203 then
-				self.DakFireSound = "daktanks/h155.mp3"
-			end
-			if self.DakCaliber >= 203 and self.DakCaliber < 420 then
-				self.DakFireSound = "daktanks/h203.mp3"
-			end
-			if self.DakCaliber >= 420 then
-				self.DakFireSound = "daktanks/h420.mp3"
-			end
-		end
-		if Selection == "Mortar" then
-			self.DakGunType = "Mortar"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,420)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Mortar"
-			self.DakModel = "models/daktanks/mortar100mm2.mdl"
-
-			if self.DakCaliber < 90 then
-				self.DakFireSound = "daktanks/m60.mp3"
-			end
-			if self.DakCaliber >= 90 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/m90.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 150 then
-				self.DakFireSound = "daktanks/m120.mp3"
-			end
-			if self.DakCaliber >= 150 and self.DakCaliber < 240 then
-				self.DakFireSound = "daktanks/m150.mp3"
-			end
-			if self.DakCaliber >= 240 and self.DakCaliber < 280 then
-				self.DakFireSound = "daktanks/m240.mp3"
-			end
-			if self.DakCaliber >= 280 and self.DakCaliber < 420 then
-				self.DakFireSound = "daktanks/m280.mp3"
-			end
-			if self.DakCaliber >= 420 and self.DakCaliber < 600 then
-				self.DakFireSound = "daktanks/m420.mp3"
-			end
-			if self.DakCaliber >= 600 then
-				self.DakFireSound = "daktanks/m600.mp3"
-			end
-		end
-		if Selection == "Smoke Launcher" then
-			self.DakGunType = "Smoke Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,100)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Smoke Launcher"
-			self.DakModel = "models/daktanks/smokelauncher100mm.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/grenade_launcher_01.mp3"
-		end
-		if Selection == "Grenade Launcher" then
-			self.DakGunType = "Grenade Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,45)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Grenade Launcher"
-			self.DakModel = "models/daktanks/grenadelauncher100mm.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/grenade_launcher_01.mp3"
-		end
-		if Selection == "Autoloader" then
-			self.DakGunType = "Autoloader"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autoloader"
-			self.DakModel = "models/daktanks/cannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-		end
-		if Selection == "Long Autoloader" then
-			self.DakGunType = "Long Autoloader"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Long Autoloader"
-			self.DakModel = "models/daktanks/longcannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-
-		end
-		if Selection == "Short Autoloader" then
-			self.DakGunType = "Short Autoloader"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Short Autoloader"
-			self.DakModel = "models/daktanks/shortcannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/c25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/c37.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/c50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 100 then
-				self.DakFireSound = "daktanks/c75.mp3"
-			end
-			if self.DakCaliber >= 100 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/c100.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 152 then
-				self.DakFireSound = "daktanks/c120.mp3"
-			end
-			if self.DakCaliber >= 152 and self.DakCaliber < 200 then
-				self.DakFireSound = "daktanks/c152.mp3"
-			end
-			if self.DakCaliber >= 200 then
-				self.DakFireSound = "daktanks/c200.mp3"
-			end
-		end
-		if Selection == "Autoloading Howitzer" then
-			self.DakGunType = "Autoloading Howitzer"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),50,240)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakModel = "models/daktanks/howitzer100mm2.mdl"
-
-			if self.DakCaliber < 75 then
-				self.DakFireSound = "daktanks/h50.mp3"
-			end
-			if self.DakCaliber >= 75 and self.DakCaliber < 105 then
-				self.DakFireSound = "daktanks/h75.mp3"
-			end
-			if self.DakCaliber >= 105 and self.DakCaliber < 122 then
-				self.DakFireSound = "daktanks/h105.mp3"
-			end
-			if self.DakCaliber >= 122 and self.DakCaliber < 155 then
-				self.DakFireSound = "daktanks/h122.mp3"
-			end
-			if self.DakCaliber >= 155 and self.DakCaliber < 203 then
-				self.DakFireSound = "daktanks/h155.mp3"
-			end
-			if self.DakCaliber >= 203 and self.DakCaliber < 420 then
-				self.DakFireSound = "daktanks/h203.mp3"
-			end
-			if self.DakCaliber >= 420 then
-				self.DakFireSound = "daktanks/h420.mp3"
-			end
-		end
-		if Selection == "Autoloading Mortar" then
-			self.DakGunType = "Autoloading Mortar"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,420)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autoloading Mortar"
-			self.DakModel = "models/daktanks/mortar100mm2.mdl"
-
-			if self.DakCaliber < 90 then
-				self.DakFireSound = "daktanks/m60.mp3"
-			end
-			if self.DakCaliber >= 90 and self.DakCaliber < 120 then
-				self.DakFireSound = "daktanks/m90.mp3"
-			end
-			if self.DakCaliber >= 120 and self.DakCaliber < 150 then
-				self.DakFireSound = "daktanks/m120.mp3"
-			end
-			if self.DakCaliber >= 150 and self.DakCaliber < 240 then
-				self.DakFireSound = "daktanks/m150.mp3"
-			end
-			if self.DakCaliber >= 240 and self.DakCaliber < 280 then
-				self.DakFireSound = "daktanks/m240.mp3"
-			end
-			if self.DakCaliber >= 280 and self.DakCaliber < 420 then
-				self.DakFireSound = "daktanks/m280.mp3"
-			end
-			if self.DakCaliber >= 420 and self.DakCaliber < 600 then
-				self.DakFireSound = "daktanks/m420.mp3"
-			end
-			if self.DakCaliber >= 600 then
-				self.DakFireSound = "daktanks/m600.mp3"
-			end
-		end
-		if Selection == "MG" then
-			self.DakGunType = "MG"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),5,25)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Machine Gun"
-			self.DakModel = "models/daktanks/machinegun100mm.mdl"
-
-			if self.DakCaliber < 7.62 then
-				self.DakFireSound = "daktanks/5mm.mp3"
-			end
-			if self.DakCaliber >= 7.62 and self.DakCaliber < 9 then
-				self.DakFireSound = "daktanks/7mm.mp3"
-			end
-			if self.DakCaliber >= 9 and self.DakCaliber < 12.7 then
-				self.DakFireSound = "daktanks/9mm.mp3"
-			end
-			if self.DakCaliber >= 12.7 and self.DakCaliber < 14.5 then
-				self.DakFireSound = "daktanks/12mm.mp3"
-			end
-			if self.DakCaliber >= 14.5 then
-				self.DakFireSound = "daktanks/14mm.mp3"
-			end
-		end
-		if Selection == "Flamethrower" then
-			self.DakGunType = "Flamethrower"
-			self.DakCaliber = 10
-			self.DakMaxHealth = 10
-			self.DakName = "Flamethrower"
-			self.DakModel = "models/daktanks/flamethrower.mdl"
-			self.DakFireSound = "daktanks/flamerfire.mp3"
-		end
-		if Selection == "HMG" then
-			self.DakGunType = "HMG"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,75)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Heavy Machine Gun"
-			self.DakModel = "models/daktanks/hmg100mm2.mdl"
-
-			if self.DakCaliber < 30 then
-				self.DakFireSound = "daktanks/hmg20.mp3"
-			end
-			if self.DakCaliber >= 30 and self.DakCaliber < 40 then
-				self.DakFireSound = "daktanks/hmg30.mp3"
-			end
-			if self.DakCaliber >= 40 then
-				self.DakFireSound = "daktanks/hmg40.mp3"
-			end
-		end
-		if Selection == "Autocannon" then
-			self.DakGunType = "Autocannon"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,90)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autocannon"
-			self.DakModel = "models/daktanks/autocannon100mm2.mdl"
-
-			if self.DakCaliber < 37 then
-				self.DakFireSound = "daktanks/ac25.mp3"
-			end
-			if self.DakCaliber >= 37 and self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/ac37.mp3"
-			end
-			if self.DakCaliber >= 50 then
-				self.DakFireSound = "daktanks/ac50.mp3"
-			end
-		end
-		if Selection == "ATGM Launcher" then
-			self.DakGunType = "ATGM Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm ATGM Launcher"
-			self.DakModel = "models/daktanks/launcher100mm2.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
-		end
-		if Selection == "Dual ATGM Launcher" then
-			self.DakGunType = "Dual ATGM Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Dual ATGM Launcher"
-			self.DakModel = "models/daktanks/duallauncher100mm2.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
-		end
-		if Selection == "Autoloading ATGM Launcher" then
-			self.DakGunType = "Autoloading ATGM Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autoloading ATGM Launcher"
-			self.DakModel = "models/daktanks/launcher100mm2.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
-		end
-		if Selection == "Autoloading Dual ATGM Launcher" then
-			self.DakGunType = "Autoloading Dual ATGM Launcher"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autoloading Dual ATGM Launcher"
-			self.DakModel = "models/daktanks/duallauncher100mm2.mdl"
-
-			self.DakFireSound = "daktanks/new/cannons/misc/tank_rocket_shot_1.mp3"
-		end
-		if Selection == "Recoilless Rifle" then
-			self.DakGunType = "Recoilless Rifle"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,150)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Recoilless Rifle"
-			self.DakModel = "models/daktanks/recoillessrifle100mm2.mdl"
-
-			if self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/new/cannons/37mm/cannon_37mm_kwk36_shot_01.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 70 then
-				self.DakFireSound = "daktanks/new/cannons/57mm/cannon_57mm_zis4_shot_01.mp3"
-			end
-			if self.DakCaliber >= 70 and self.DakCaliber < 90 then
-				self.DakFireSound = "daktanks/new/cannons/85mm/cannon_85mm_zis_c53_shot_01.mp3"
-			end
-			if self.DakCaliber >= 90 and self.DakCaliber < 110 then
-				self.DakFireSound = "daktanks/new/cannons/105mm/cannon_105mm_m4_shot_01.mp3"
-			end
-			if self.DakCaliber >= 110 then
-				self.DakFireSound = "daktanks/new/cannons/120mm/cannon_120mm_rh120_shot_01.mp3"
-			end
-		end
-		if Selection == "Autoloading Recoilless Rifle" then
-			self.DakGunType = "Autoloading Recoilless Rifle"
-			self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,150)
-			self.DakMaxHealth = self.DakCaliber
-			self.DakName = self.DakCaliber.."mm Autoloading Recoilless Rifle"
-			self.DakModel = "models/daktanks/recoillessrifle100mm2.mdl"
-
-			if self.DakCaliber < 50 then
-				self.DakFireSound = "daktanks/new/cannons/37mm/cannon_37mm_kwk36_shot_01.mp3"
-			end
-			if self.DakCaliber >= 50 and self.DakCaliber < 70 then
-				self.DakFireSound = "daktanks/new/cannons/57mm/cannon_57mm_zis4_shot_01.mp3"
-			end
-			if self.DakCaliber >= 70 and self.DakCaliber < 90 then
-				self.DakFireSound = "daktanks/new/cannons/85mm/cannon_85mm_zis_c53_shot_01.mp3"
-			end
-			if self.DakCaliber >= 90 and self.DakCaliber < 110 then
-				self.DakFireSound = "daktanks/new/cannons/105mm/cannon_105mm_m4_shot_01.mp3"
-			end
-			if self.DakCaliber >= 110 then
-				self.DakFireSound = "daktanks/new/cannons/120mm/cannon_120mm_rh120_shot_01.mp3"
-			end
+			self.DakName = self.DakCaliber .. "mm " .. (SelectedClass.Name or Selection)
+			self.DakModel = SelectedClass.Model
+			self.DakFireSound = SelectedClass.SetSound(self.DakCaliber)
 		end
 		--AMMO--
 		--Define variables--
@@ -915,7 +448,7 @@ function TOOL:LeftClick( trace )
 			end
 		    --huge if statement that checks to see if its an ammo crate of any type
 			self.DakIsExplosive = true
-			self.DakAmmoType = self.DakCaliber.."mm"..self.GunType..self.AmmoType.."Ammo"
+			self.DakAmmoType = self.DakCaliber .. "mm" .. self.GunType .. self.AmmoType .. "Ammo"
 		end
 		--Flamethrower--
 		if Selection == "Flamethrower Fuel" then
@@ -1814,7 +1347,7 @@ function TOOL.BuildCPanel( panel )
 	--Table containing the description of the fuel tanks
 	local fuelList = {}
 
-	for ClassName, ClassData in pairs(Classes.FuelTanks) do
+	for ClassName, ClassData in SortedPairs( Classes.FuelTanks ) do
 		fuelList[ClassName] = function()
 			local name = ClassName .. "\n\n"
 			local desc = ClassData.Description .. "\n\n"
@@ -1829,6 +1362,19 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing the description of the available weapons
 	local gunList = {}
+	--[[
+	-- TODO: Finish breaking down this dense chunk to use the weapon class definitions instead
+	for ClassName, ClassData in SortedPairs( Classes.Weapons ) do
+		gunList[ClassName] = function()
+			local name = Caliber .. "mm " .. (ClassData.Name or ClassName) .. "\n\n"
+			local desc = ClassData.Description .. "\n\n"
+			local stats = "Weapon Stats:\n"
+			local weight = "Weight:        " .. math.Round(0.0125*((((Caliber*6.5)*(Caliber*3)*(Caliber*3))+(math.pi*(Caliber^2)*(Caliber*50))-(math.pi*((Caliber/2)^2)*(Caliber*50)))*0.001*7.8125)/1000) .. " kg\n"
+			local reloads = "Reloads: \n\n"
+
+		end
+	end
+	]]
 	gunList["ATGM Launcher"] = function()
 		DLabel:SetText( Caliber.."mm ATGM Launcher\n\nLightweight and simple ATGM launcher.\n\nWeapon Stats:\nWeight:        "..math.Round(0.0125*((((Caliber*6.5)*(Caliber*3)*(Caliber*3))+(math.pi*(Caliber^2)*(Caliber*50))-(math.pi*((Caliber/2)^2)*(Caliber*50)))*0.001*7.8125)/1000).." kg\nReloads: \n\nATGM: "..math.Round( 2*0.75*(math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*6.5)*3550) ,2).." seconds, Loaders: "..math.Max(math.Round( (math.pi*((Caliber*0.001*0.5)^2)*(Caliber*0.001*6.5)*3550)/25 ) , 1).. "\n\nReload Area: "..math.Round(ShellLength*10*Caliber*0.0393701,2).." inches, all directions\n\n" )
 	end
@@ -1901,7 +1447,7 @@ function TOOL.BuildCPanel( panel )
 	--AmmoData Key--1 = AP Pen Multiplier, 2 = AP Velocity, 3 = HE Pen Multiplier, 4 = HE Blast and Frag Pen Multiplier, 5 = HE Velocity, 6 = HEAT Pen Multiplier, 7 = HEAT Velocity, 8 = HESH Pen Multiplier, 9 = HESH Velocity
 
 	--Base Velocity = 29527.6
-	--Lenght Mult
+	--Length Mult
 	--AP PEN
 	--HE PEN
 	--HE FRAG/BLAST PEN
@@ -1912,158 +1458,16 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing information and settings for weapons, this is called by the Gun Type combobox
 	local gunData = {}
-	gunData["ATGM Launcher"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Anti Tank Guided Missile" }
-		DermaNumSlider:SetMinMax( 40, 180 )
-	end
-	gunData["Dual ATGM Launcher"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Anti Tank Guided Missile" }
-		DermaNumSlider:SetMinMax( 40, 180 )
-	end
-	gunData["Autoloading ATGM Launcher"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Anti Tank Guided Missile" }
-		DermaNumSlider:SetMinMax( 40, 180 )
-	end
-	gunData["Autoloading Dual ATGM Launcher"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Anti Tank Guided Missile" }
-		DermaNumSlider:SetMinMax( 40, 180 )
-	end
-	gunData["Recoilless Rifle"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 25/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "High Explosive","High Explosive Anti Tank","High Explosive Anti Tank Fin Stabilized","High Explosive Squash Head","Smoke" }
-		DermaNumSlider:SetMinMax( 20, 150 )
-	end
-	gunData["Autoloading Recoilless Rifle"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 25/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "High Explosive","High Explosive Anti Tank","High Explosive Anti Tank Fin Stabilized","High Explosive Squash Head","Smoke" }
-		DermaNumSlider:SetMinMax( 20, 150 )
-	end
-	gunData["Autocannon"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "Armor Piercing Fin Stabilized Discarding Sabot" }
-		DermaNumSlider:SetMinMax( 20, 90 )
-	end
-	gunData["Autoloader"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Long Autoloader"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 70/50
-		ShellLengthExact = 9
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Short Autoloader"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 40/50
-		ShellLengthExact = 5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Autoloading Howitzer"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 30/50
-		ShellLengthExact = 4
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke" }
-		DermaNumSlider:SetMinMax( 50, 240 )
-	end
-	gunData["Smoke Launcher"] = function()
-		EntType   = "dak_temachinegun"
-		ShellLength = 3/50
-		ShellLengthExact = 0.5
-		AmmoTypes = { "Smoke" }
-		DermaNumSlider:SetMinMax( 40, 100 )
-	end
-	gunData["Grenade Launcher"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 27/50
-		ShellLengthExact = 3.5
-		AmmoTypes = { "High Explosive", "High Explosive Anti Tank", "High Explosive Squash Head", "Smoke" }
-		DermaNumSlider:SetMinMax( 20, 45 )
-	end
-	gunData["Autoloading Mortar"] = function()
-		EntType   = "dak_teautogun"
-		ShellLength = 15/50
-		ShellLengthExact = 2.75
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke" }
-		DermaNumSlider:SetMinMax( 40, 420 )
-	end
-	gunData["Cannon"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Long Cannon"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 70/50
-		ShellLengthExact = 9
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Short Cannon"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 40/50
-		ShellLengthExact = 5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" }
-		DermaNumSlider:SetMinMax( 25, 200 )
-	end
-	gunData["Flamethrower"] = function()
-		EntType   = "dak_temachinegun"
-		AmmoTypes = {}
-	end
-	gunData["Heavy Machine Gun"] = function()
-		GunType   = "HMG"
-		EntType   = "dak_teautogun"
-		ShellLength = 40/50
-		ShellLengthExact = 5
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "Armor Piercing Fin Stabilized Discarding Sabot" }
-		DermaNumSlider:SetMinMax( 20, 75 )
-	end
-	gunData["Howitzer"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 30/50
-		ShellLengthExact = 4
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke" }
-		DermaNumSlider:SetMinMax( 50, 240 )
-	end
-	gunData["Machine Gun"] = function()
-		GunType   = "MG"
-		EntType   = "dak_temachinegun"
-		ShellLength = 50/50
-		ShellLengthExact = 6.5
-		AmmoTypes = { "Armor Piercing" }
-		DermaNumSlider:SetMinMax( 5, 25 )
-	end
-	gunData["Mortar"] = function()
-		EntType   = "dak_tegun"
-		ShellLength = 15/50
-		ShellLengthExact = 2.75
-		AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke"}
-		DermaNumSlider:SetMinMax( 40, 420 )
+
+	for ClassName, ClassData in SortedPairs(Classes.Weapons) do
+		gunData[ClassData.Name or ClassName] = function()
+			GunType = ClassName
+			EntType = ClassData.EntType
+			ShellLength = ClassData.ShellLengthMult
+			ShellLengthExact = ClassData.ShellLengthExact
+			AmmoTypes = ClassData.AmmoTypes
+			DermaNumSlider:SetMinMax(ClassData.MinCaliber, ClassData.MaxCaliber)
+		end
 	end
 
 	--Table containing the volume of the available ammo crates
@@ -2474,29 +1878,12 @@ function TOOL.BuildCPanel( panel )
 	AmmoBoxSelect:SetPos( 15, 345 )
 	AmmoBoxSelect:SetSortItems( false )
 	AmmoBoxSelect:SetValue( "--Select Weapon--" )
-	AmmoBoxSelect:AddChoice( "Autocannon" )
-	AmmoBoxSelect:AddChoice( "Autoloader" )
-	AmmoBoxSelect:AddChoice( "Long Autoloader" )
-	AmmoBoxSelect:AddChoice( "Short Autoloader" )
-	AmmoBoxSelect:AddChoice( "Autoloading Howitzer" )
-	AmmoBoxSelect:AddChoice( "Autoloading Mortar" )
-	AmmoBoxSelect:AddChoice( "Short Cannon" )
-	AmmoBoxSelect:AddChoice( "Cannon" )
-	AmmoBoxSelect:AddChoice( "ATGM Launcher" )
-	AmmoBoxSelect:AddChoice( "Dual ATGM Launcher" )
-	AmmoBoxSelect:AddChoice( "Autoloading ATGM Launcher" )
-	AmmoBoxSelect:AddChoice( "Autoloading Dual ATGM Launcher" )
-	AmmoBoxSelect:AddChoice( "Recoilless Rifle" )
-	AmmoBoxSelect:AddChoice( "Autoloading Recoilless Rifle" )
-	AmmoBoxSelect:AddChoice( "Long Cannon" )
-	AmmoBoxSelect:AddChoice( "Flamethrower" )
-	AmmoBoxSelect:AddChoice( "Heavy Machine Gun" )
-	AmmoBoxSelect:AddChoice( "Howitzer" )
-	AmmoBoxSelect:AddChoice( "Machine Gun" )
-	AmmoBoxSelect:AddChoice( "Smoke Launcher" )
-	AmmoBoxSelect:AddChoice( "Grenade Launcher" )
-	AmmoBoxSelect:AddChoice( "Mortar" )
-	AmmoBoxSelect.OnSelect = function( panel, index, value )
+
+	for ClassName, ClassData in SortedPairs( Classes.Weapons ) do
+		AmmoBoxSelect:AddChoice( ClassData.Name or ClassName )
+	end
+
+	AmmoBoxSelect.OnSelect = function( _, _, value )
 		GunType = value
 		gunData[value]()
 		DermaNumSlider:SetValue( math.Clamp(DermaNumSlider:GetValue(),DermaNumSlider:GetMin(),DermaNumSlider:GetMax()) )

@@ -384,8 +384,6 @@ function ENT:DakTEFire()
 					end
 				end
 
-				local shootDir = shootAngles:Forward()
-
 				local Propellant = math.Clamp(self:GetPropellant(),10,100)*0.01
  				local Shell = {}
  				Shell.Pos = shootOrigin + ( self:GetForward() * 1 )
@@ -526,19 +524,19 @@ function ENT:TriggerInput(iname, value)
 	if IsValid(self.DakTankCore) and hook.Run("DakTankCanFire", self) ~= false then
 		self.Held = value
 		if (iname == "Fire") then
-			if value>0 then
+			if value > 0 then
 				self.Firing = value > 0
 				self:DakTEFire()
 				if self.Refiring then
-					local ShotsFiredSinceLastCall = math.floor((CurTime()-self.LastFireTime)/self.DakCooldown)
-					if ShotsFiredSinceLastCall>0 then
-						for i=1, ShotsFiredSinceLastCall do
+					local ShotsFiredSinceLastCall = math.floor((CurTime() - self.LastFireTime) / self.DakCooldown)
+					if ShotsFiredSinceLastCall > 0 then
+						for _ = 1, ShotsFiredSinceLastCall do
 							self.truefire = true
 							self:DakTEFire()
 						end
 					end
 				end
-				timer.Create( "RefireTimer"..self:EntIndex(), self.DakCooldown, 1, function()
+				timer.Create( "RefireTimer" .. self:EntIndex(), self.DakCooldown, 1, function()
 					if IsValid(self) then
 						self.Refiring = true
 						self.truefire = true
@@ -547,7 +545,7 @@ function ENT:TriggerInput(iname, value)
 					end
 				end)
 			else
-				timer.Remove( "RefireTimer"..self:EntIndex() )
+				timer.Remove( "RefireTimer" .. self:EntIndex() )
 				self.Refiring = false
 				self.truefire = false
 				if self.FlameFiring == 1 then

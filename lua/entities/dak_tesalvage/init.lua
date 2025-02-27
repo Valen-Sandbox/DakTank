@@ -55,7 +55,7 @@ function ENT:Think()
 	if self:GetModel() == "models/gibs/hgibs_rib.mdl" and (self:GetParent() == NULL or self:GetParent() == nil) then
 		local trace = {}
 		trace.start = self.LastPos
-		trace.endpos = self:GetPos() + self:GetVelocity()*0.25
+		trace.endpos = self:GetPos() + self:GetVelocity() * 0.25
 		trace.filter = self
 		local Hit = util.TraceLine( trace )
 		if Hit.Entity:IsValid() then
