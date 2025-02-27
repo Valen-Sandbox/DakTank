@@ -1,27 +1,7 @@
 AddCSLuaFile( "dak_ai_translations.lua" )
 include( "dak_ai_translations.lua" )
 
-if SERVER then
-
-	--AddCSLuaFile ("shared.lua")
-
-
-	SWEP.Weight = 5
-
-	SWEP.AutoSwitchTo = false
-	SWEP.AutoSwitchFrom = false
-
-elseif CLIENT then
-
-	SWEP.PrintName = "Base Gun"
-
-	SWEP.Slot = 4
-	SWEP.SlotPos = 1
-
-	SWEP.DrawAmmo = true
-	SWEP.DrawCrosshair = true
-end
-
+SWEP.PrintName = "Base Gun"
 SWEP.Author = "DakTank"
 SWEP.Purpose = "Shoots Things."
 SWEP.Instructions = "[Sample Text], 14.55mm pen"
@@ -50,6 +30,33 @@ SWEP.HoldType = "ar2"
 SWEP.LastTime = CurTime()
 SWEP.CSMuzzleFlashes = true
 
+SWEP.Weight = 5
+SWEP.AutoSwitchTo = false
+SWEP.AutoSwitchFrom = false
+
+SWEP.Slot = 4
+SWEP.SlotPos = 1
+SWEP.DrawAmmo = true
+SWEP.DrawCrosshair = true
+
+-- Gun info
+SWEP.ShotCount = 1
+SWEP.Spread = 0.05 -- 0.1 for pistols, 0.075 for smgs, 0.05 for rifles
+SWEP.PrimaryCooldown = 0.1
+SWEP.FireSound = "weapons/ak47/ak47-1.wav"
+SWEP.IsPistol = false
+SWEP.IsRifle = true
+SWEP.heavyweapon = false
+
+-- Shell info
+SWEP.DakTrail = "dakteballistictracer"
+SWEP.DakCaliber = 7.62
+SWEP.DakShellType = "AP"
+SWEP.DakPenLossPerMeter = 0.0005
+SWEP.DakExplosive = false
+SWEP.DakVelocity = 28200
+SWEP.Zoom = 55
+
 function SWEP:Initialize()
 	self.SpreadStacks = 0
 	self:SetHoldType( self.HoldType )
@@ -70,28 +77,12 @@ function SWEP:Initialize()
 		owner:CapabilitiesAdd( CAP_AIM_GUN )
 		owner:CapabilitiesAdd( CAP_NO_HIT_SQUADMATES )
 	end
+
 	self.PrimaryLastFire = 0
 	self.PrimaryMessage = 0
 	self.Fired = 0
-
-	--gun info
-	self.ShotCount = 1
-	self.Spread = 0.05 --0.1 for pistols, 0.075 for smgs, 0.05 for rifles
-	self.PrimaryCooldown = 0.1
-	self.FireSound = "weapons/ak47/ak47-1.wav"
-	self.IsPistol = false
-	self.IsRifle = true
-	self.heavyweapon = false
-
-	--shell info
-	self.DakTrail = "dakteballistictracer"
-	self.DakCaliber = 7.62
-	self.DakShellType = "AP"
-	self.DakPenLossPerMeter = 0.0005
-	self.DakExplosive = false
-	self.DakVelocity = 28200
-	self.ShellLengthMult = self.DakVelocity / 29527.6
-	self.Zoom = 55
+	self.ShellLengthMult = self.ShellLengthMult or self.DakVelocity / 29527.6
+	self.DakTrail = self.IsMissile and "daktemissiletracer" or "dakteballistictracer"
 end
 
 function SWEP:Reload()
@@ -123,23 +114,24 @@ end
 
 function SWEP:PrimaryAttack()
 	if not IsFirstTimePredicted() then return end
+
 	if self.PrimaryLastFire + self.PrimaryCooldown < CurTime() then
 		local owner = self:GetOwner()
+		local ownerVel = owner:GetVelocity()
 
-		if ( self.heavyweapon == true and owner:GetVelocity() == Vector( 0, 0, 0 ) and owner:OnGround() ) or self.heavyweapon == false or self.heavyweapon == nil then
+		if ( self.heavyweapon == true and ownerVel == vector_origin and owner:OnGround() ) or self.heavyweapon == false or self.heavyweapon == nil then
 			if self:Clip1() > 0 then
 				if SERVER then
 					if owner:IsPlayer() then
 						owner:LagCompensation( true )
 					end
 
-					for i = 1, self.ShotCount do
+					for _ = 1, self.ShotCount do
 						local shell = {}
 						shell.Pos = owner:GetShootPos()
-						local initvel = owner:GetVelocity()
-						shell.DakVelocity = ( ( self.DakVelocity * math.Rand( 0.95, 1.05 ) ) * ( owner:GetAimVector():Angle() + Angle( math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ) ) ):Forward() ) + initvel
+						shell.DakVelocity = ( ( self.DakVelocity * math.Rand( 0.95, 1.05 ) ) * ( owner:GetAimVector():Angle() + Angle( math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ) ) ):Forward() ) + ownerVel
 						if owner:Crouching() then
-							shell.DakVelocity = ( ( self.DakVelocity * math.Rand( 0.95, 1.05 ) ) * ( owner:GetAimVector():Angle() + 0.5 * Angle( math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ) ) ):Forward() ) + initvel
+							shell.DakVelocity = ( ( self.DakVelocity * math.Rand( 0.95, 1.05 ) ) * ( owner:GetAimVector():Angle() + 0.5 * Angle( math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ), math.Rand( -self.Spread, self.Spread ) ) ):Forward() ) + ownerVel
 						end
 
 						shell.DakTrail = self.DakTrail
@@ -245,7 +237,8 @@ function SWEP:PrimaryAttack()
 				end
 			end
 		end
-		if self.heavyweapon == true and not ( owner:GetVelocity() == Vector( 0, 0, 0 ) and owner:OnGround() ) then
+
+		if self.heavyweapon == true and not ( ownerVel == vector_origin and owner:OnGround() ) then
 			if self.PrimaryMessage == nil then self.PrimaryMessage = 0 end
 			if self.PrimaryMessage + 1 < CurTime() then
 				if SERVER then
@@ -285,5 +278,3 @@ end
 function SWEP:GetCapabilities()
 	return bit.bor( CAP_WEAPON_RANGE_ATTACK1, CAP_INNATE_RANGE_ATTACK1 )
 end
-
-

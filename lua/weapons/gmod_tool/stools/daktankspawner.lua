@@ -50,7 +50,6 @@ function TOOL:LeftClick( trace )
 		end
 		if (trace.Entity:GetClass() == "dak_gun") or (trace.Entity:GetClass() == "dak_laser") or (trace.Entity:GetClass() == "dak_xpulselaser") or (trace.Entity:GetClass() == "dak_launcher") or (trace.Entity:GetClass() == "dak_lams") or (trace.Entity:GetClass() == "dak_tegun") or (trace.Entity:GetClass() == "dak_teautogun") or (trace.Entity:GetClass() == "dak_temachinegun") then
 			if (self:GetClientInfo("SpawnEnt") == "dak_gun") or (self:GetClientInfo("SpawnEnt") == "dak_laser") or (self:GetClientInfo("SpawnEnt") == "dak_xpulselaser") or (self:GetClientInfo("SpawnEnt") == "dak_launcher") or (self:GetClientInfo("SpawnEnt") == "dak_lams") or (self:GetClientInfo("SpawnEnt") == "dak_tegun") or (self:GetClientInfo("SpawnEnt") == "dak_teautogun")or (self:GetClientInfo("SpawnEnt") == "dak_temachinegun") then
-				local Target = trace.HitPos
 				local spawnent = self:GetClientInfo("SpawnEnt")
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end
@@ -64,7 +63,6 @@ function TOOL:LeftClick( trace )
 		end
 		if trace.Entity:GetClass() == "dak_tegearbox" then
 			if self:GetClientInfo("SpawnEnt") == "dak_tegearboxnew" then
-				local Target = trace.HitPos
 				local spawnent = self:GetClientInfo("SpawnEnt")
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end
@@ -78,7 +76,6 @@ function TOOL:LeftClick( trace )
 		end
 		if trace.Entity:GetClass() == "dak_tegearboxnew" then
 			if self:GetClientInfo("SpawnEnt") == "dak_tegearbox" then
-				local Target = trace.HitPos
 				local spawnent = self:GetClientInfo("SpawnEnt")
 				self.spawnedent = ents.Create(spawnent)
 				if ( !IsValid( self.spawnedent ) ) then return end

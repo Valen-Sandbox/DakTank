@@ -1,7 +1,6 @@
-
 --[[---------------------------------------------------------
    Name: SetupWeaponHoldTypeForAI
-   Desc: Mainly a Todo.. In a seperate file to clean up the init.lua
+   Desc: Mainly a Todo.. In a separate file to clean up the init.lua
 -----------------------------------------------------------]]
 function SWEP:SetupWeaponHoldTypeForAI( t )
 
@@ -164,4 +163,3 @@ function SWEP:SetupWeaponHoldTypeForAI( t )
 	return end
 
 end
-

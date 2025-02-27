@@ -34,8 +34,9 @@ TOOL.ClientConVar[ "DakArmor" ] = "1"
 TOOL.ClientConVar[ "ArmorType" ]   = "RHA"
 
 local DTTE = DTTE
+local screenTextColor = Color( 224, 224, 255, 255 )
 
-local function SetMass( Player, Entity, Data )
+local function SetMass( _, Entity, Data )
 	if not SERVER then return end
 
 	if Data.Mass then
@@ -302,10 +303,10 @@ function TOOL:Think()
 					self.Weapon:SetNWFloat("HVAP",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 					self.Weapon:SetNWFloat("APFSDS",math.Round(CompArmor*trace.Entity.EntityMods.CompKEMult,2))
 				else
-					local APArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
-					local HEATArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
-					local HVAPArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()},nil,true)
-					local APFSDSArmor, _, _, _ = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()},nil,true)
+					local APArmor = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "AP", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
+					local HEATArmor = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HEAT", self:GetClientInfo("DakArmor"), {self:GetOwner()},nil,true)
+					local HVAPArmor = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "HVAP", self:GetClientInfo("DakArmor")*0.5, {self:GetOwner()},nil,true)
+					local APFSDSArmor  = DTTE.GetEffArmor(trace.StartPos, trace.HitPos+trace.Normal*5, "APFSDS", self:GetClientInfo("DakArmor")*0.25, {self:GetOwner()},nil,true)
 					self.Weapon:SetNWFloat("Armor",math.Round(trace.Entity.DakArmor,2))
 					self.Weapon:SetNWFloat("AP",math.Round(APArmor,2))
 					self.Weapon:SetNWFloat("HEAT",math.Round(HEATArmor,2))
@@ -334,7 +335,6 @@ end
 function TOOL.BuildCPanel(panel)
 	local wide = panel:GetWide()
 
-
 	local DLabel = vgui.Create( "DLabel", panel )
 	DLabel:SetPos( 17, 55 )
 	DLabel:SetAutoStretchVertical( true )
@@ -346,7 +346,7 @@ function TOOL.BuildCPanel(panel)
 	local ArmorValueText = vgui.Create("DNumSlider", panel)
 	ArmorValueText:SetPos( 17, 65 )
 	ArmorValueText:SetValue(0)
-	ArmorValueText:SetWide(wide/2)
+	ArmorValueText:SetWide(wide / 2)
 	ArmorValueText:SetTall(20)
 	ArmorValueText:SetMin(0.01)
 	ArmorValueText:SetMax(10000)
@@ -388,7 +388,7 @@ function TOOL.BuildCPanel(panel)
 	ArmorDesc:SetWrap( true )
 end
 
-function TOOL:DrawToolScreen( w, h )
+function TOOL:DrawToolScreen()
 	if not CLIENT then return end
 
 	cam.Start2D()
@@ -399,30 +399,28 @@ function TOOL:DrawToolScreen( w, h )
 		surface.DrawTexturedRect( 0, 0, 256, 256 )
 		surface.SetFont( "DakTankArmorFont" )
 
-		draw.SimpleTextOutlined( "Angle", "DakTankArmorFont", 64, 20, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Angle"),2), "DakTankArmorFont", 64, 50, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "Angle", "DakTankArmorFont", 64, 20, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Angle"),2), "DakTankArmorFont", 64, 50, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "Armor", "DakTankArmorFont", 64, 79, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Armor"),2), "DakTankArmorFont", 64, 109, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "Armor", "DakTankArmorFont", 64, 79, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Armor"),2), "DakTankArmorFont", 64, 109, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "Mass", "DakTankArmorFont", 64, 143, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Mass"),2), "DakTankArmorFont", 64, 173, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "Mass", "DakTankArmorFont", 64, 143, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Mass"),2), "DakTankArmorFont", 64, 173, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "Shell", "DakTankArmorFont", 64, 207, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Shell"),2), "DakTankArmorFont", 64, 237, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "Shell", "DakTankArmorFont", 64, 207, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("Shell"),2), "DakTankArmorFont", 64, 237, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "vs AP", "DakTankArmorFont", 192, 20, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("AP"),2), "DakTankArmorFont", 192, 50, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "vs AP", "DakTankArmorFont", 192, 20, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("AP"),2), "DakTankArmorFont", 192, 50, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "vs HEAT", "DakTankArmorFont", 192, 79, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HEAT"),2), "DakTankArmorFont", 192, 109, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "vs HEAT", "DakTankArmorFont", 192, 79, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HEAT"),2), "DakTankArmorFont", 192, 109, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "vs HVAP", "DakTankArmorFont", 192, 143, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HVAP"),2), "DakTankArmorFont", 192, 173, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( "vs HVAP", "DakTankArmorFont", 192, 143, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("HVAP"),2), "DakTankArmorFont", 192, 173, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 
-		draw.SimpleTextOutlined( "vs APFSDS", "DakTankArmorFont", 192, 207, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("APFSDS"),2), "DakTankArmorFont", 192, 237, Color( 224, 224, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
-
+		draw.SimpleTextOutlined( "vs APFSDS", "DakTankArmorFont", 192, 207, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
+		draw.SimpleTextOutlined( math.Round(self.Weapon:GetNWFloat("APFSDS"),2), "DakTankArmorFont", 192, 237, screenTextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 3, color_black )
 	cam.End2D()
-
 end

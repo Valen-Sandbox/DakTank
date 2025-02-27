@@ -143,7 +143,6 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	--local entids = {}
 	info.DakName = self.DakName
 	info.DakIsExplosive = self.DakIsExplosive
 	info.DakMaxHealth = self.DakMaxHealth
@@ -151,10 +150,12 @@ function ENT:PreEntityCopy()
 	info.DakOwner = self.DakOwner
 	if IsValid(self.DakGun) then info.GunID = self.DakGun:EntIndex() end
 	info.DakColor = self:GetColor()
+
 	--Materials
 	info.DakMat0 = self:GetSubMaterial(0)
 	info.DakMat1 = self:GetSubMaterial(1)
 	duplicator.StoreEntityModifier(self, "DakTek", info)
+
 	--Wire dupe info
 	self.BaseClass.PreEntityCopy(self)
 end
