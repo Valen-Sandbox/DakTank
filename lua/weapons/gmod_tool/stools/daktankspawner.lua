@@ -38,6 +38,53 @@ TOOL.crewcolors = {
 local DTTE = DTTE
 local Classes = DTTE.Classes
 
+local function UpdateGenericEntity(Tool, TraceEnt, EntClass, UpdateString, SetToolModel)
+	if IsValid(TraceEnt) and TraceEnt:GetClass() == EntClass then
+		if SetToolModel then
+			TraceEnt.DakOwner = Tool:GetOwner()
+		end
+
+		if EntClass == "dak_temotor" then
+			TraceEnt.DakSound = Tool.DakSound
+		end
+
+		TraceEnt.DakName = Tool.DakName
+		TraceEnt.DakModel = Tool.DakModel
+		TraceEnt.DakMaxHealth = Tool.DakMaxHealth
+		TraceEnt.DakHealth = Tool.DakMaxHealth
+		TraceEnt:PhysicsDestroy()
+		TraceEnt:SetModel(TraceEnt.DakModel)
+		TraceEnt:PhysicsInit(SOLID_VPHYSICS)
+		TraceEnt:SetMoveType(MOVETYPE_VPHYSICS)
+		TraceEnt:SetSolid(SOLID_VPHYSICS)
+		Tool:GetOwner():ChatPrint(UpdateString .. " updated.")
+	else
+		if EntClass == "dak_temotor" then
+			Tool.spawnedent.DakSound = Tool.DakSound
+		end
+
+		Tool.spawnedent.DakName = Tool.DakName
+		Tool.spawnedent.DakModel = Tool.DakModel
+		Tool.spawnedent.DakMaxHealth = Tool.DakMaxHealth
+		Tool.spawnedent.DakHealth = Tool.DakMaxHealth
+
+		if SetToolModel then
+			Tool.spawnedent.DakOwner = Tool:GetOwner()
+			Tool.spawnedent:PhysicsDestroy()
+			Tool.spawnedent:SetModel(Tool.DakModel)
+			Tool.spawnedent:PhysicsInit(SOLID_VPHYSICS)
+			Tool.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
+			Tool.spawnedent:SetSolid(SOLID_VPHYSICS)
+
+			if EntClass == "dak_crew" then
+				Tool.spawnedent:SetColor(Tool.crewcolors[math.random(1,8)])
+			end
+		else
+			Tool.spawnedent:SetModel(Tool.spawnedent.DakModel)
+		end
+	end
+end
+
 --Main spawning function, creates entities based on the options selected in the menu and updates current entities
 function TOOL:LeftClick( trace )
 	if SERVER then
@@ -47,7 +94,7 @@ function TOOL:LeftClick( trace )
 			self.spawnedent = ents.Create(spawnent)
 			if ( !IsValid( self.spawnedent ) ) then return end
 			self.spawnedent:SetPos(Target+Vector(0,0,2*self.spawnedent:OBBMins().z))
-			self.spawnedent:SetAngles( Angle(0,0,0))
+			self.spawnedent:SetAngles( angle_zero )
 		end
 		if (trace.Entity:GetClass() == "dak_gun") or (trace.Entity:GetClass() == "dak_laser") or (trace.Entity:GetClass() == "dak_xpulselaser") or (trace.Entity:GetClass() == "dak_launcher") or (trace.Entity:GetClass() == "dak_lams") or (trace.Entity:GetClass() == "dak_tegun") or (trace.Entity:GetClass() == "dak_teautogun") or (trace.Entity:GetClass() == "dak_temachinegun") then
 			if (self:GetClientInfo("SpawnEnt") == "dak_gun") or (self:GetClientInfo("SpawnEnt") == "dak_laser") or (self:GetClientInfo("SpawnEnt") == "dak_xpulselaser") or (self:GetClientInfo("SpawnEnt") == "dak_launcher") or (self:GetClientInfo("SpawnEnt") == "dak_lams") or (self:GetClientInfo("SpawnEnt") == "dak_tegun") or (self:GetClientInfo("SpawnEnt") == "dak_teautogun")or (self:GetClientInfo("SpawnEnt") == "dak_temachinegun") then
@@ -132,41 +179,13 @@ function TOOL:LeftClick( trace )
 			self.DakModel = "models/daktanks/crewdriver.mdl"
 		end
 		--Fuel
-		if Selection == "MicroFuel" then
-			self.DakMaxHealth = 10
-			self.DakHealth = 10
-			self.DakName = "Micro Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank1.mdl"
-		end
-		if Selection == "SmallFuel" then
-			self.DakMaxHealth = 20
-			self.DakHealth = 20
-			self.DakName = "Small Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank2.mdl"
-		end
-		if Selection == "StandardFuel" then
-			self.DakMaxHealth = 30
-			self.DakHealth = 30
-			self.DakName = "Standard Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank3.mdl"
-		end
-		if Selection == "LargeFuel" then
-			self.DakMaxHealth = 40
-			self.DakHealth = 40
-			self.DakName = "Large Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank4.mdl"
-		end
-		if Selection == "HugeFuel" then
-			self.DakMaxHealth = 50
-			self.DakHealth = 50
-			self.DakName = "Huge Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank5.mdl"
-		end
-		if Selection == "UltraFuel" then
-			self.DakMaxHealth = 60
-			self.DakHealth = 60
-			self.DakName = "Ultra Fuel Tank"
-			self.DakModel = "models/daktanks/fueltank6.mdl"
+		SelectedClass = Classes.FuelTanks[Selection]
+
+		if SelectedClass then
+			self.DakName = Selection
+			self.DakHealth = SelectedClass.MaxHealth
+			self.DakMaxHealth = SelectedClass.MaxHealth
+			self.DakModel = SelectedClass.Model
 		end
 		--Engines
 		SelectedClass = Classes.Engines[Selection]
@@ -1038,244 +1057,25 @@ function TOOL:LeftClick( trace )
 			end
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_teautoloadingmodule" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_teautoloadingmodule" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakOwner = self:GetOwner()
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint("Magazine updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakOwner = self:GetOwner()
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent:PhysicsDestroy()
-					self.spawnedent:SetModel(self.DakModel)
-					self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-					self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-					self.spawnedent:SetSolid(SOLID_VPHYSICS)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakOwner = self:GetOwner()
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent:PhysicsDestroy()
-				self.spawnedent:SetModel(self.DakModel)
-				self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-				self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-				self.spawnedent:SetSolid(SOLID_VPHYSICS)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_teautoloadingmodule", "Magazine", true)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_turretmotor" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_turretmotor" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakOwner = self:GetOwner()
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint("Turret motor updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakOwner = self:GetOwner()
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent:PhysicsDestroy()
-					self.spawnedent:SetModel(self.DakModel)
-					self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-					self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-					self.spawnedent:SetSolid(SOLID_VPHYSICS)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakOwner = self:GetOwner()
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent:PhysicsDestroy()
-				self.spawnedent:SetModel(self.DakModel)
-				self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-				self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-				self.spawnedent:SetSolid(SOLID_VPHYSICS)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_turretmotor", "Turret motor", true)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_crew" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_crew" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakOwner = self:GetOwner()
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint("Crew updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakOwner = self:GetOwner()
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent:PhysicsDestroy()
-					self.spawnedent:SetModel(self.DakModel)
-					self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-					self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-					self.spawnedent:SetSolid(SOLID_VPHYSICS)
-					self.spawnedent:SetColor(self.crewcolors[math.random(1,8)])
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakOwner = self:GetOwner()
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent:PhysicsDestroy()
-				self.spawnedent:SetModel(self.DakModel)
-				self.spawnedent:PhysicsInit(SOLID_VPHYSICS)
-				self.spawnedent:SetMoveType(MOVETYPE_VPHYSICS)
-				self.spawnedent:SetSolid(SOLID_VPHYSICS)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_crew", "Crew", true)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_temotor" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_temotor" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakHealth
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity.DakSound = self.DakSound
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint( "Engine updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakHealth
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent.DakSound = self.DakSound
-					self.spawnedent:SetModel(self.spawnedent.DakModel)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakHealth
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent.DakSound = self.DakSound
-				self.spawnedent:SetModel(self.spawnedent.DakModel)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_temotor", "Engine", false)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_tefuel" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_tefuel" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint( "Fuel updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent:SetModel(self.spawnedent.DakModel)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent:SetModel(self.spawnedent.DakModel)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_tefuel", "Fuel tank", false)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_tegearbox" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_tegearbox" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint( "Gearbox updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent:SetModel(self.spawnedent.DakModel)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent:SetModel(self.spawnedent.DakModel)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_tegearbox", "Gearbox", false)
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_tegearboxnew" then
-			if trace.Entity then
-				if trace.Entity:GetClass() == "dak_tegearboxnew" then
-					trace.Entity.DakName = self.DakName
-					trace.Entity.DakMaxHealth = self.DakMaxHealth
-					trace.Entity.DakHealth = self.DakMaxHealth
-					trace.Entity.DakModel = self.DakModel
-					trace.Entity:PhysicsDestroy()
-					trace.Entity:SetModel(trace.Entity.DakModel)
-					trace.Entity:PhysicsInit(SOLID_VPHYSICS)
-					trace.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-					trace.Entity:SetSolid(SOLID_VPHYSICS)
-					self:GetOwner():ChatPrint( "Gearbox updated.")
-				else
-					self.spawnedent.DakName = self.DakName
-					self.spawnedent.DakMaxHealth = self.DakMaxHealth
-					self.spawnedent.DakHealth = self.DakMaxHealth
-					self.spawnedent.DakModel = self.DakModel
-					self.spawnedent:SetModel(self.spawnedent.DakModel)
-				end
-			end
-			if not(trace.Entity:IsValid()) then
-				self.spawnedent.DakName = self.DakName
-				self.spawnedent.DakMaxHealth = self.DakMaxHealth
-				self.spawnedent.DakHealth = self.DakMaxHealth
-				self.spawnedent.DakModel = self.DakModel
-				self.spawnedent:SetModel(self.spawnedent.DakModel)
-			end
+			UpdateGenericEntity(self, trace.Entity, "dak_tegearboxnew", "Gearbox", false)
 		end
 
 		self.ScalingGun = 0
@@ -1653,7 +1453,7 @@ function TOOL:RightClick( trace )
 			if trace.Entity.DakArmor == nil then
 				DTTE.SetupNewEnt(trace.Entity)
 			end
-			if trace.Entity:GetClass()=="prop_physics" then
+			if trace.Entity:GetClass() == "prop_physics" then
 				local SA = trace.Entity:GetPhysicsObject():GetSurfaceArea()
 				if trace.Entity.IsDakTekFutureTech == 1 then
 					trace.Entity.DakArmor = 1000
@@ -1663,7 +1463,7 @@ function TOOL:RightClick( trace )
 						trace.Entity.DakArmor = trace.Entity:OBBMaxs().x/2
 						trace.Entity.DakIsTread = 1
 					else
-						if trace.Entity:GetClass()=="prop_physics" and not(trace.Entity.IsComposite == 1) then
+						if trace.Entity:GetClass() == "prop_physics" and not(trace.Entity.IsComposite == 1) then
 							DTTE.ArmorSanityCheck(trace.Entity)
 						end
 					end
@@ -1857,7 +1657,7 @@ function TOOL:Reload( trace )
 			end
 		end
 		local ply = self:GetOwner()
-		ply:ChatPrint("This Contraption weighs "..Mass.." kg")
+		ply:ChatPrint("This Contraption weighs " .. Mass .. " kg")
 		end
 	end
 end
@@ -2013,23 +1813,18 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing the description of the fuel tanks
 	local fuelList = {}
-	fuelList["Micro Fuel Tank"] = function()
-		DLabel:SetText( "Micro Fuel Tank\n\nTiny fuel tank to run light tanks and tankettes.\n\nFuel Tank Stats:\nHealth:    10\nWeight:   65kg\nCapacity: 45L" )
-	end
-	fuelList["Small Fuel Tank"] = function()
-		DLabel:SetText( "Small Fuel Tank\n\nSmall fuel tank for light tanks and weak engined mediums.\n\nFuel Tank Stats:\nHealth:    20\nWeight:   120kg\nCapacity: 90L" )
-	end
-	fuelList["Standard Fuel Tank"] = function()
-		DLabel:SetText( "Standard Fuel Tank\n\nStandard medium tank fuel tank.\n\nFuel Tank Stats:\nHealth:    30\nWeight:   240kg\nCapacity: 180L" )
-	end
-	fuelList["Large Fuel Tank"] = function()
-		DLabel:SetText( "Large Fuel Tank\n\nLarge fuel tanks for heavies running mid sized engines.\n\nFuel Tank Stats:\nHealth:    40\nWeight:   475kg\nCapacity: 360L" )
-	end
-	fuelList["Huge Fuel Tank"] = function()
-		DLabel:SetText( "Huge Fuel Tank\n\nHuge fuel tank for heavies running large gas guzzlers.\n\nFuel Tank Stats:\nHealth:    50\nWeight:   950kg\nCapacity: 720L" )
-	end
-	fuelList["Ultra Fuel Tank"] = function()
-		DLabel:SetText( "Ultra Fuel Tank\n\nMassive fuel tank designed for super heavy tanks running the largest of engines.\n\nFuel Tank Stats:\nHealth:    60\nWeight:   1900kg\nCapacity: 1440L" )
+
+	for ClassName, ClassData in pairs(Classes.FuelTanks) do
+		fuelList[ClassName] = function()
+			local name = ClassName .. "\n\n"
+			local desc = ClassData.Description .. "\n\n"
+			local stats = "Fuel Tank Stats:\n"
+			local health = "Health:    " .. ClassData.MaxHealth .. "\n"
+			local weight = "Weight:   " .. ClassData.Mass .. "kg\n"
+			local capacity = "Capacity: " .. ClassData.Fuel .. "L"
+
+			DLabel:SetText( name .. desc .. stats .. health .. weight .. capacity )
+		end
 	end
 
 	--Table containing the description of the available weapons
@@ -2466,8 +2261,7 @@ function TOOL.BuildCPanel( panel )
 			DLabel:SetText( "Fuel\n\nFuel tanks are required to run your engine, there are different sizes providing different bonuses." )
 		else
 			fuelList[FuelModel]()
-			local String = string.Explode( " ", FuelModel )
-			RunConsoleCommand( "daktankspawner_SpawnSettings", String[1]..String[2] )
+			RunConsoleCommand( "daktankspawner_SpawnSettings", FuelModel )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_tefuel" )
 		end
 	end
@@ -2568,50 +2362,38 @@ function TOOL.BuildCPanel( panel )
 			if AmmoTypeSelect:GetSelectedID() == nil or AmmoModelSelect:GetSelectedID() == nil then
 				DLabel:SetText( "Ammunition\n\nKeeps guns shooty." )
 			else
-
 				local String = string.Explode( " ", CrateModel )
 				local AmmoCrate = String[1]..AmmoType..String[3]
-				local ShellVol = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*6.5)
 				local ShellLenMult = 6.5
-				local ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 
 				if Caliber < 40 then
 					if AmmoTypeSelect:GetValue() == "Anti Tank Guided Missile" then
 						AmmoTypeSelect:SetValue("High Explosive Anti Tank")
-						AmmoCrate = String[1].."HEAT"..String[3]
+						AmmoCrate = String[1] .. "HEAT" .. String[3]
 						AmmoType = "HEAT"
 					end
 				end
-				--NOTE: shell volume formula is pi * ( ( Caliber * 0.5*mm to inch multiplier)^2 )*Caliber*(mm to inch multiplier*shell length mult*2)
+
 				if AmmoBoxSelect:GetSelected() == "Howitzer" or AmmoBoxSelect:GetSelected() == "Autoloading Howitzer" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*4)
 					ShellLenMult = 4
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				elseif AmmoBoxSelect:GetSelected() == "Smoke Launcher" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*1.375)
 					ShellLenMult = 1.375
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				elseif AmmoBoxSelect:GetSelected() == "Grenade Launcher" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*3.5)
 					ShellLenMult = 3.5
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				elseif AmmoBoxSelect:GetSelected() == "Mortar" or  AmmoBoxSelect:GetSelected() == "AutoloadingMortar" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*2.75)
 					ShellLenMult = 2.75
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				elseif AmmoBoxSelect:GetSelected() == "Short Cannon" or AmmoBoxSelect:GetSelected() == "Heavy Machine Gun" or AmmoBoxSelect:GetSelected() == "Short Autoloader" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*5)
 					ShellLenMult = 5
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				elseif AmmoBoxSelect:GetSelected() == "Long Cannon" or AmmoBoxSelect:GetSelected() == "Long Autoloader" then
-					ShellVol 	 = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*(0.0393701*2*9)
 					ShellLenMult = 9
-					ShellVolSquare = ( ( Caliber*0.0393701 )^2 )*(Caliber*0.0393701*(ShellLenMult*2))
 				end
 
+				-- NOTE: shell volume formula is pi * ( ( Caliber * 0.5*mm to inch multiplier)^2 )*Caliber*(mm to inch multiplier*shell length mult*2)
+				local ShellVol = math.pi * ((Caliber * 0.01968505) ^ 2) * Caliber * (0.0393701 * 2 * ShellLenMult)
+				local ShellVolSquare = ((Caliber * 0.0393701) ^ 2) * (Caliber * 0.0393701 * (ShellLenMult * 2))
 				local ShellMass = ShellVol * 0.044
-				AmmoCount 		= math.floor(Volume/ShellVolSquare)
-				AmmoWeight 		= math.Round(10+(AmmoCount*ShellMass))
+				AmmoCount 		= math.floor(Volume / ShellVolSquare)
+				AmmoWeight 		= math.Round(10 + (AmmoCount * ShellMass))
 
 				if AmmoType == "ATGM" then
 					ShellVol = math.pi*( ( Caliber*0.01968505 )^2 )*Caliber*0.5118113 * 1.5
@@ -2762,7 +2544,7 @@ function TOOL.BuildCPanel( panel )
 	AmmoModelSelect:AddChoice( "24x24x36 Ammo Box" )
 	AmmoModelSelect:AddChoice( "24x36x36 Ammo Box" )
 	AmmoModelSelect:AddChoice( "24x36x48 Ammo Box" )
-	AmmoModelSelect.OnSelect = function( panel, index, value )
+	AmmoModelSelect.OnSelect = function( _, _, value )
 		CrateModel = value
 		crateList[value]()
 		updateUI()
@@ -2772,13 +2554,12 @@ function TOOL.BuildCPanel( panel )
 	FuelModelSelect:SetPos( 15, 345 )
 	FuelModelSelect:SetSortItems( false )
 	FuelModelSelect:SetValue( "--Select Fuel Tank--" )
-	FuelModelSelect:AddChoice( "Micro Fuel Tank" )
-	FuelModelSelect:AddChoice( "Small Fuel Tank" )
-	FuelModelSelect:AddChoice( "Standard Fuel Tank" )
-	FuelModelSelect:AddChoice( "Large Fuel Tank" )
-	FuelModelSelect:AddChoice( "Huge Fuel Tank" )
-	FuelModelSelect:AddChoice( "Ultra Fuel Tank" )
-	FuelModelSelect.OnSelect = function( panel, index, value )
+
+	for ClassName in SortedPairs( Classes.FuelTanks ) do
+		FuelModelSelect:AddChoice( ClassName )
+	end
+
+	FuelModelSelect.OnSelect = function( _, _, value )
 		FuelModel = value
 
 		updateUI()
@@ -2789,11 +2570,11 @@ function TOOL.BuildCPanel( panel )
 	EngineModelSelect:SetSortItems( false )
 	EngineModelSelect:SetValue( "--Select Engine--" )
 
-	for ClassName in pairs( Classes.Engines ) do
+	for ClassName in SortedPairs( Classes.Engines ) do
 		EngineModelSelect:AddChoice( ClassName )
 	end
 
-	EngineModelSelect.OnSelect = function( panel, index, value )
+	EngineModelSelect.OnSelect = function( _, _, value )
 		EngineModel = value
 
 		updateUI()
@@ -2804,7 +2585,7 @@ function TOOL.BuildCPanel( panel )
 	GearboxDirectionSelect:SetValue( "--Select Direction--" )
 	GearboxDirectionSelect:AddChoice( "Frontal Mount" )
 	GearboxDirectionSelect:AddChoice( "Rear Mount" )
-	GearboxDirectionSelect.OnSelect = function( panel, index, value )
+	GearboxDirectionSelect.OnSelect = function( _, _, value )
 		GearboxDirection = string.Explode( " ", value )[1]
 
 		updateUI()
@@ -2820,7 +2601,7 @@ function TOOL.BuildCPanel( panel )
 	GearboxModelSelect:AddChoice( "Large Gearbox" )
 	GearboxModelSelect:AddChoice( "Huge Gearbox" )
 	GearboxModelSelect:AddChoice( "Ultra Gearbox" )
-	GearboxModelSelect.OnSelect = function( panel, index, value )
+	GearboxModelSelect.OnSelect = function( _, _, value )
 		GearboxModel = value
 
 		updateUI()
@@ -2833,7 +2614,7 @@ function TOOL.BuildCPanel( panel )
 	AutoloaderMagazineSelect:AddChoice( "Small Autoloader Magazine" )
 	AutoloaderMagazineSelect:AddChoice( "Medium Autoloader Magazine" )
 	AutoloaderMagazineSelect:AddChoice( "Large Autoloader Magazine" )
-	AutoloaderMagazineSelect.OnSelect = function( panel, index, value )
+	AutoloaderMagazineSelect.OnSelect = function( _, _, value )
 		AutoloaderMagazine = value
 
 		updateUI()
@@ -2846,7 +2627,7 @@ function TOOL.BuildCPanel( panel )
 	TurretMotorSelect:AddChoice( "Small Turret Motor" )
 	TurretMotorSelect:AddChoice( "Medium Turret Motor" )
 	TurretMotorSelect:AddChoice( "Large Turret Motor" )
-	TurretMotorSelect.OnSelect = function( panel, index, value )
+	TurretMotorSelect.OnSelect = function( _, _, value )
 		TurretMotor = value
 
 		updateUI()
