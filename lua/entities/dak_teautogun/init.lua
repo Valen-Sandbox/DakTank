@@ -2454,8 +2454,8 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	local entids = {}
 	info.AutoLoaderIDs = {}
+
 	if #self.AutoLoaders > 0 then
 		for i = 1, #self.AutoLoaders do
 			info.AutoLoaderIDs[i] = self.AutoLoaders[i]:EntIndex()

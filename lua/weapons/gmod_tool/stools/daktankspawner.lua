@@ -36,6 +36,7 @@ TOOL.crewcolors = {
 }
 
 local DTTE = DTTE
+local Classes = DTTE.Classes
 
 --Main spawning function, creates entities based on the options selected in the menu and updates current entities
 function TOOL:LeftClick( trace )
@@ -88,9 +89,11 @@ function TOOL:LeftClick( trace )
 			end
 		end
 	--MOBILITY--
-	    --Turret
-	    local Selection = self:GetClientInfo("SpawnSettings")
-	    self.IsAmmoCrate = 0
+		--Turret
+		local Selection = self:GetClientInfo("SpawnSettings")
+		local SelectedClass = {}
+		self.IsAmmoCrate = 0
+
 		if Selection == "STMotor" then
 			self.DakMaxHealth = 10
 			self.DakHealth = 10
@@ -166,47 +169,14 @@ function TOOL:LeftClick( trace )
 			self.DakModel = "models/daktanks/fueltank6.mdl"
 		end
 		--Engines
-		if Selection == "MicroEngine" then
-			self.DakName = "Micro Engine"
-			self.DakHealth = 5
-			self.DakMaxHealth = 5
-			self.DakModel = "models/daktanks/engine1.mdl"
-			self.DakSound = "daktanks/engine/enginemicro.wav"
-		end
-		if Selection == "SmallEngine" then
-			self.DakName = "Small Engine"
-			self.DakHealth = 20
-			self.DakMaxHealth = 20
-			self.DakModel = "models/daktanks/engine2.mdl"
-			self.DakSound = "daktanks/engine/enginesmall.wav"
-		end
-		if Selection == "StandardEngine" then
-			self.DakName = "Standard Engine"
-			self.DakHealth = 45
-			self.DakMaxHealth = 45
-			self.DakModel = "models/daktanks/engine3.mdl"
-			self.DakSound = "daktanks/engine/enginestandard.wav"
-		end
-		if Selection == "LargeEngine" then
-			self.DakName = "Large Engine"
-			self.DakHealth = 90
-			self.DakMaxHealth = 90
-			self.DakModel = "models/daktanks/engine4.mdl"
-			self.DakSound = "daktanks/engine/enginelarge.wav"
-		end
-		if Selection == "HugeEngine" then
-			self.DakName = "Huge Engine"
-			self.DakHealth = 150
-			self.DakMaxHealth = 150
-			self.DakModel = "models/daktanks/engine5.mdl"
-			self.DakSound = "daktanks/engine/enginehuge.wav"
-		end
-		if Selection == "UltraEngine" then
-			self.DakName = "Ultra Engine"
-			self.DakHealth = 360
-			self.DakMaxHealth = 360
-			self.DakModel = "models/daktanks/engine6.mdl"
-			self.DakSound = "daktanks/engine/engineultra.wav"
+		SelectedClass = Classes.Engines[Selection]
+
+		if SelectedClass then
+			self.DakName = Selection
+			self.DakHealth = SelectedClass.MaxHealth
+			self.DakMaxHealth = SelectedClass.MaxHealth
+			self.DakModel = SelectedClass.Model
+			self.DakSound = SelectedClass.Sound
 		end
 		--GEARBOXES
 		if Selection == "MicroGearboxF" then
@@ -1742,7 +1712,6 @@ function TOOL:RightClick( trace )
 					end
 				end
 				if Target:GetClass() == "dak_tankcore" then
-					--print(Target.Modern)
 					--if Target.Modern and Target.ColdWar then
 						ply:ChatPrint("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-")
 						--[[
@@ -1894,16 +1863,16 @@ function TOOL:Reload( trace )
 end
 
 local function DTSpawnerEngineLabel(name, desc, health, armor, weight, speed, power, fuel)
-	local s1 = name.."\n\n"
-	local s2 = desc.."\n\n"
+	local s1 = name .. "\n\n"
+	local s2 = desc .. "\n\n"
 	local s3 = "Engine Stats:\n"
-	local s4 = "Health:                  "..health.."\n"
-	local s5 = "Armor:                  "..armor.."mm\n"
-	local s6 = "Weight:                "..weight.."kg\n"
-	local s7 = "Speed:            "..(speed*2).."km/h with 10t contraption\n"
-	local s8 = "Power:                  "..power.." HP\n"
-	local s9 = "Fuel Required:      "..fuel.."L (for full performance)"
-	return s1..s2..s3..s4..s5..s6..s7..s8..s9
+	local s4 = "Health:                  " .. health .. "\n"
+	local s5 = "Armor:                  " .. armor .. " mm\n"
+	local s6 = "Weight:                " .. weight .. " kg\n"
+	local s7 = "Speed:            " .. (speed * 2) .. " km/h with 10t contraption\n"
+	local s8 = "Power:                  " .. power .. " HP\n"
+	local s9 = "Fuel Required:      " .. fuel .. "L (for full performance)"
+	return s1 .. s2 .. s3 .. s4 .. s5 .. s6 .. s7 .. s8 .. s9
 end
 
 function TOOL.BuildCPanel( panel )
@@ -1945,23 +1914,20 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing the information of the available engines
 	local engineList = {}
-	engineList["Micro Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Micro Engine","Tiny engine for tiny tanks.","5","5","80","13","40","24"))
-	end
-	engineList["Small Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Small Engine","Small engine for light tanks and slow mediums.","20","20","265","42","125","75"))
-	end
-	engineList["Standard Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Standard Engine","Standard sized engine for medium tanks or slow heavies.","45","45","630","100","300","180"))
-	end
-	engineList["Large Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Large Engine","Large engine for heavy tanks.","90","90","1225","200","600","360"))
-	end
-	engineList["Huge Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Huge Engine","Huge engine for heavy tanks that want to move fast.","150","150","2120","333","1000","600"))
-	end
-	engineList["Ultra Engine"] = function()
-		DLabel:SetText(DTSpawnerEngineLabel("Ultra Engine","Ultra engine for use in super heavy tanks.","360","360","5020","800","2400","1440"))
+
+	for ClassName, ClassData in pairs(Classes.Engines) do
+		engineList[ClassName] = function()
+			local EngineText = DTSpawnerEngineLabel(ClassName,
+													ClassData.Description,
+													ClassData.MaxHealth,
+													ClassData.Armor,
+													ClassData.Mass,
+													ClassData.ExampleSpeed,
+													ClassData.HP,
+													ClassData.FuelReq)
+
+			DLabel:SetText(EngineText)
+		end
 	end
 
 	--Table containing the description of the available gearboxes
@@ -2487,7 +2453,7 @@ function TOOL.BuildCPanel( panel )
 			DLabel:SetText( "Engines\n\nLarge gas guzzlers to get your tank moving at speeds faster than a brisk walk." )
 		else
 			engineList[EngineModel]()
-			RunConsoleCommand( "daktankspawner_SpawnSettings", string.Replace( EngineModel, " ", "" ) )
+			RunConsoleCommand( "daktankspawner_SpawnSettings", EngineModel )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_temotor" )
 		end
 	end
@@ -2717,7 +2683,7 @@ function TOOL.BuildCPanel( panel )
 	--Text Box
 	DLabel:SetPos( 15, 345 )
 	DLabel:SetText( "Select an entity and information for it will appear here" )
-	DLabel:SetTextColor( Color( 0, 0, 0, 255 ) )
+	DLabel:SetTextColor( DLabel:GetSkin().Colours.Label.Dark )
 	DLabel:SetAutoStretchVertical( true )
 	DLabel:SetWrap( true )
 	DLabel:SetVisible( true )
@@ -2822,12 +2788,11 @@ function TOOL.BuildCPanel( panel )
 	EngineModelSelect:SetPos( 15, 345 )
 	EngineModelSelect:SetSortItems( false )
 	EngineModelSelect:SetValue( "--Select Engine--" )
-	EngineModelSelect:AddChoice( "Micro Engine" )
-	EngineModelSelect:AddChoice( "Small Engine" )
-	EngineModelSelect:AddChoice( "Standard Engine" )
-	EngineModelSelect:AddChoice( "Large Engine" )
-	EngineModelSelect:AddChoice( "Huge Engine" )
-	EngineModelSelect:AddChoice( "Ultra Engine" )
+
+	for ClassName in pairs( Classes.Engines ) do
+		EngineModelSelect:AddChoice( ClassName )
+	end
+
 	EngineModelSelect.OnSelect = function( panel, index, value )
 		EngineModel = value
 

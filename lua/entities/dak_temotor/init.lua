@@ -1,7 +1,11 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+local Engines = DTTE.Classes.Engines
+
+ENT.DakName = "Standard Engine"
 ENT.DakFuel = NULL
 ENT.DakMaxHealth = 25
 ENT.DakHealth = 25
@@ -11,6 +15,7 @@ ENT.DakSound = "vehicles/apc/apc_cruise_loop3.wav"
 ENT.DakPooled = 0
 ENT.DakCrew = NULL
 ENT.DakHP = 0
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -25,10 +30,10 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-	DTTE.CheckSpherical(self)
 	local self = self
 	local selfTbl = self:GetTable()
 
+	DTTE.CheckSpherical(self)
 
 	if CurTime() >= selfTbl.SparkTime + 0.33 then
 		local scale
@@ -55,57 +60,16 @@ function ENT:Think()
 		selfTbl.SparkTime = CurTime()
 	end
 
-	if selfTbl.DakName == "Micro Engine" then
-		selfTbl.DakMaxHealth = 5
-		selfTbl.DakArmor = 5
-		selfTbl.DakMass = 80
-		selfTbl.DakSpeed = 0.4444
-		selfTbl.DakModel = "models/daktanks/engine1.mdl"
-		selfTbl.DakFuelReq = 24
-		selfTbl.DakHP = 40
-	elseif selfTbl.DakName == "Small Engine" then
-		selfTbl.DakMaxHealth = 20
-		selfTbl.DakArmor = 20
-		selfTbl.DakMass = 265
-		selfTbl.DakSpeed = 1.3888
-		selfTbl.DakModel = "models/daktanks/engine2.mdl"
-		selfTbl.DakFuelReq = 75
-		selfTbl.DakHP = 125
-	elseif selfTbl.DakName == "Standard Engine" then
-		selfTbl.DakMaxHealth = 45
-		selfTbl.DakArmor = 45
-		selfTbl.DakMass = 625
-		selfTbl.DakSpeed = 3.3333
-		selfTbl.DakModel = "models/daktanks/engine3.mdl"
-		selfTbl.DakFuelReq = 180
-		selfTbl.DakHP = 300
-	elseif selfTbl.DakName == "Large Engine" then
-		selfTbl.DakMaxHealth = 90
-		selfTbl.DakArmor = 90
-		selfTbl.DakMass = 1225
-		selfTbl.DakSpeed = 6.6666
-		selfTbl.DakModel = "models/daktanks/engine4.mdl"
-		selfTbl.DakFuelReq = 360
-		selfTbl.DakHP = 600
-	elseif selfTbl.DakName == "Huge Engine" then
-		selfTbl.DakMaxHealth = 150
-		selfTbl.DakArmor = 150
-		selfTbl.DakMass = 2120
-		selfTbl.DakSpeed = 11.1111
-		selfTbl.DakModel = "models/daktanks/engine5.mdl"
-		selfTbl.DakFuelReq = 600
-		selfTbl.DakHP = 1000
-	elseif selfTbl.DakName == "Ultra Engine" then
-		selfTbl.DakMaxHealth = 360
-		selfTbl.DakArmor = 360
-		selfTbl.DakMass = 5020
-		selfTbl.DakSpeed = 26.6666
-		selfTbl.DakModel = "models/daktanks/engine6.mdl"
-		selfTbl.DakFuelReq = 1440
-		selfTbl.DakHP = 2400
-	end
+	local curEngine = Engines[selfTbl.DakName]
+	selfTbl.DakMaxHealth = curEngine.MaxHealth
+	selfTbl.DakArmor = curEngine.Armor
+	selfTbl.DakMass = curEngine.Mass
+	selfTbl.DakSpeed = curEngine.Speed
+	selfTbl.DakModel = curEngine.Model
+	selfTbl.DakFuelReq = curEngine.FuelReq
+	selfTbl.DakHP = curEngine.HP
 
-	if not selfTbl.FirstCheck and not (selfTbl.DakMaxHealth == 25) then
+	if not selfTbl.FirstCheck and selfTbl.DakMaxHealth ~= 25 then
 		selfTbl.FirstCheck = true
 		selfTbl.DakHealth = selfTbl.DakMaxHealth
 	end
@@ -122,7 +86,7 @@ function ENT:Think()
 		selfTbl.Sound:ChangeVolume(0, 0)
 	end
 
-	if selfTbl.DakModel and not (self:GetModel() == selfTbl.DakModel) then
+	if selfTbl.DakModel and self:GetModel() ~= selfTbl.DakModel then
 		self:SetModel(selfTbl.DakModel)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetSolid(SOLID_VPHYSICS)
@@ -142,7 +106,7 @@ function ENT:Think()
 	return true
 end
 
-function ENT:DTOnTakeDamage(Damage)
+function ENT:DTOnTakeDamage()
 	if self.DakDead then return end
 	if self.DakHealth <= 0 then
 		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
@@ -155,7 +119,6 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	--local entids = {}
 	info.FuelID = self.DakFuel:EntIndex()
 	info.CrewID = self.DakCrew:EntIndex()
 	info.DakName = self.DakName
@@ -165,7 +128,9 @@ function ENT:PreEntityCopy()
 	info.DakHealth = self.DakHealth
 	info.DakSpeed = self.DakSpeed
 	info.DakSound = self.DakSound
+
 	duplicator.StoreEntityModifier(self, "DakTek", info)
+
 	--Wire dupe info
 	self.BaseClass.PreEntityCopy(self)
 end

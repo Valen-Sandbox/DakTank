@@ -3,6 +3,8 @@ local math = math
 local bmax = 16384
 local bmin = -bmax
 
+DTTE.Classes = {}
+
 hook.Add("InitPostEntity", "DakTekTankEditionRunOnLoadHook", function()
 	local Settings = physenv.GetPerformanceSettings() -- copy table from physenfv
 	Settings.MaxVelocity = 1000000 -- change max velocity
