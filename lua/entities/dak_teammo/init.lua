@@ -60,7 +60,7 @@ function ENT:Think()
 
 	if CurTime() >= selfTbl.SlowThinkTime + 1 then
 		DTTE.CheckSpherical(self)
-		if not (selfTbl.DakName == "Base Ammo") then
+		if selfTbl.DakName ~= "Base Ammo" then
 			selfTbl.DakCaliber = tonumber(string.Split(selfTbl.DakName, "m")[1])
 			if selfTbl.DakAmmoType == "Flamethrower Fuel" then
 				selfTbl.DakMaxAmmo = 1000
@@ -178,7 +178,7 @@ function ENT:Think()
 	return true
 end
 
-function ENT:DTOnTakeDamage(Damage)
+function ENT:DTOnTakeDamage()
 	if self.DakDead or not self.DakAmmo then return end
 	if self.DakHealth <= 0 then
 		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end

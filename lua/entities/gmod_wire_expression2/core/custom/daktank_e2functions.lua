@@ -1,6 +1,11 @@
-E2Lib.RegisterExtension("daktank",true)
+E2Lib.RegisterExtension("daktank", true)
 
 local DTTE = DTTE
+local gunClasses = {
+	["dak_tegun"] = true,
+	["dak_teautogun"] = true,
+	["dak_temachinegun"] = true
+}
 
 -- E2 Functions
 __e2setcost(1)
@@ -84,7 +89,7 @@ end
 e2function string entity:daktankGetAmmoType()
 	if not IsValid(this) then return "" end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakName == nil then
 			return ""
 		else
@@ -172,7 +177,7 @@ end
 e2function number entity:daktankGetAmmoCount()
 	if not IsValid(this) then return 1 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.AmmoCount == nil then
 			return 1
 		else
@@ -185,7 +190,7 @@ end
 e2function number entity:daktankGetShellPenetration()
 	if not IsValid(this) then return 0 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakShellPenetration == nil then
 			return 1
 		else
@@ -207,7 +212,7 @@ end
 e2function number entity:daktankGetShellVelocity()
 	if not IsValid(this) then return 0 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakShellVelocity == nil then
 			return 1
 		else
@@ -225,7 +230,7 @@ end
 e2function number entity:daktankGetShellMass()
 	if not IsValid(this) then return 0 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakShellMass == nil then
 			return 1
 		else
@@ -238,7 +243,7 @@ end
 e2function number entity:daktankGetShellDamage()
 	if not IsValid(this) then return 0 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakShellDamage == nil then
 			return 1
 		else
@@ -248,211 +253,10 @@ e2function number entity:daktankGetShellDamage()
 	return 0
 end
 
---[[
-e2function number entity:daktankGetAPPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellPenetration == nil then
-			return 1
-		else
-			return this.BaseDakShellPenetration
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHVAPPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellPenetration == nil then
-			return 1
-		else
-			return this.BaseDakShellPenetration*1.5
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEATPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellPenetration == nil then
-			return 1
-		else
-			return this.DakMaxHealth*1.20
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHESHPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellPenetration == nil then
-			return 1
-		else
-			return this.DakMaxHealth*1.25
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellPenetration == nil then
-			return 1
-		else
-			return this.BaseDakShellPenetration*0.3
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEFragPenetration()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.DakShellFragPen == nil then
-			return 1
-		else
-			return this.DakShellFragPen
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetAPDamage()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellDamage == nil then
-			return 1
-		else
-			return this.BaseDakShellDamage
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHVAPDamage()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellDamage == nil then
-			return 1
-		else
-			return this.BaseDakShellDamage/8
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEATDamage()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellDamage == nil then
-			return 1
-		else
-			return this.BaseDakShellDamage/8
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHESHDamage()
-	return 0
-end
-
-e2function number entity:daktankGetHEDamage()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellDamage == nil or this.DakShellSplashDamage == nil then
-			return 1
-		else
-			return (this.BaseDakShellDamage/2) + this.DakShellSplashDamage
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetAPVelocity()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellVelocity == nil then
-			return 1
-		else
-			return this.BaseDakShellVelocity
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHVAPVelocity()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellVelocity == nil then
-			return 1
-		else
-			return this.BaseDakShellVelocity*4/3
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEVelocity()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellVelocity == nil then
-			return 1
-		else
-			return this.BaseDakShellVelocity
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHEATVelocity()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellVelocity == nil then
-			return 1
-		else
-			return this.BaseDakShellVelocity*0.75
-		end
-	end
-	return 0
-end
-
-e2function number entity:daktankGetHESHVelocity()
-	if not IsValid(this) then return 0 end
-
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_teautogun" or this:GetClass() == "dak_temachinegun" then
-		if this.BaseDakShellVelocity == nil then
-			return 1
-		else
-			return this.BaseDakShellVelocity*0.5
-		end
-	end
-	return 0
-end
-]]--
-
 e2function number entity:daktankGetMaxCooldown()
 	if not IsValid(this) then return 0 end
 
-	if this:GetClass() == "dak_tegun" or this:GetClass() == "dak_temachinegun" or this:GetClass() == "dak_teautogun" then
+	if gunClasses[this:GetClass()] then
 		if this.DakCooldown == nil then
 			return 1
 		else
@@ -474,7 +278,7 @@ e2function number entity:daktankGetGunLoaded()
 end
 
 e2function number daktankHitCrit(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if Ent:IsWorld() and ArmorVal > 0 then
 		ArmorVal = 1000000
 	end
@@ -483,7 +287,7 @@ e2function number daktankHitCrit(vector Start, vector End, string ShellType, num
 end
 
 e2function number daktankRecurseArmor(vector Start, vector End, string ShellType, number Caliber, array Filter)
-	local ArmorVal, Ent, _, _ = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
+	local ArmorVal, Ent = DTTE.GetArmorRecurse(Vector(Start[1],Start[2],Start[3]), Vector(End[1],End[2],End[3]), ShellType, Caliber, Filter)
 	if not(ArmorVal>-1) then return 1000000 end
 	return ArmorVal
 end

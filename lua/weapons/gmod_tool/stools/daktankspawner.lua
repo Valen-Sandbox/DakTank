@@ -141,23 +141,13 @@ function TOOL:LeftClick( trace )
 		local SelectedClass = {}
 		self.IsAmmoCrate = 0
 
-		if Selection == "STMotor" then
-			self.DakMaxHealth = 10
-			self.DakHealth = 10
-			self.DakName = "Small Turret Motor"
-			self.DakModel = "models/xqm/hydcontrolbox.mdl"
-		end
-		if Selection == "MTMotor" then
-			self.DakMaxHealth = 20
-			self.DakHealth = 20
-			self.DakName = "Medium Turret Motor"
-			self.DakModel = "models/props_c17/utilityconducter001.mdl"
-		end
-		if Selection == "LTMotor" then
-			self.DakMaxHealth = 50
-			self.DakHealth = 50
-			self.DakName = "Large Turret Motor"
-			self.DakModel = "models/props_c17/substation_transformer01d.mdl"
+		SelectedClass = Classes.TurretMotors[Selection]
+
+		if SelectedClass then
+			self.DakName = Selection
+			self.DakMaxHealth = SelectedClass.MaxHealth
+			self.DakHealth = SelectedClass.MaxHealth
+			self.DakModel = SelectedClass.Model
 		end
 		--Crew
 		if Selection == "CrewSitting" then
@@ -1298,14 +1288,19 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing the description of the Turret Motors
 	local turretmotorList = {}
-	turretmotorList["Small Turret Motor"] = function()
-		DLabel:SetText( "Small Turret Motor\n\nThis can be linked to a single turret controller, increasing the speed it rotates by a flat amount, this small motor is useful for light turrets. If destroyed turret speed will go back to normal.\n\nMotor Stats:\nHealth:  10\nWeight: 250kg\nPower: x1 speed of unassisted turret" )
-	end
-	turretmotorList["Medium Turret Motor"] = function()
-		DLabel:SetText( "Medium Turret Motor\n\nThis can be linked to a single turret controller, increasing the speed it rotates by a flat amount, this small motor is useful for medium turrets. If destroyed turret speed will go back to normal.\n\nMotor Stats:\nHealth:  20\nWeight: 500kg\nPower: x2.5 speed of unassisted turret" )
-	end
-	turretmotorList["Large Turret Motor"] = function()
-		DLabel:SetText( "Large Turret Motor\n\nThis can be linked to a single turret controller, increasing the speed it rotates by a flat amount, this small motor is useful for heavy turrets. If destroyed turret speed will go back to normal.\n\nMotor Stats:\nHealth:  50\nWeight: 1000kg\nPower: x6 speed of unassisted turret" )
+
+	for ClassName, ClassData in pairs(Classes.TurretMotors) do
+		turretMotorList[ClassName] = function()
+			local name = ClassName .. "\n\n"
+			local descStart = "This can be linked to a single turret controller, increasing the speed it rotates by a flat amount."
+			local descEnd = ClassData.Description .. "If destroyed turret speed will go back to normal.\n\n"
+			local stats = "Motor Stats:\n"
+			local health = "Health:  " .. ClassData.MaxHealth .. "\n"
+			local weight = "Weight: " .. ClassData.Mass .. "kg\n"
+			local power = "Power: x" .. ClassData.PowerMult .. " speed of unassisted turret"
+
+			DLabel:SetText(name .. descStart .. descEnd .. stats .. health .. weight .. power)
+		end
 	end
 
 	--Table containing the description of the available ammo types, called when spawning ammo crates
@@ -2011,9 +2006,11 @@ function TOOL.BuildCPanel( panel )
 	TurretMotorSelect:SetPos( 15, 345 )
 	TurretMotorSelect:SetValue( "--Select Turret Motor--" )
 	TurretMotorSelect:SetSortItems( false )
-	TurretMotorSelect:AddChoice( "Small Turret Motor" )
-	TurretMotorSelect:AddChoice( "Medium Turret Motor" )
-	TurretMotorSelect:AddChoice( "Large Turret Motor" )
+
+	for ClassName in SortedPairs( Classes.TurretMotors ) do
+		TurretMotorSelect:AddChoice( ClassName )
+	end
+
 	TurretMotorSelect.OnSelect = function( _, _, value )
 		TurretMotor = value
 

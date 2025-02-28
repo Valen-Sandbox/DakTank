@@ -1,12 +1,17 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+local TurretMotors = DTTE.Classes.TurretMotors
+
+ENT.DakName = "Small Turret Motor"
 ENT.DakEngine = NULL
 ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakMass = 250
 ENT.DakPooled = 0
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -22,6 +27,7 @@ function ENT:Think()
 	local selfTbl = self:GetTable()
 
 	DTTE.CheckSpherical(self)
+
 	if CurTime() >= selfTbl.SparkTime + 0.33 then
 		local scale
 		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
@@ -48,22 +54,12 @@ function ENT:Think()
 	end
 
 	if selfTbl.DakName == "Turret Motor" or selfTbl.DakName == "TMotor" then selfTbl.DakName = "Small Turret Motor" end
-	if selfTbl.DakName == "Small Turret Motor" then
-		selfTbl.DakMaxHealth = 10
-		selfTbl.DakMass = 250
-		selfTbl.DakModel = "models/xqm/hydcontrolbox.mdl"
-		selfTbl.DakRotMult = 0.1
-	elseif selfTbl.DakName == "Medium Turret Motor" then
-		selfTbl.DakMaxHealth = 20
-		selfTbl.DakMass = 500
-		selfTbl.DakModel = "models/props_c17/utilityconducter001.mdl"
-		selfTbl.DakRotMult = 0.25
-	elseif selfTbl.DakName == "Large Turret Motor" then
-		selfTbl.DakMaxHealth = 50
-		selfTbl.DakMass = 1000
-		selfTbl.DakModel = "models/props_c17/substation_transformer01d.mdl"
-		selfTbl.DakRotMult = 0.6
-	end
+
+	local curMotor = TurretMotors[selfTbl.DakName]
+	selfTbl.DakMaxHealth = curMotor.MaxHealth
+	selfTbl.DakMass = curMotor.Mass
+	selfTbl.DakModel = curMotor.Model
+	selfTbl.DakRotMult = curMotor.RotMult
 
 	if selfTbl.DakModel and self:GetModel() ~= selfTbl.DakModel then
 		self:SetModel(selfTbl.DakModel)
@@ -86,7 +82,7 @@ function ENT:Think()
 	return true
 end
 
-function ENT:DTOnTakeDamage(Damage)
+function ENT:DTOnTakeDamage()
 	if self.DakDead then return end
 	if self.DakHealth <= 0 then
 		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
@@ -99,7 +95,7 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	--local entids = {}
+
 	if IsValid(self.TurretController) then info.TurretID = self.TurretController:EntIndex() end
 	info.DakName = self.DakName
 	info.DakMass = self.DakMass
@@ -107,6 +103,7 @@ function ENT:PreEntityCopy()
 	info.DakMaxHealth = self.DakMaxHealth
 	info.DakHealth = self.DakHealth
 	duplicator.StoreEntityModifier(self, "DakTek", info)
+
 	--Wire dupe info
 	self.BaseClass.PreEntityCopy(self)
 end
