@@ -344,8 +344,6 @@ function ENT:DakTEAmmoCheck()
 	end
 end
 
-util.AddNetworkString( "daktankshotfired" )
-
 function ENT:DakTEFire()
 	if ( self.Firing and self.DakDead ~= true) then
 		if IsValid(self.DakTankCore) then

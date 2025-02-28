@@ -44,14 +44,12 @@ ENT.DakCaliber = 0
 function ENT:Initialize()
 	self.ShellLoaded = 0
 	self.ShellLoaded2 = 0
-	--self:SetModel(self.DakModel)
 	self.DakHealth = self.DakMaxHealth
 
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
-	--local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
 	self.timer2 = CurTime()
 
@@ -66,13 +64,6 @@ function ENT:Initialize()
 	self.DakBurnStacks = 0
 	self.BasicVelocity = 29527.6
 	self.AutoSwapStacks = 0
-
-	function self:SetupDataTables()
-		self:NetworkVar("Bool",0,"Firing")
-		self:NetworkVar("Float",0,"Timer")
-		self:NetworkVar("Float",1,"Cooldown")
-		self:NetworkVar("String",0,"Model")
-	end
 
 	self.CooldownDistanceModifier = 1
 	self.CooldownWeightMod = 5000

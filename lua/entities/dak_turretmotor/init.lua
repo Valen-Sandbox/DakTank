@@ -11,48 +11,11 @@ ENT.DakMaxHealth = 10
 ENT.DakHealth = 10
 ENT.DakMass = 250
 ENT.DakPooled = 0
+ENT.DakArmor = 10
+ENT.ThinkTime = 0.33
+ENT.CanSpark = true
 
-function ENT:Initialize()
-	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetMoveType(MOVETYPE_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
-	self.DakArmor = 10
-	self.DakHealth = self.DakMaxHealth
-	self.SparkTime = CurTime()
-	self.DakBurnStacks = 0
-end
-
-function ENT:Think()
-	local self = self
-	local selfTbl = self:GetTable()
-
-	DTTE.CheckSpherical(self)
-
-	if CurTime() >= selfTbl.SparkTime + 0.33 then
-		local scale
-		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
-			scale = 1
-		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.60) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.40) then
-			scale = 2
-		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.40) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.20) then
-			scale = 3
-		elseif selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.20) then
-			scale = 4
-		end
-
-		if scale then
-			local effectdata = EffectData()
-			effectdata:SetOrigin(self:GetPos())
-			effectdata:SetEntity(self)
-			effectdata:SetAttachment(1)
-			effectdata:SetMagnitude(.5)
-			effectdata:SetScale(scale)
-			util.Effect("daktedamage", effectdata)
-		end
-
-		selfTbl.SparkTime = CurTime()
-	end
-
+function ENT:DakThink(selfTbl)
 	if selfTbl.DakName == "Turret Motor" or selfTbl.DakName == "TMotor" then selfTbl.DakName = "Small Turret Motor" end
 
 	local curMotor = TurretMotors[selfTbl.DakName]
@@ -61,35 +24,14 @@ function ENT:Think()
 	selfTbl.DakModel = curMotor.Model
 	selfTbl.DakRotMult = curMotor.RotMult
 
-	if selfTbl.DakModel and self:GetModel() ~= selfTbl.DakModel then
-		self:SetModel(selfTbl.DakModel)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetSolid(SOLID_VPHYSICS)
-	end
-
-	if selfTbl.DakHealth > selfTbl.DakMaxHealth then selfTbl.DakHealth = selfTbl.DakMaxHealth end
 	if selfTbl.DakRotMult then selfTbl.DakRotMult = selfTbl.DakRotMult * selfTbl.DakHealth / selfTbl.DakMaxHealth end
-	if self:GetPhysicsObject():GetMass() ~= selfTbl.DakMass then self:GetPhysicsObject():SetMass(selfTbl.DakMass) end
+
 	if selfTbl.DakDead then
 		selfTbl.DakRotMult = 0
 		selfTbl.DakHealth = 0
 	elseif self:IsOnFire() then
 		selfTbl.DakHealth = selfTbl.DakHealth - 0.33
 		self:DTOnTakeDamage(0.33)
-	end
-
-	self:NextThink(CurTime() + 0.33)
-	return true
-end
-
-function ENT:DTOnTakeDamage()
-	if self.DakDead then return end
-	if self.DakHealth <= 0 then
-		if self.DakOwner:IsPlayer() and self.DakOwner ~= NULL then self.DakOwner:ChatPrint(self.DakName .. " Destroyed!") end
-		self:SetMaterial("models/props_buildings/plasterwall021a")
-		self:SetColor(Color(100, 100, 100, 255))
-		self.DakDead = true
-		return
 	end
 end
 

@@ -1287,13 +1287,13 @@ function TOOL.BuildCPanel( panel )
 	end
 
 	--Table containing the description of the Turret Motors
-	local turretmotorList = {}
+	local turretMotorList = {}
 
 	for ClassName, ClassData in pairs(Classes.TurretMotors) do
 		turretMotorList[ClassName] = function()
 			local name = ClassName .. "\n\n"
-			local descStart = "This can be linked to a single turret controller, increasing the speed it rotates by a flat amount."
-			local descEnd = ClassData.Description .. "If destroyed turret speed will go back to normal.\n\n"
+			local descStart = "This can be linked to a single turret controller, increasing the speed it rotates by a flat amount. "
+			local descEnd = ClassData.Description .. " If destroyed turret speed will go back to normal.\n\n"
 			local stats = "Motor Stats:\n"
 			local health = "Health:  " .. ClassData.MaxHealth .. "\n"
 			local weight = "Weight: " .. ClassData.Mass .. "kg\n"
@@ -1628,8 +1628,8 @@ function TOOL.BuildCPanel( panel )
 		if TurretMotorSelect:GetSelectedID() == nil then
 			DLabel:SetText( "Turret Motors\n\nThese are electric motors that help to turn the turret. They're very useful for heavier vehicles." )
 		else
-			turretmotorList[TurretMotor]()
-			RunConsoleCommand( "daktankspawner_SpawnSettings", string.sub( TurretMotor, 1, 1 ).."TMotor" )
+			turretMotorList[TurretMotor]()
+			RunConsoleCommand( "daktankspawner_SpawnSettings", TurretMotor )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_turretmotor" )
 		end
 	end
