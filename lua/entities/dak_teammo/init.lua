@@ -30,12 +30,14 @@ function ENT:DakThink(selfTbl)
 	end
 end
 
-function ENT:DakSlowThink(selfTbl)
+local function setAmmoSettings(selfTbl, physObj)
+	local splitString = string.Split(selfTbl.DakName, "m")
+
 	if selfTbl.DakName ~= "Base Ammo" then
-		selfTbl.DakCaliber = tonumber(string.Split(selfTbl.DakName, "m")[1])
+		selfTbl.DakCaliber = tonumber(splitString[1])
+
 		if selfTbl.DakAmmoType == "Flamethrower Fuel" then
 			selfTbl.DakMaxAmmo = 1000
-			if not selfTbl.DakAmmo or selfTbl.DakAmmo > selfTbl.DakMaxAmmo then selfTbl.DakAmmo = selfTbl.DakMaxAmmo end
 		else
 			-- steel density 0.132 kg/in3
 			--cannon, launcher, and recoilless rifle
@@ -45,7 +47,6 @@ function ENT:DakSlowThink(selfTbl)
 			--This part is pretty awful. Ammo type, calibre, and gun type shouldn't be stored together in one string.
 			--I've Made it so that it at least isn't doing the work of splitting the string repeatedly, but ideally all of this code should just be indexing a table like twice
 
-			local splitString = string.Split(selfTbl.DakName, "m")
 			--short cannon and hmg
 			if (splitString[3][1] == "S" and splitString[3][2] == "C") or (splitString[3][1] == "H" and splitString[3][2] == "M" and splitString[3][3] == "G") then
 				shellSize = 10
@@ -72,44 +73,42 @@ function ENT:DakSlowThink(selfTbl)
 
 			selfTbl.ShellVolume = math.pi * (((selfTbl.DakCaliber * 0.5) * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * shellSize) * shellVolumeMult
 			selfTbl.ShellSquareVolume = ((selfTbl.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakCaliber * 0.0393701 * shellSize)
-			selfTbl.DakMaxAmmo = math.floor((self:GetPhysicsObject():GetVolume() / selfTbl.ShellSquareVolume) * (1 / shellVolumeMult))
+			selfTbl.DakMaxAmmo = math.floor((physObj:GetVolume() / selfTbl.ShellSquareVolume) * (1 / shellVolumeMult))
 			selfTbl.ShellMass = selfTbl.ShellVolume * 0.044
-
-			if selfTbl.DakAmmo == nil then selfTbl.DakAmmo = selfTbl.DakMaxAmmo end
-			if selfTbl.DakAmmo > selfTbl.DakMaxAmmo then selfTbl.DakAmmo = selfTbl.DakMaxAmmo end
 		end
 	end
 
-	local physObj = self:GetPhysicsObject()
-	local mass = physObj:GetMass()
+	if not selfTbl.DakAmmo or selfTbl.DakAmmo > selfTbl.DakMaxAmmo then selfTbl.DakAmmo = selfTbl.DakMaxAmmo end
+
+	local expectedMass = 10
+
 	if selfTbl.DakAmmoType == "Flamethrower Fuel" then
 		selfTbl.DakArmor = 12.5
 		selfTbl.DakMaxHealth = 30
-		if selfTbl.DakHealth >= selfTbl.DakMaxHealth then
-			selfTbl.DakHealth = 30
-		end
-		if mass ~= 500 then
-			physObj:SetMass(500)
-		end
+		expectedMass = 500
 	else
 		selfTbl.DakArmor = 5
 		selfTbl.DakMaxHealth = 10
-		if selfTbl.DakHealth >= selfTbl.DakMaxHealth then
-			selfTbl.DakHealth = 10
-		end
-		if selfTbl.ShellMass == nil then
-			if mass ~= 10 then
-				physObj:SetMass(10)
-			end
-		else
-			if mass ~= math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10) then
-				physObj:SetMass(math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10))
-			end
-		end
+		expectedMass = selfTbl.ShellMass == nil and 10 or math.Round((selfTbl.ShellMass * selfTbl.DakAmmo) + 10)
 	end
+
+	if selfTbl.DakHealth >= selfTbl.DakMaxHealth then
+		selfTbl.DakHealth = selfTbl.DakMaxHealth
+	end
+
+	if physObj:GetMass() ~= expectedMass then
+		physObj:SetMass(expectedMass)
+	end
+end
+
+function ENT:DakSlowThink(selfTbl)
+	local physObj = self:GetPhysicsObject()
+
+	setAmmoSettings(selfTbl, physObj)
 
 	WireLib.TriggerOutput(self, "Ammo", selfTbl.DakAmmo)
 	WireLib.TriggerOutput(self, "MaxAmmo", selfTbl.DakMaxAmmo)
+
 	if selfTbl.DakDead ~= true then
 		selfTbl.DakEjectAmmo = selfTbl.Inputs.EjectAmmo.Value
 		if selfTbl.DakEjectAmmo == 1 and CurTime() >= selfTbl.DumpTime + 0.5 and selfTbl.DakAmmo > 0 then
@@ -241,101 +240,20 @@ function ENT:DakOnTakeDamage()
 	end
 end
 
-function ENT:PreEntityCopy()
-	local info = {}
-	info.DakName = self.DakName
-	info.DakIsExplosive = self.DakIsExplosive
-	info.DakAmmo = self.DakMaxAmmo
-	info.DakMaxAmmo = self.DakMaxAmmo
-	info.DakMaxHealth = self.DakMaxHealth
-	info.DakHealth = self.DakHealth
-	info.DakAmmoType = self.DakAmmoType
-	info.DakOwner = self.DakOwner
-	info.DakIsHE = self.DakIsHE
-
-	duplicator.StoreEntityModifier(self, "DakTek", info)
-
-	--Wire dupe info
-	self.BaseClass.PreEntityCopy(self)
+function ENT:DakOnCopy(Info)
+	Info.DakIsExplosive = self.DakIsExplosive
+	Info.DakAmmo = self.DakMaxAmmo
+	Info.DakMaxAmmo = self.DakMaxAmmo
+	Info.DakAmmoType = self.DakAmmoType
+	Info.DakIsHE = self.DakIsHE
 end
 
-function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
-	if Ent.EntityMods and Ent.EntityMods.DakTek then
-		self.DakName = Ent.EntityMods.DakTek.DakName
-		self.DakIsExplosive = Ent.EntityMods.DakTek.DakIsExplosive
-		self.DakAmmo = Ent.EntityMods.DakTek.DakMaxAmmo
-		self.DakMaxAmmo = Ent.EntityMods.DakTek.DakMaxAmmo
-		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
-		self.DakHealth = self.DakMaxHealth
-		self.DakAmmoType = Ent.EntityMods.DakTek.DakAmmoType
-		self.DakOwner = Player
-		self.DakIsHE = Ent.EntityMods.DakTek.DakIsHE
-		Ent.EntityMods.DakTekLink = nil
-	end
-
-	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
-	self.DakCaliber = tonumber(string.Split(self.DakName, "m")[1])
-	if self.DakAmmoType == "Flamethrower Fuel" then
-		self.DakMaxAmmo = 1000
-		if not self.DakAmmo then self.DakAmmo = self.DakMaxAmmo end
-		if self.DakAmmo > self.DakMaxAmmo then self.DakAmmo = self.DakMaxAmmo end
-		if self:GetPhysicsObject():GetMass() ~= 500 then self:GetPhysicsObject():SetMass(500) end
-	else
-		-- steel density 0.132 kg/in3
-		self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 13)
-		self.ShellMass = self.ShellVolume * 0.044
-		self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 13)
-		self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		if (string.Split(self.DakName, "m")[3][1] == "S" and string.Split(self.DakName, "m")[3][2] == "C") or (string.Split(self.DakName, "m")[3][1] == "H" and string.Split(self.DakName, "m")[3][2] == "M" and string.Split(self.DakName, "m")[3][3] == "G") then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 10)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 10)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if string.Split(self.DakName, "m")[3][1] == "L" and string.Split(self.DakName, "m")[3][2] == "C" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 18)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 18)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if string.Split(self.DakName, "m")[3][1] == "H" and string.Split(self.DakName, "m")[3][2] ~= "M" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 8)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 8)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if string.Split(self.DakName, "m")[3][1] == "M" and string.Split(self.DakName, "m")[3][2] ~= "G" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 5.5)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 5.5)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if string.Split(self.DakName, "m")[3][1] == "G" and string.Split(self.DakName, "m")[3][2] == "L" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 7)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 7)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if string.Split(self.DakName, "m")[3][1] == "S" and string.Split(self.DakName, "m")[3][2] == "L" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 2.75)
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 2.75)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-		end
-
-		if (string.Split(self.DakName, "m")[3][2] .. string.Split(self.DakName, "m")[3][3] .. string.Split(self.DakName, "m")[3][4] .. string.Split(self.DakName, "m")[3][5]) == "ATGM" then
-			self.ShellVolume = math.pi * (((self.DakCaliber * 0.5) * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 13)
-			self.ShellMass = self.ShellVolume * 0.044
-			self.ShellSquareVolume = ((self.DakCaliber * 0.0393701) ^ 2) * (self.DakCaliber * 0.0393701 * 13)
-			self.DakMaxAmmo = math.floor(self:GetPhysicsObject():GetVolume() / self.ShellSquareVolume)
-			self.DakMaxAmmo = math.floor(self.DakMaxAmmo * (1 / 1.5))
-			self.ShellVolume = self.ShellVolume * 1.5
-		end
-
-		self.ShellMass = self.ShellVolume * 0.044
-		if self.DakAmmo == nil then self.DakAmmo = self.DakMaxAmmo end
-		if self.DakAmmo > self.DakMaxAmmo then self.DakAmmo = self.DakMaxAmmo end
-		if self:GetPhysicsObject():GetMass() ~= math.Round((self.ShellMass * self.DakAmmo) + 10) then self:GetPhysicsObject():SetMass(math.Round((self.ShellMass * self.DakAmmo) + 10)) end
-	end
-
+function ENT:DakOnPaste(EntMods)
+	self.DakIsExplosive = EntMods.DakIsExplosive
+	self.DakMaxAmmo = EntMods.DakMaxAmmo
+	self.DakAmmoType = EntMods.DakAmmoType
+	self.DakIsHE = EntMods.DakIsHE
 	self.DakAmmo = self.DakMaxAmmo
+
+	setAmmoSettings(self:GetTable(), self:GetPhysicsObject())
 end

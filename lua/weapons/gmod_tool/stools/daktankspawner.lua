@@ -352,91 +352,13 @@ function TOOL:LeftClick( trace )
 			self.AmmoType = "SM"
 		end
 		if self.IsAmmoCrate == 1 then
-			if self:GetClientInfo("DTTE_AmmoType") == "Cannon" then
-				self.GunType = "C"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
+			local GunClass = Classes.Weapons[self:GetClientInfo("DTTE_AmmoType")]
+
+			if GunClass then -- Checks to see if it's an ammo crate of any type
+				self.GunType = GunClass.ShortName
+				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")), 2), GunClass.MinCaliber, GunClass.MaxCaliber)
 			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Long Cannon" then
-				self.GunType = "LC"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Short Cannon" then
-				self.GunType = "SC"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Howitzer" then
-				self.GunType = "H"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),50,240)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Smoke Launcher" then
-				self.GunType = "SL"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,100)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Grenade Launcher" then
-				self.GunType = "GL"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,45)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Mortar" then
-				self.GunType = "M"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,420)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloader" then
-				self.GunType = "C"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Long Autoloader" then
-				self.GunType = "LC"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Short Autoloader" then
-				self.GunType = "SC"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),25,200)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloading Howitzer" then
-				self.GunType = "H"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),50,240)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloading Mortar" then
-				self.GunType = "M"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,420)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autocannon" then
-				self.GunType = "AC"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,90)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "MG" then
-				self.GunType = "MG"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),5,25)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "HMG" then
-				self.GunType = "HMG"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,75)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "ATGM Launcher" then
-				self.GunType = "L"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Dual ATGM Launcher" then
-				self.GunType = "L"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloading ATGM Launcher" then
-				self.GunType = "L"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloading Dual ATGM Launcher" then
-				self.GunType = "L"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),40,180)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Recoilless Rifle" then
-				self.GunType = "RR"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,150)
-			end
-			if self:GetClientInfo("DTTE_AmmoType") == "Autoloading Recoilless Rifle" then
-				self.GunType = "RR"
-				self.DakCaliber = math.Clamp(math.Round(tonumber(self:GetClientInfo("DTTE_GunCaliber")),2),20,150)
-			end
-		    --huge if statement that checks to see if its an ammo crate of any type
+
 			self.DakIsExplosive = true
 			self.DakAmmoType = self.DakCaliber .. "mm" .. self.GunType .. self.AmmoType .. "Ammo"
 		end
@@ -581,23 +503,17 @@ function TOOL:LeftClick( trace )
 		end
 		if self:GetClientInfo("SpawnEnt") == "dak_teautoloadingmodule" then
 			UpdateGenericEntity(self, trace.Entity, "dak_teautoloadingmodule", "Magazine", true)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_turretmotor" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_turretmotor" then
 			UpdateGenericEntity(self, trace.Entity, "dak_turretmotor", "Turret motor", true)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_crew" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_crew" then
 			UpdateGenericEntity(self, trace.Entity, "dak_crew", "Crew", true)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_temotor" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_temotor" then
 			UpdateGenericEntity(self, trace.Entity, "dak_temotor", "Engine", false)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_tefuel" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_tefuel" then
 			UpdateGenericEntity(self, trace.Entity, "dak_tefuel", "Fuel tank", false)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_tegearbox" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_tegearbox" then
 			UpdateGenericEntity(self, trace.Entity, "dak_tegearbox", "Gearbox", false)
-		end
-		if self:GetClientInfo("SpawnEnt") == "dak_tegearboxnew" then
+		elseif self:GetClientInfo("SpawnEnt") == "dak_tegearboxnew" then
 			UpdateGenericEntity(self, trace.Entity, "dak_tegearboxnew", "Gearbox", false)
 		end
 

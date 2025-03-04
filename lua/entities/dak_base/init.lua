@@ -27,7 +27,7 @@ function ENT:Think()
 	local curTime = CurTime()
 
 	 -- This can be improved further but I can't be bothered right now.
-	if selfTbl.CanSpark and curTime >= selfTbl.SparkTime + 0.33 then
+	if selfTbl.CanSpark and curTime >= selfTbl.SparkTime + 0.33 and not selfTbl.DakDead then
 		local scale
 		if selfTbl.DakHealth <= (selfTbl.DakMaxHealth * 0.80) and selfTbl.DakHealth > (selfTbl.DakMaxHealth * 0.60) then
 			scale = 1
@@ -92,6 +92,7 @@ function ENT:DTOnTakeDamage(Damage)
 		self:SetMaterial("models/props_buildings/plasterwall021a")
 		self:SetColor(Color(100, 100, 100, 255))
 		self.DakDead = true
+		if IsValid(self.DakGun) then self.DakGun.Loaded = 0 end
 
 		return
 	end
@@ -99,4 +100,43 @@ function ENT:DTOnTakeDamage(Damage)
 	if self.DakOnTakeDamage then
 		self:DakOnTakeDamage(Damage)
 	end
+end
+
+function ENT:PreEntityCopy()
+	local info = {}
+	info.DakName = self.DakName
+	info.DakMaxHealth = self.DakMaxHealth
+	info.DakHealth = self.DakHealth
+	info.DakOwner = self.DakOwner
+
+	if self.DakOnCopy then
+		self:DakOnCopy(info)
+	end
+
+	duplicator.StoreEntityModifier(self, "DakTek", info)
+
+	-- Wire dupe info
+	self.BaseClass.PreEntityCopy(self)
+end
+
+function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
+	if Ent.EntityMods and Ent.EntityMods.DakTek then
+		local EntMods = Ent.EntityMods.DakTek
+
+		self.DakName = EntMods.DakName
+		self.DakMaxHealth = EntMods.DakMaxHealth
+		self.DakHealth = self.DakMaxHealth
+		self.DakOwner = Player
+		Ent.EntityMods.DakTekLink = nil
+
+		if EntMods.DakColor then
+			self:SetColor(EntMods.DakColor)
+		end
+
+		if self.DakOnPaste then
+			self:DakOnPaste(EntMods, Ent, CreatedEntities)
+		end
+	end
+
+	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
 end

@@ -62,46 +62,27 @@ function ENT:DakThink(selfTbl)
 	end
 end
 
-function ENT:PreEntityCopy()
-	local info = {}
-	info.FuelID = self.DakFuel:EntIndex()
-	info.CrewID = self.DakCrew:EntIndex()
-	info.DakName = self.DakName
-	info.DakMass = self.DakMass
-	info.DakModel = self.DakModel
-	info.DakMaxHealth = self.DakMaxHealth
-	info.DakHealth = self.DakHealth
-	info.DakSpeed = self.DakSpeed
-	info.DakSound = self.DakSound
-
-	duplicator.StoreEntityModifier(self, "DakTek", info)
-
-	--Wire dupe info
-	self.BaseClass.PreEntityCopy(self)
+function ENT:DakOnCopy(Info)
+	Info.FuelID = self.DakFuel:EntIndex()
+	Info.CrewID = self.DakCrew:EntIndex()
+	Info.DakMass = self.DakMass
+	Info.DakModel = self.DakModel
+	Info.DakSpeed = self.DakSpeed
+	Info.DakSound = self.DakSound
 end
 
-function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
-	if Ent.EntityMods and Ent.EntityMods.DakTek then
-		local Fuel = CreatedEntities[Ent.EntityMods.DakTek.FuelID]
-		if Fuel and IsValid(Fuel) then self.DakFuel = Fuel end
-		local Crew = CreatedEntities[Ent.EntityMods.DakTek.CrewID]
-		if Crew and IsValid(Crew) then self.DakCrew = Crew end
-		self.DakName = Ent.EntityMods.DakTek.DakName
-		self.DakMass = Ent.EntityMods.DakTek.DakMass
-		self.DakModel = Ent.EntityMods.DakTek.DakModel
-		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
-		self.DakHealth = self.DakMaxHealth
-		self.DakSpeed = Ent.EntityMods.DakTek.DakSpeed
-		self.DakSound = Ent.EntityMods.DakTek.DakSound
-		self.DakOwner = Player
-		if Ent.EntityMods.DakTek.DakColor then
-			self:SetColor(Ent.EntityMods.DakTek.DakColor)
-		end
+function ENT:DakOnPaste(EntMods, Ent, CreatedEntities)
+	local Fuel = CreatedEntities[EntMods.FuelID]
+	if Fuel and IsValid(Fuel) then self.DakFuel = Fuel end
+	local Crew = CreatedEntities[EntMods.CrewID]
+	if Crew and IsValid(Crew) then self.DakCrew = Crew end
 
-		Ent.EntityMods.DakTek = nil
-	end
+	self.DakMass = EntMods.DakMass
+	self.DakModel = EntMods.DakModel
+	self.DakSpeed = EntMods.DakSpeed
+	self.DakSound = EntMods.DakSound
 
-	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
+	Ent.EntityMods.DakTek = nil
 end
 
 function ENT:OnRemove()

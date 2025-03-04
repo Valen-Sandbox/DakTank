@@ -35,41 +35,24 @@ function ENT:DakThink(selfTbl)
 	end
 end
 
-function ENT:PreEntityCopy()
-	local info = {}
-
-	if IsValid(self.TurretController) then info.TurretID = self.TurretController:EntIndex() end
-	info.DakName = self.DakName
-	info.DakMass = self.DakMass
-	info.DakModel = self.DakModel
-	info.DakMaxHealth = self.DakMaxHealth
-	info.DakHealth = self.DakHealth
-	duplicator.StoreEntityModifier(self, "DakTek", info)
-
-	--Wire dupe info
-	self.BaseClass.PreEntityCopy(self)
-end
-
-function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
-	if Ent.EntityMods and Ent.EntityMods.DakTek then
-		if Ent.EntityMods.DakTek.TurretID then
-			local Eng = CreatedEntities[Ent.EntityMods.DakTek.TurretID]
-			if Eng and IsValid(Eng) then self.TurretController = Eng end
-		end
-
-		self.DakName = Ent.EntityMods.DakTek.DakName
-		self.DakMass = Ent.EntityMods.DakTek.DakMass
-		self.DakModel = Ent.EntityMods.DakTek.DakModel
-		self.DakMaxHealth = Ent.EntityMods.DakTek.DakMaxHealth
-		self.DakHealth = self.DakMaxHealth
-		self.DakOwner = Player
-		if Ent.EntityMods.DakTek.DakColor then
-			self:SetColor(Ent.EntityMods.DakTek.DakColor)
-		end
-
-		self:Activate()
-		Ent.EntityMods.DakTek = nil
+function ENT:DakOnCopy(Info)
+	if IsValid(self.TurretController) then
+		Info.TurretID = self.TurretController:EntIndex()
 	end
 
-	self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
+	Info.DakMass = self.DakMass
+	Info.DakModel = self.DakModel
+end
+
+function ENT:DakOnPaste(EntMods, Ent, CreatedEntities)
+	if EntMods.TurretID then
+		local Eng = CreatedEntities[EntMods.TurretID]
+		if Eng and IsValid(Eng) then self.TurretController = Eng end
+	end
+
+	self.DakMass = EntMods.DakMass
+	self.DakModel = EntMods.DakModel
+
+	self:Activate()
+	Ent.EntityMods.DakTek = nil
 end
