@@ -2,6 +2,15 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+local DTTE = DTTE
+local AutoMags = DTTE.Classes.AutoMags
+
+local oldMagNames = {
+	["Small Autoloader Clip"] = "Small Autoloader Magazine",
+	["Medium Autoloader Clip"] = "Medium Autoloader Magazine",
+	["Large Autoloader Clip"] = "Large Autoloader Magazine"
+}
+
 ENT.DakName = "Autoloader Module"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
@@ -15,20 +24,11 @@ ENT.CanSpark = true
 function ENT:DakSlowThink()
 	local selfTbl = self:GetTable()
 
-	local magNames = {
-		["Small Autoloader Clip"] = "Small Autoloader Magazine",
-		["Medium Autoloader Clip"] = "Medium Autoloader Magazine",
-		["Large Autoloader Clip"] = "Large Autoloader Magazine"
-	}
+	selfTbl.DakName = oldMagNames[selfTbl.DakName] or selfTbl.DakName
 
-	selfTbl.DakName = magNames[selfTbl.DakName] or selfTbl.DakName
-	local magStats = {
-		["Small Autoloader Magazine"] = 1000,
-		["Medium Autoloader Magazine"] = 2000,
-		["Large Autoloader Magazine"] = 3000
-	}
+	local curMag = AutoMags[selfTbl.DakName]
+	selfTbl.DakMass = curMag.Mass
 
-	if magStats[selfTbl.DakName] then selfTbl.DakMass = magStats[selfTbl.DakName] end
 	if IsValid(selfTbl.DakGun) and selfTbl.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
 		if selfTbl.DakGun.TurretController and IsValid(self:GetParent()) then
 			if self:GetParent():GetParent() == selfTbl.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == selfTbl.DakGun:GetParent():GetParent() or (selfTbl.DakGun.TurretController:GetYawMin() <= 45 and selfTbl.DakGun.TurretController:GetYawMax() <= 45) then

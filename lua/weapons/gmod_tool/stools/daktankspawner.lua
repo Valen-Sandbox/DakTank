@@ -261,23 +261,13 @@ function TOOL:LeftClick( trace )
 			self.DakModel = "models/daktanks/gearbox1r6.mdl"
 		end
 		--CLIPS--
-		if Selection == "SALMagazine" then
-			self.DakMaxHealth = 50
-			self.DakHealth = 50
-			self.DakName = "Small Autoloader Magazine"
-			self.DakModel = "models/daktanks/alclip1.mdl"
-		end
-		if Selection == "MALMagazine" then
-			self.DakMaxHealth = 75
-			self.DakHealth = 75
-			self.DakName = "Medium Autoloader Magazine"
-			self.DakModel = "models/daktanks/alclip2.mdl"
-		end
-		if Selection == "LALMagazine" then
-			self.DakMaxHealth = 100
-			self.DakHealth = 100
-			self.DakName = "Large Autoloader Magazine"
-			self.DakModel = "models/daktanks/alclip3.mdl"
+		SelectedClass = Classes.AutoMags[Selection]
+
+		if SelectedClass then
+			self.DakName = Selection
+			self.DakMaxHealth = SelectedClass.MaxHealth
+			self.DakHealth = SelectedClass.MaxHealth
+			self.DakModel = SelectedClass.Model
 		end
 		--GUNS--
 		SelectedClass = Classes.Weapons[Selection]
@@ -1192,14 +1182,18 @@ function TOOL.BuildCPanel( panel )
 
 	--Table containing the description of the autoloader magazines
 	local magazineList = {}
-	magazineList["Small Autoloader Magazine"] = function()
-		DLabel:SetText( "Small Autoloader Magazine\n\nSmall sized magazine required to load an autoloader.\n\nMag Stats:\nArmor:   10mm\nWeight: 1000kg\nHealth:  50" )
-	end
-	magazineList["Medium Autoloader Magazine"] = function()
-		DLabel:SetText( "Medium Autoloader Magazine\n\nMedium sized magazine required to load an autoloader.\n\nMag Stats:\nArmor:   10mm\nWeight: 2000kg\nHealth:  75" )
-	end
-	magazineList["Large Autoloader Magazine"] = function()
-		DLabel:SetText( "Large Autoloader Magazine\n\nLarge sized magazine required to load an autoloader.\n\nMag Stats:\nArmor:   10mm\nWeight: 3000kg\nHealth:  100" )
+
+	for ClassName, ClassData in pairs(Classes.AutoMags) do
+		magazineList[ClassName] = function()
+			local name = ClassName .. "\n\n"
+			local desc = ClassData.Description .. "\n\n"
+			local stats = "Mag Stats:\n"
+			local armor = "Armor:   10mm\n"
+			local weight = "Weight: " .. ClassData.Mass .. "kg\n"
+			local health = "Health:  " .. ClassData.MaxHealth
+
+			DLabel:SetText(name .. desc .. stats .. armor .. weight .. health)
+		end
 	end
 
 	--Table containing the description of the Turret Motors
@@ -1642,7 +1636,7 @@ function TOOL.BuildCPanel( panel )
 			DLabel:SetText( "Autoloader Magazines\n\nThese are the magazines that hold shells and supply them to an autoloader. They are explosive." )
 		else
 			magazineList[AutoloaderMagazine]()
-			RunConsoleCommand( "daktankspawner_SpawnSettings", string.sub( AutoloaderMagazine, 1, 1 ).."ALMagazine" )
+			RunConsoleCommand( "daktankspawner_SpawnSettings", AutoloaderMagazine )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_teautoloadingmodule" )
 		end
 	end
@@ -1909,9 +1903,11 @@ function TOOL.BuildCPanel( panel )
 	AutoloaderMagazineSelect:SetPos( 15, 345 )
 	AutoloaderMagazineSelect:SetValue( "--Select Autoloader Magazine--" )
 	AutoloaderMagazineSelect:SetSortItems( false )
-	AutoloaderMagazineSelect:AddChoice( "Small Autoloader Magazine" )
-	AutoloaderMagazineSelect:AddChoice( "Medium Autoloader Magazine" )
-	AutoloaderMagazineSelect:AddChoice( "Large Autoloader Magazine" )
+
+	for ClassName in SortedPairs( Classes.AutoMags ) do
+		AutoloaderMagazineSelect:AddChoice( ClassName )
+	end
+
 	AutoloaderMagazineSelect.OnSelect = function( _, _, value )
 		AutoloaderMagazine = value
 
