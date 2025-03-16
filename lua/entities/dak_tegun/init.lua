@@ -38,7 +38,7 @@ ENT.BasicVelocity = 29527.6
 ENT.muzzle = NULL
 ENT.ShellLengthMult = 1
 ENT.ShellLengthExact = 1
-ENT.DakGunType = "N/A"
+ENT.DakGunType = "Cannon"
 ENT.DakCaliber = 0
 
 function ENT:Initialize()
