@@ -338,6 +338,11 @@ local function DestroyEnt(Ent, Filter, Shell)
 		Salvage.DakLastDamagePos = CurPos
 		Salvage:SetPos(CurPos)
 		Salvage:SetAngles(Ent:GetAngles())
+
+		if CPPI then
+			Salvage:CPPISetOwner(game.GetWorld())
+		end
+
 		Salvage:Spawn()
 		Filter[#Filter + 1] = Salvage
 		Ent:Remove()
