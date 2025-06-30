@@ -1,13 +1,22 @@
 TOOL.Category = "DakTank"
-TOOL.Name = "#Tool.daktankspawner.listname"
+TOOL.Name = "#tool.daktankspawner.listname"
 TOOL.Command = nil
 TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
+TOOL.Information = {
+	{ name = "left" },
+	{ name = "right" },
+	{ name = "reload" },
+}
+
 if CLIENT then
-	language.Add( "Tool.daktankspawner.listname", "DakTank Spawner" )
-	language.Add( "Tool.daktankspawner.name", "DakTank Spawner" )
-	language.Add( "Tool.daktankspawner.desc", "Spawns DakTank entities." )
-	language.Add( "Tool.daktankspawner.0", "Left click to spawn or update valid entities. Right click to check info of target. Reload to get contraption total mass." )
+	language.Add("tool.daktankspawner.listname", "DakTank Spawner")
+	language.Add("tool.daktankspawner.name", "DakTank Spawner")
+	language.Add("tool.daktankspawner.desc", "Spawns DakTank entities.")
+	language.Add("tool.daktankspawner.left", "Spawn or update valid entity")
+	language.Add("tool.daktankspawner.right", "Check info of target")
+	language.Add("tool.daktankspawner.reload", "Get total contraption mass")
 end
+
 TOOL.ClientConVar[ "SpawnEnt" ] 	   = ""
 TOOL.ClientConVar[ "SpawnSettings" ]   = ""
 TOOL.ClientConVar[ "DTTE_GunCaliber" ] = 5
@@ -1587,7 +1596,7 @@ function TOOL.BuildCPanel( panel )
 			DLabel:SetText( "Auto Tread Gearboxes\n\nTransfers the power of your engines to the wheels, you'll need heavy gearboxes to handle high power engines. Comes with auto generated treads for easy editing." )
 		else
 			gearboxList[GearboxModel]()
-			RunConsoleCommand( "daktankspawner_SpawnSettings", string.Replace( GearboxModel, " ", "" )..string.sub( GearboxDirection, 1, 1 ) )
+			RunConsoleCommand( "daktankspawner_SpawnSettings", string.Replace( GearboxModel, " ", "" ) .. string.sub( GearboxDirection, 1, 1 ) )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_tegearboxnew" )
 		end
 	end
@@ -1604,7 +1613,7 @@ function TOOL.BuildCPanel( panel )
 			DLabel:SetText( "Gearboxes\n\nTransfers the power of your engines to the wheels, you'll need heavy gearboxes to handle high power engines." )
 		else
 			gearboxList[GearboxModel]()
-			RunConsoleCommand( "daktankspawner_SpawnSettings", string.Replace( GearboxModel, " ", "" )..string.sub( GearboxDirection, 1, 1 ) )
+			RunConsoleCommand( "daktankspawner_SpawnSettings", string.Replace( GearboxModel, " ", "" ) .. string.sub( GearboxDirection, 1, 1 ) )
 			RunConsoleCommand( "daktankspawner_SpawnEnt", "dak_tegearbox" )
 		end
 	end

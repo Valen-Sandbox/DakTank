@@ -1,16 +1,21 @@
 TOOL.Category = "DakTank"
-TOOL.Name = "#Tool.daktankarmorer.listname"
+TOOL.Name = "#tool.daktankarmorer.listname"
 TOOL.Command = nil
 TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 TOOL.LastLeftClick = CurTime()
 TOOL.LastRightClick = CurTime()
 TOOL.LastThink = 0
+TOOL.Information = {
+	{ name = "left" },
+	{ name = "right" },
+}
 
-if (CLIENT) then
-	language.Add( "Tool.daktankarmorer.listname", "DakTank Armorer" )
-	language.Add( "Tool.daktankarmorer.name", "DakTank Armorer" )
-	language.Add( "Tool.daktankarmorer.desc", "Armors stuff and gives info." )
-	language.Add( "Tool.daktankarmorer.0", "Left click to set armor. Right click to get info." )
+if CLIENT then
+	language.Add("tool.daktankarmorer.listname", "DakTank Armorer")
+	language.Add("tool.daktankarmorer.name", "DakTank Armorer")
+	language.Add("tool.daktankarmorer.desc", "Armors stuff and gives info.")
+	language.Add("tool.daktankarmorer.left", "Set armor")
+	language.Add("tool.daktankarmorer.right", "Get info")
 
 	surface.CreateFont( "DakTankArmorFont", {
 		font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
@@ -30,6 +35,7 @@ if (CLIENT) then
 		outline = false,
 	} )
 end
+
 TOOL.ClientConVar[ "DakArmor" ] = "1"
 TOOL.ClientConVar[ "ArmorType" ]   = "RHA"
 

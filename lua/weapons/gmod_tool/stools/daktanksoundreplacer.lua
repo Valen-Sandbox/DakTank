@@ -1,16 +1,21 @@
 TOOL.Category = "DakTank"
-TOOL.Name = "#Tool.daktanksoundreplacer.listname"
+TOOL.Name = "#tool.daktanksoundreplacer.listname"
 TOOL.Command = nil
 TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
 TOOL.LastLeftClick = CurTime()
 TOOL.LastRightClick = CurTime()
 TOOL.LastReload = CurTime()
+TOOL.Information = {
+	{ name = "left" },
+	{ name = "right" },
+}
 
 if CLIENT then
-	language.Add( "Tool.daktanksoundreplacer.listname", "DakTank Sound Replacer" )
-	language.Add( "Tool.daktanksoundreplacer.name", "DakTank Sound Replacer" )
-	language.Add( "Tool.daktanksoundreplacer.desc", "Changes the sounds for DakTank guns and engines." )
-	language.Add( "Tool.daktanksoundreplacer.0", "Left click to apply sound. Right click to get target's current sound." )
+	language.Add("tool.daktanksoundreplacer.listname", "DakTank Sound Replacer")
+	language.Add("tool.daktanksoundreplacer.name", "DakTank Sound Replacer")
+	language.Add("tool.daktanksoundreplacer.desc", "Changes the sounds for DakTank guns and engines.")
+	language.Add("tool.daktanksoundreplacer.left", "Apply sound")
+	language.Add("tool.daktanksoundreplacer.right", "Get target's current sound")
 end
 
 TOOL.ClientConVar[ "DakTankSound1" ] = ""

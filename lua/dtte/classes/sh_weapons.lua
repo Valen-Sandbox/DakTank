@@ -293,6 +293,7 @@ Weapons["MG"] = {
 	AmmoTypes = { "Armor Piercing" },
 }
 Weapons["Smoke Launcher"] = {
+	ShortName = "SL",
 	Description = "Lightweight tube built to fire low velocity smoke grenades to conceal the vehicle's movement.",
 	ShellLengthMult = 3 / 50,
 	ShellLengthExact = 0.5,
@@ -304,6 +305,7 @@ Weapons["Smoke Launcher"] = {
 	AmmoTypes = { "Smoke" },
 }
 Weapons["Grenade Launcher"] = {
+	ShortName = "GL",
 	Description = "Automatic grenade launcher great for infantry support. Cold war and modern versions are belt fed directly from ammo boxes while WWII versions reload based off a set magazine size. A loader can help speed up the reloading time. Ammo for this gun must be in the turret if it is in the turret or hull if it is hull mounted.",
 	ShellLengthMult = 27 / 50,
 	ShellLengthExact = 3.5,
@@ -315,6 +317,7 @@ Weapons["Grenade Launcher"] = {
 	AmmoTypes = { "High Explosive", "High Explosive Anti Tank", "High Explosive Squash Head", "Smoke" },
 }
 Weapons["Autoloader"] = {
+	ShortName = "C",
 	Description = "Cannon with automated loading system, in cold war and modern eras it may be setup with a carousel loading system while WWII is required to use a magazine. Magazines boast a faster time between shots but must reload after a set amount of shots. Mags must be in the same compartment as the gun, ammo boxes count as the mags for carousel loaders. Ample space is required behind the breech to load the round.",
 	ShellLengthMult = 50 / 50,
 	ShellLengthExact = 6.5,
@@ -326,6 +329,7 @@ Weapons["Autoloader"] = {
 	AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" },
 }
 Weapons["Long Autoloader"] = {
+	ShortName = "LC",
 	Description = "Long cannon with automated loading system, in cold war and modern eras it may be setup with a carousel loading system while WWII is required to use a magazine. Magazines boast a faster time between shots but must reload after a set amount of shots. Mags must be in the same compartment as the gun, ammo boxes count as the mags for carousel loaders. Ample space is required behind the breech to load the round.",
 	ShellLengthMult = 70 / 50,
 	ShellLengthExact = 9,
@@ -337,6 +341,7 @@ Weapons["Long Autoloader"] = {
 	AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" },
 }
 Weapons["Short Autoloader"] = {
+	ShortName = "SC",
 	Description = "Short cannon with automated loading system, in cold war and modern eras it may be setup with a carousel loading system while WWII is required to use a magazine. Magazines boast a faster time between shots but must reload after a set amount of shots. Mags must be in the same compartment as the gun, ammo boxes count as the mags for carousel loaders. Ample space is required behind the breech to load the round.",
 	ShellLengthMult = 40 / 50,
 	ShellLengthExact = 5,
@@ -348,6 +353,7 @@ Weapons["Short Autoloader"] = {
 	AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Velocity Armor Piercing", "Armor Piercing Discarding Sabot", "High Explosive Squash Head", "Anti Tank Guided Missile", "Armor Piercing Fin Stabilized Discarding Sabot", "Smoke" },
 }
 Weapons["Autoloading Howitzer"] = {
+	ShortName = "H",
 	Description = "Howitzer with automated loading system, in cold war and modern eras it may be setup with a carousel loading system while WWII is required to use a magazine. Magazines boast a faster time between shots but must reload after a set amount of shots. Mags must be in the same compartment as the gun, ammo boxes count as the mags for carousel loaders. Ample space is required behind the breech to load the round.",
 	ShellLengthMult = 30 / 50,
 	ShellLengthExact = 4,
@@ -359,6 +365,7 @@ Weapons["Autoloading Howitzer"] = {
 	AmmoTypes = { "Armor Piercing", "High Explosive", "Armor Piercing High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Anti Tank Guided Missile", "Smoke" },
 }
 Weapons["Autoloading Mortar"] = {
+	ShortName = "M",
 	Description = "Mortar with automated loading system, in cold war and modern eras it may be setup with a carousel loading system while WWII is required to use a magazine. Magazines boast a faster time between shots but must reload after a set amount of shots. Mags must be in the same compartment as the gun, ammo boxes count as the mags for carousel loaders. Ample space is required behind the breech to load the round.",
 	ShellLengthMult = 15 / 50,
 	ShellLengthExact = 2.75,
@@ -397,6 +404,7 @@ Weapons["Autoloading Dual ATGM Launcher"] = {
 	ReadyRounds = 2,
 }
 Weapons["Autoloading Recoilless Rifle"] = {
+	ShortName = "RR",
 	Description = "Autoloaded, light weight, low recoil gun, great on light vehicles but limited to explosive ammunition only.",
 	ShellLengthMult = 25 / 50,
 	ShellLengthExact = 6.5,
@@ -408,6 +416,7 @@ Weapons["Autoloading Recoilless Rifle"] = {
 	AmmoTypes = { "High Explosive", "High Explosive Anti Tank", "High Explosive Anti Tank Fin Stabilized", "High Explosive Squash Head", "Smoke" },
 }
 Weapons["Autocannon"] = {
+	ShortName = "AC",
 	Description = "Fully automatic cannon limited to lower calibers for ease of loading. Cold war and modern versions are belt fed directly from ammo boxes while WWII versions reload based off a set magazine size. A loader can help speed up the reloading time. Ammo for this gun must be in the turret if it is in the turret or hull if it is hull mounted.",
 	ShellLengthMult = 50 / 50,
 	ShellLengthExact = 6.5,
@@ -431,6 +440,7 @@ Weapons["Flamethrower"] = {
 }
 Weapons["HMG"] = {
 	Name = "Heavy Machine Gun",
+	ShortName = "HMG",
 	Description = "Short barreled autocannon with higher rate of fire but weaker KE performance. Cold war and modern versions are belt fed directly from ammo boxes while WWII versions reload based off a set magazine size. A loader can help speed up the reloading time. Ammo for this gun must be in the turret if it is in the turret or hull if it is hull mounted.",
 	ShellLengthMult = 40 / 50,
 	ShellLengthExact = 5,

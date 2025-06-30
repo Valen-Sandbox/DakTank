@@ -1,7 +1,12 @@
 TOOL.Category = "DakTank"
-TOOL.Name = "#Tool.daktanklinker.listname"
+TOOL.Name = "#tool.daktanklinker.listname"
 TOOL.Command = nil
 TOOL.ConfigName = "" --Setting this means that you do not have to create external configuration files to define the layout of the tool config-hud
+TOOL.Information = {
+	{ name = "left" },
+	{ name = "right" },
+	{ name = "info", stage = 0 },
+}
 
 TOOL.EntList = {}
 TOOL.ColorList = {}
@@ -12,15 +17,16 @@ TOOL.LastReload = CurTime()
 TOOL.ClientConVar[ "DakChatFeedback" ] = 1
 TOOL.ClientConVar[ "DakCompOverride" ] = 1
 
-
-if (CLIENT) then
-language.Add( "Tool.daktanklinker.listname", "DakTank Linker" )
-language.Add( "Tool.daktanklinker.name", "DakTank Linker" )
-language.Add( "Tool.daktanklinker.desc", "Links stuff to things." )
-language.Add( "Tool.daktanklinker.0", "Left click to select the gearbox, AL magazine, or turret motor. Right click on the fuel, gun, or turret control. Also links crew members to things." )
+if CLIENT then
+	language.Add("tool.daktanklinker.listname", "DakTank Linker")
+	language.Add("tool.daktanklinker.name", "DakTank Linker")
+	language.Add("tool.daktanklinker.desc", "Links stuff to things.")
+	language.Add("tool.daktanklinker.left", "Select the gearbox, AL magazine, or turret motor")
+	language.Add("tool.daktanklinker.right", "Select the fuel, gun, or turret control to finalize the link")
+	language.Add("tool.daktanklinker.0", "Also links crew members to things")
 end
---TOOL.ClientConVar[ "myparameter" ] = "fubar"
-TOOL.ClientConVar[ "ArmorType" ]   = "RHA"
+
+TOOL.ClientConVar[ "ArmorType" ] = "RHA"
 
 function TOOL:LeftClick( trace )
 	if CurTime()>self.LastLeftClick then

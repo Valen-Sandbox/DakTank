@@ -422,7 +422,7 @@ function ENT:Think()
 				selfTbl.setup = 1
 			end
 
-			phys = selfParent2:GetPhysicsObject()
+			local phys = selfParent2:GetPhysicsObject()
 			if selfTbl.InertiaSet == nil and phys:IsMotionEnabled() == true then
 				local oldinertia = phys:GetInertia()
 				local multiplier = 2

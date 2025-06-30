@@ -1053,6 +1053,7 @@ end
 local matfallback = Material("editor/wireframe")
 local flip1 = Vector(-1, -1, 1)
 local flip2 = Vector(1, -1, 1)
+
 function ENT:render_tracks(vehicleMode)
 	local selfTbl = self:GetTable()
 	if not selfTbl.dak_tracks_ready then return end
@@ -1064,14 +1065,12 @@ function ENT:render_tracks(vehicleMode)
 	for i = 1, 2 do
 		local tracknodescount, trackverts, trackvertscount, tracknormals, trackscroll
 		if i == 1 then
-			tracknodes = selfTbl.dak_tracks_nodes_ri
 			tracknodescount = selfTbl.dak_tracks_nodescount_ri
 			trackverts = selfTbl.dak_tracks_verts_ri
 			trackvertscount = selfTbl.dak_tracks_vertscount_ri
 			tracknormals = selfTbl.dak_tracks_normals_ri
 			trackscroll = selfTbl.dak_wheels_lastrot_ri
 		else
-			tracknodes = selfTbl.dak_tracks_nodes_le
 			tracknodescount = selfTbl.dak_tracks_nodescount_le
 			trackverts = selfTbl.dak_tracks_verts_le
 			trackvertscount = selfTbl.dak_tracks_vertscount_le

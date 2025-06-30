@@ -41,7 +41,6 @@ function ENT:Initialize()
 	--self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
-	--local phys = self:GetPhysicsObject()
 	self.timer = CurTime()
 
 	self.Inputs = Wire_CreateInputs(self, { "Fire", "FuzeDelay" })

@@ -1,7 +1,9 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
+
 local DTTE = DTTE
+
 ENT.DakEntity = NULL
 ENT.DakMaxHealth = 5
 ENT.DakHealth = 5
@@ -9,50 +11,52 @@ ENT.DakArmor = 2.5
 ENT.DakName = "Crew"
 ENT.DakMass = 75
 ENT.DakPooled = 0
+
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self.DakHealth = self.DakMaxHealth
-	--self.Soundtime = CurTime()
 	self.SparkTime = CurTime()
 	self.DakBurnStacks = 0
 	self.LastHealth = 5
+
 	self.VO = self:GetVoice()
 	if self.VO == 0 then self.VO = math.random(1, 6) end
-	local VO1Death, dir1 = file.Find("sound/daktanks/crew/aus/death*", "GAME")
-	local VO1Pain, dir2 = file.Find("sound/daktanks/crew/aus/pain*", "GAME")
-	local VO1Suffer, dir3 = file.Find("sound/daktanks/crew/aus/suffer*", "GAME")
+
+	local VO1Death = file.Find("sound/daktanks/crew/aus/death*", "GAME")
+	local VO1Pain = file.Find("sound/daktanks/crew/aus/pain*", "GAME")
+	local VO1Suffer = file.Find("sound/daktanks/crew/aus/suffer*", "GAME")
 	self.VO1Death = VO1Death
 	self.VO1Pain = VO1Pain
 	self.VO1Suffer = VO1Suffer
-	local VO2Death, dir4 = file.Find("sound/daktanks/crew/fre/death*", "GAME")
-	local VO2Pain, dir5 = file.Find("sound/daktanks/crew/fre/pain*", "GAME")
-	local VO2Suffer, dir6 = file.Find("sound/daktanks/crew/fre/suffer*", "GAME")
+	local VO2Death = file.Find("sound/daktanks/crew/fre/death*", "GAME")
+	local VO2Pain = file.Find("sound/daktanks/crew/fre/pain*", "GAME")
+	local VO2Suffer = file.Find("sound/daktanks/crew/fre/suffer*", "GAME")
 	self.VO2Death = VO2Death
 	self.VO2Pain = VO2Pain
 	self.VO2Suffer = VO2Suffer
-	local VO3Death, dir7 = file.Find("sound/daktanks/crew/ger/death*", "GAME")
-	local VO3Pain, dir8 = file.Find("sound/daktanks/crew/ger/pain*", "GAME")
-	local VO3Suffer, dir9 = file.Find("sound/daktanks/crew/ger/suffer*", "GAME")
+	local VO3Death = file.Find("sound/daktanks/crew/ger/death*", "GAME")
+	local VO3Pain = file.Find("sound/daktanks/crew/ger/pain*", "GAME")
+	local VO3Suffer = file.Find("sound/daktanks/crew/ger/suffer*", "GAME")
 	self.VO3Death = VO3Death
 	self.VO3Pain = VO3Pain
 	self.VO3Suffer = VO3Suffer
-	local VO4Death, dir10 = file.Find("sound/daktanks/crew/rus/death*", "GAME")
-	local VO4Pain, dir11 = file.Find("sound/daktanks/crew/rus/pain*", "GAME")
-	local VO4Suffer, dir12 = file.Find("sound/daktanks/crew/rus/suffer*", "GAME")
+	local VO4Death = file.Find("sound/daktanks/crew/rus/death*", "GAME")
+	local VO4Pain = file.Find("sound/daktanks/crew/rus/pain*", "GAME")
+	local VO4Suffer = file.Find("sound/daktanks/crew/rus/suffer*", "GAME")
 	self.VO4Death = VO4Death
 	self.VO4Pain = VO4Pain
 	self.VO4Suffer = VO4Suffer
-	local VO5Death, dir13 = file.Find("sound/daktanks/crew/sco/death*", "GAME")
-	local VO5Pain, dir14 = file.Find("sound/daktanks/crew/sco/pain*", "GAME")
-	local VO5Suffer, dir15 = file.Find("sound/daktanks/crew/sco/suffer*", "GAME")
+	local VO5Death = file.Find("sound/daktanks/crew/sco/death*", "GAME")
+	local VO5Pain = file.Find("sound/daktanks/crew/sco/pain*", "GAME")
+	local VO5Suffer = file.Find("sound/daktanks/crew/sco/suffer*", "GAME")
 	self.VO5Death = VO5Death
 	self.VO5Pain = VO5Pain
 	self.VO5Suffer = VO5Suffer
-	local VO6Death, dir16 = file.Find("sound/daktanks/crew/us/death*", "GAME")
-	local VO6Pain, dir17 = file.Find("sound/daktanks/crew/us/pain*", "GAME")
-	local VO6Suffer, dir18 = file.Find("sound/daktanks/crew/us/suffer*", "GAME")
+	local VO6Death = file.Find("sound/daktanks/crew/us/death*", "GAME")
+	local VO6Pain = file.Find("sound/daktanks/crew/us/pain*", "GAME")
+	local VO6Suffer = file.Find("sound/daktanks/crew/us/suffer*", "GAME")
 	self.VO6Death = VO6Death
 	self.VO6Pain = VO6Pain
 	self.VO6Suffer = VO6Suffer
@@ -266,7 +270,7 @@ end
 
 function ENT:PreEntityCopy()
 	local info = {}
-	--local entids = {}
+
 	if IsValid(self.DakEntity) then info.DakEntityID = self.DakEntity:EntIndex() end
 	if IsValid(self.DakEntity2) then info.DakEntity2ID = self.DakEntity2:EntIndex() end
 	info.DakName = self.DakName
