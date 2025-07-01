@@ -1564,15 +1564,20 @@ function ENT:Think() --converting self. calls into selfTbl. is going to take awh
 								end
 
 								if turrets2[i].WiredGun ~= NULL then
-									self.Contraption[#self.Contraption + 1] = turrets2[i].WiredGun:GetParent():GetParent()
-									TurEnts[#TurEnts + 1] = turrets2[i].WiredGun:GetParent():GetParent()
-									for k, v in pairs(turrets2[i].WiredGun:GetParent():GetParent():GetChildren()) do
-										self.Contraption[#self.Contraption + 1] = v
-										TurEnts[#TurEnts + 1] = v
-										for k2, v2 in pairs(v:GetChildren()) do
-											self.Contraption[#self.Contraption + 1] = v2
-											TurEnts[#TurEnts + 1] = v2
-											if v2:GetClass() == "dak_turretcontrol" then turrets3[#turrets3 + 1] = v2 end
+									local gunRoot = turrets2[i].WiredGun:GetParent():GetParent()
+
+									if IsValid(gunRoot) then
+										self.Contraption[#self.Contraption + 1] = gunRoot
+										TurEnts[#TurEnts + 1] = gunRoot
+
+										for _, v in pairs(gunRoot:GetChildren()) do
+											self.Contraption[#self.Contraption + 1] = v
+											TurEnts[#TurEnts + 1] = v
+											for _, v2 in pairs(v:GetChildren()) do
+												self.Contraption[#self.Contraption + 1] = v2
+												TurEnts[#TurEnts + 1] = v2
+												if v2:GetClass() == "dak_turretcontrol" then turrets3[#turrets3 + 1] = v2 end
+											end
 										end
 									end
 								end
