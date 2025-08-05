@@ -254,7 +254,9 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 
 							CurPlayer.DakHudArmorLast = util.TableToJSON( Target.frontarmortable )
 						end
-					else
+
+						CurPlayer.DakHudIsDrawing = true
+					elseif CurPlayer.DakHudIsDrawing then
 						--send empty and tell to close hud
 						net.Start( "daktankhud" )
 						net.WriteString( util.TableToJSON( {} ) )
@@ -267,6 +269,8 @@ hook.Add( "Think", "DakTankInfoScannerFunction", function()
 						net.Start( "daktankhud3" )
 						net.WriteString( util.TableToJSON( {} ) )
 						net.Send( CurPlayer )
+
+						CurPlayer.DakHudIsDrawing = false
 					end
 				end
 				CurPlayer.DakHudLastTarget = HitEnt
