@@ -11,7 +11,7 @@ local oldMagNames = {
 	["Large Autoloader Clip"] = "Large Autoloader Magazine"
 }
 
-ENT.DakName = "Autoloader Module"
+ENT.DakName = "Small Autoloader Magazine"
 ENT.DakIsExplosive = true
 ENT.DakArmor = 10
 ENT.DakMaxHealth = 10
