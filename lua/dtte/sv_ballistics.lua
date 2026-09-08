@@ -1217,7 +1217,16 @@ local function ContEXP(Filter, IgnoreEnt, Pos, Damage, Radius, Caliber, Pen, Own
 				end
 			end
 
+			local EffArmor = (DTTE.GetArmor(ExpTrace.Entity, Shell.DakShellType, 2) / math.abs(ExpTraceLine.HitNormal:Dot(Direction)))
+			if ExpTrace.Entity.IsComposite == 1 or (ExpTrace.Entity:CPPIGetOwner() ~= nil and ExpTrace.Entity:CPPIGetOwner():IsWorld()) then
+				if ExpTrace.Entity.EntityMods == nil then ExpTrace.Entity.EntityMods = {} end
+				if ExpTrace.Entity.EntityMods.CompKEMult == nil then ExpTrace.Entity.EntityMods.CompKEMult = 9.2 end
+				if ExpTrace.Entity.EntityMods.CompCEMult == nil then ExpTrace.Entity.EntityMods.CompCEMult = 18.4 end
+				EffArmor = (ExpTrace.Entity:GetPhysicsObject():GetVolume() ^ (1 / 3)) * ExpTrace.Entity.EntityMods.CompCEMult--DTTE.CompositesTrace( ExpTrace.Entity, ExpTrace.HitPos, ExpTrace.Normal, Shell.Filter ) * ExpTrace.Entity.EntityMods.CompKEMult
+			end
+
 			ExpTrace.Entity.DakLastDamagePos = ExpTrace.HitPos
+
 			if CanDamage(ExpTrace.Entity) then
 				if ExpTrace.Entity:GetClass() == "dak_tegun" or ExpTrace.Entity:GetClass() == "dak_temachinegun" or ExpTrace.Entity:GetClass() == "dak_teautogun" then
 					DTDealDamage(ExpTrace.Entity, -math.Clamp((Damage / traces) * (Pen / DTTE.GetArmor(ExpTrace.Entity, "HE", Caliber)) * 0.001,0,DTTE.GetArmor(ExpTrace.Entity, "HE", Caliber) * 2),self,true)
@@ -1230,13 +1239,7 @@ local function ContEXP(Filter, IgnoreEnt, Pos, Damage, Radius, Caliber, Pen, Own
 					end
 				end
 			end
-			local EffArmor = (DTTE.GetArmor(ExpTrace.Entity, Shell.DakShellType, 2) / math.abs(ExpTraceLine.HitNormal:Dot(Direction)))
-			if ExpTrace.Entity.IsComposite == 1 or (ExpTrace.Entity:CPPIGetOwner() ~= nil and ExpTrace.Entity:CPPIGetOwner():IsWorld()) then
-				if ExpTrace.Entity.EntityMods == nil then ExpTrace.Entity.EntityMods = {} end
-				if ExpTrace.Entity.EntityMods.CompKEMult == nil then ExpTrace.Entity.EntityMods.CompKEMult = 9.2 end
-				if ExpTrace.Entity.EntityMods.CompCEMult == nil then ExpTrace.Entity.EntityMods.CompCEMult = 18.4 end
-				EffArmor = (ExpTrace.Entity:GetPhysicsObject():GetVolume() ^ (1 / 3)) * ExpTrace.Entity.EntityMods.CompCEMult--DTTE.CompositesTrace( ExpTrace.Entity, ExpTrace.HitPos, ExpTrace.Normal, Shell.Filter ) * ExpTrace.Entity.EntityMods.CompKEMult
-			end
+
 			if EffArmor < Pen and ExpTrace.Entity.IsDakTekFutureTech == nil then
 				util.Decal( "Impact.Concrete", ExpTrace.HitPos + (Direction * 5), ExpTrace.HitPos - (Direction * 5), IgnoreEnt)
 				if ExpTrace.Entity:GetClass() == "dak_crew" or ExpTrace.Entity:GetClass() == "dak_gamemode_bot2" or ExpTrace.Entity:IsPlayer() or ExpTrace.Entity:IsNPC() then

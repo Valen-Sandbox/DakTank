@@ -55,7 +55,7 @@ function ENT:DakSlowThink(selfTbl)
 			local start = self:GetPos()
 			local endpos = start + Direction * 50
 
-			RecurseTrace(start, endpos, self, true)
+			RecurseTrace(start, endpos, {self}, true)
 		end
 
 		selfTbl.DakHealth = selfTbl.DakHealth - 1
