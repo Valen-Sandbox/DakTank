@@ -30,8 +30,10 @@ function ENT:DakSlowThink()
 	selfTbl.DakMass = curMag.Mass
 
 	if IsValid(selfTbl.DakGun) and selfTbl.DakGun.IsAutoLoader == 1 then --Is there a reason for this to not be a boolean?
-		if selfTbl.DakGun.TurretController and IsValid(self:GetParent()) then
-			if self:GetParent():GetParent() == selfTbl.DakGun.TurretController.TurretBase or self:GetParent():GetParent() == selfTbl.DakGun:GetParent():GetParent() or (selfTbl.DakGun.TurretController:GetYawMin() <= 45 and selfTbl.DakGun.TurretController:GetYawMax() <= 45) then
+		local turretCon = selfTbl.DakGun.TurretController
+
+		if IsValid(turretCon) and IsValid(self:GetParent()) then
+			if self:GetParent():GetParent() == turretCon.TurretBase or self:GetParent():GetParent() == selfTbl.DakGun:GetParent():GetParent() or (turretCon:GetYawMin() <= 45 and turretCon:GetYawMax() <= 45) then
 				selfTbl.DakGun.DakMagazine = math.floor(0.27 * self:GetPhysicsObject():GetVolume() / (((selfTbl.DakGun.DakCaliber * 0.0393701) ^ 2) * (selfTbl.DakGun.DakCaliber * 0.0393701 * 13 * selfTbl.DakGun.ShellLengthMult)))
 				if selfTbl.DakGun.DakMagazine > 0 then
 					selfTbl.DakGun.DakReloadTime = selfTbl.DakGun.DakCooldown * selfTbl.DakGun.DakMagazine
