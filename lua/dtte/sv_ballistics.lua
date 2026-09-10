@@ -353,7 +353,7 @@ local function DestroyEnt(Ent, Filter, Shell)
 	end
 end
 
-local function KillEnemy(Ent, Owner, Shell, TraceCount, Damage, DamageMult)
+local function KillEnemy(Ent, Owner, Shell, Direction, TraceCount, Damage, DamageMult)
 	if not Ent:IsValid() then return end
 
 	if Ent:IsPlayer() or Ent:IsNPC() or Ent.Base == "base_nextbot" then
@@ -1257,7 +1257,7 @@ local function ContEXP(Filter, IgnoreEnt, Pos, Damage, Radius, Caliber, Pen, Own
 		end
 	end
 
-	KillEnemy(ExpTrace.Entity, Owner, Shell, traces, Damage, 500)
+	KillEnemy(ExpTrace.Entity, Owner, Shell, Direction, traces, Damage, 500)
 end
 
 function DTAPHE(Pos, Damage, Radius, Caliber, Pen, Owner, Shell, HitEnt)
@@ -1358,7 +1358,7 @@ function DTAPHE(Pos, Damage, Radius, Caliber, Pen, Owner, Shell, HitEnt)
 				end
 			end
 
-			KillEnemy(ExpTrace.Entity, Owner, Shell, traces, Damage, 500)
+			KillEnemy(ExpTrace.Entity, Owner, Shell, Direction, traces, Damage, 500)
 		end
 	end
 end
@@ -1548,7 +1548,7 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 								end
 							end
 
-							KillEnemy(ExpTrace.Entity, Owner, Shell, traces, Damage, 1)
+							KillEnemy(ExpTrace.Entity, Owner, Shell, Direction, traces, Damage, 1)
 						end
 					end
 				end
@@ -1779,7 +1779,7 @@ function DTShockwave(Pos,Damage,Radius,Pen,Owner,Shell,HitEnt,nocheck)
 					end
 				end
 
-				KillEnemy(ExpTrace.Entity, Owner, Shell, traces, Damage, 1)
+				KillEnemy(ExpTrace.Entity, Owner, Shell, Direction, traces, Damage, 1)
 			end
 		end
 	end
@@ -1900,7 +1900,7 @@ local function ContSpall(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, 
 		end
 	end
 
-	KillEnemy(SpallTrace.Entity, Owner, Shell, 1, Damage, 250)
+	KillEnemy(SpallTrace.Entity, Owner, Shell, Direction, 1, Damage, 250)
 end
 
 function DTSpall(Pos,Armor,HitEnt,Caliber,Pen,Owner,Shell,Dir)
@@ -2067,7 +2067,7 @@ function DTSpall(Pos,Armor,HitEnt,Caliber,Pen,Owner,Shell,Dir)
 			effectdata:SetScale(Shell.DakCaliber * 0.00393701)
 
 			if SpallTrace.Entity:IsValid() then
-				KillEnemy(SpallTrace.Entity, Owner, Shell, 1, SpallDamage, 500)
+				KillEnemy(SpallTrace.Entity, Owner, Shell, Direction, 1, SpallDamage, 500)
 
 				effectdata:SetOrigin(SpallTrace.HitPos)
 			else
@@ -2227,7 +2227,7 @@ local function ContHEAT(Filter, IgnoreEnt, Pos, Damage, Pen, Owner, Direction, S
 	effectdata:SetScale(Shell.DakCaliber * 0.393701)
 
 	if HEATTrace.Entity:IsValid() then
-		KillEnemy(HEATTrace.Entity, Owner, Shell, 1, Damage, 500)
+		KillEnemy(HEATTrace.Entity, Owner, Shell, Direction, 1, Damage, 500)
 
 		effectdata:SetOrigin(HEATTrace.HitPos)
 	else
@@ -2354,7 +2354,7 @@ function DTHEAT(Pos, HitEnt, Caliber, Pen, Damage, Owner, Shell)
 	effectdata:SetScale(Shell.DakCaliber * 0.00393701)
 
 	if HEATTrace.Entity:IsValid() then
-		KillEnemy(HEATTrace.Entity, Owner, Shell, 1, HEATDamage, 500)
+		KillEnemy(HEATTrace.Entity, Owner, Shell, Direction, 1, HEATDamage, 500)
 
 		effectdata:SetOrigin(HEATTrace.HitPos)
 	else
